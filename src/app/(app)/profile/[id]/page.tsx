@@ -5,6 +5,7 @@ import Activity from "@/models/Activity";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileStatsBar from "@/components/profile/ProfileStatsBar";
 import FeedList from "@/components/feed/FeedList";
+import GitProfileMetrics from "@/components/profile/GitProfileMetrics";
 import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
@@ -92,6 +93,8 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
                     </div>
                 </div>
             </div>
+
+            <GitProfileMetrics userId={id} />
         </div>
       </div>
     </div>

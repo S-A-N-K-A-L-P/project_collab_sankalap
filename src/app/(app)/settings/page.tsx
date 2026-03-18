@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { Save, User as UserIcon, Shield, Code2, MapPin, Loader2, Sparkles, Zap } from "lucide-react";
 import { motion } from "framer-motion";
+import GitSettings from "@/components/settings/GitSettings";
 
 export default function SettingsPage() {
   const { data: session, update } = useSession();
@@ -137,6 +138,14 @@ export default function SettingsPage() {
                 />
               </div>
             </div>
+          </div>
+
+          <div className="md:col-span-3">
+             <div className="h-px bg-[#1f1f23] w-full my-4" />
+          </div>
+
+          <div className="md:col-span-3">
+             <GitSettings userId={(session?.user as any).id} />
           </div>
         </div>
 
