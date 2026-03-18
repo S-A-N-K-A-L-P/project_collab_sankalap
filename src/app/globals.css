@@ -38,5 +38,31 @@ body {
 }
 
 .text-metadata {
-  @apply font-mono text-[10px] uppercase tracking-wider opacity-70;
+  @apply font-mono text-[9px] uppercase tracking-[0.2em] opacity-60;
+}
+
+.cyber-border {
+  @apply border border-slate-200 dark:border-slate-800 hover:border-blue-500/50 transition-colors shadow-sm;
+}
+
+.neon-glow {
+  @apply shadow-[0_0_15px_-3px_rgba(59,130,246,0.3)];
+}
+
+.bento-card {
+  @apply bg-white dark:bg-slate-900/50 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm backdrop-blur-xl hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300;
+}
+
+/* Scrollbar styling for a cleaner look */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-200 dark:bg-slate-800 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-blue-500/50;
 }

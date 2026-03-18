@@ -109,15 +109,17 @@ export default function ProposalCard({ proposal }: ProposalCardProps) {
         <div className="flex justify-between items-start mb-4">
           <div className="flex gap-3">
             <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-bold text-blue-600 shadow-sm overflow-hidden relative">
-              {proposal.createdBy.avatar ? (
+              {proposal.createdBy?.avatar ? (
                 <img src={proposal.createdBy.avatar} alt={proposal.createdBy.name} className="object-cover w-full h-full" />
               ) : (
-                proposal.createdBy.name[0]
+                proposal.createdBy?.name ? proposal.createdBy.name[0] : "?"
               )}
             </div>
             <div className="min-w-0">
-              <h4 className="font-black text-slate-900 dark:text-white text-sm leading-none hover:text-blue-600 cursor-pointer transition-colors truncate tracking-tight">{proposal.createdBy.name}</h4>
-              <p className="text-[10px] text-slate-500 font-mono mt-1 opacity-70">3H AGO • <span className={style.color}>{style.label}</span></p>
+              <h4 className="font-black text-slate-900 dark:text-white text-sm leading-none hover:text-blue-600 cursor-pointer transition-colors truncate tracking-tight">{proposal.createdBy?.name || "Unknown"}</h4>
+              <p className="text-[10px] text-slate-500 font-mono mt-1 opacity-70">
+                {new Date(proposal.createdAt).toLocaleDateString()} • <span className={style.color}>{style.label}</span>
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -150,28 +152,30 @@ export default function ProposalCard({ proposal }: ProposalCardProps) {
         <div className="mt-6 flex items-center justify-between">
             <div className="flex items-center gap-4">
                 <div className="flex -space-x-1.5 overflow-hidden">
-                    {[1, 2, 3].map(i => (
+                    {proposal.contributors?.slice(0, 3).map((c, i) => (
                         <div key={i} className="inline-block h-6 w-6 rounded-lg ring-2 ring-white dark:ring-slate-900 bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-[8px] font-bold">
-                            U{i}
+                            {c.name ? c.name[0] : "U"}
                         </div>
                     ))}
-                    <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-50 ring-2 ring-white dark:ring-slate-900 dark:bg-blue-950 text-[8px] font-bold text-blue-600 dark:text-blue-400">
-                        +{(proposal.contributors?.length || 0) + 5}
-                    </div>
+                    {(proposal.contributors?.length || 0) > 3 && (
+                        <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-50 ring-2 ring-white dark:ring-slate-900 dark:bg-blue-950 text-[8px] font-bold text-blue-600 dark:text-blue-400">
+                            +{proposal.contributors.length - 3}
+                        </div>
+                    )}
                 </div>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
-                   <span className="text-green-500 font-black">+3 JOINED TODAY</span>
+                <p className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-tighter">
+                   {proposal.contributors?.length || 0} CONTRIBUTORS
                 </p>
             </div>
             
             <div className="flex items-center gap-3 text-slate-400">
                 <div className="flex items-center gap-1">
                     <MessageSquare className="w-3.5 h-3.5" />
-                    <span className="text-[11px] font-mono font-bold">{proposal.commentsCount || 12}</span>
+                    <span className="text-[11px] font-mono font-bold">{proposal.commentsCount || 0}</span>
                 </div>
                 <div className="flex items-center gap-1">
                     <Share2 className="w-3.5 h-3.5" />
-                    <span className="text-[11px] font-mono font-bold">{proposal.sharesCount || 5}</span>
+                    <span className="text-[11px] font-mono font-bold">{proposal.sharesCount || 0}</span>
                 </div>
             </div>
         </div>

@@ -17,57 +17,78 @@ export default async function ProposalsPage() {
     .lean();
 
   return (
-    <div className="max-w-[1600px] mx-auto p-4 md:p-6 lg:p-8 space-y-8 font-sans">
-      {/* Header Section - More Dense */}
-      <div className="flex flex-col md:flex-row justify-between items-center bg-slate-900 text-white p-8 rounded-3xl shadow-2xl border border-slate-800 relative overflow-hidden">
-        <div className="space-y-1 relative z-10">
-          <div className="flex items-center gap-2 mb-1">
-             <span className="px-2 py-0.5 bg-blue-500 text-[10px] font-black rounded uppercase tracking-widest">Live Now</span>
-             <span className="text-[10px] font-mono text-slate-400">SESSION: ACTIVE</span>
-          </div>
-          <h1 className="text-3xl font-black tracking-tighter">BUILDER FEED</h1>
-          <p className="text-slate-400 font-medium text-sm">Where ideas transform into code. Join the momentum.</p>
-        </div>
-        <div className="relative z-10 scale-110">
-          <FeedActions />
-        </div>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2"></div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Sidebar - Quick Stats/Menu (Optional, can keep it simpler) */}
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-blue-500/30">
+      <div className="max-w-[1600px] mx-auto p-4 md:p-6 lg:p-8 space-y-6">
         
-        {/* Center Feed - Main Focus */}
-        <div className="lg:col-span-8 space-y-8">
-            <ProposalFeed proposals={proposals as any[]} title="Recent Ideas" />
+        {/* TOP BENTO ROW: Branding & Key Action */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div className="lg:col-span-8 bg-slate-900 p-8 rounded-[2rem] border border-slate-800 shadow-2xl relative overflow-hidden flex flex-col justify-center">
+                <div className="relative z-10 space-y-2">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+                        <span className="text-[10px] font-mono font-black text-blue-400 uppercase tracking-[0.3em]">Protocol Active</span>
+                    </div>
+                    <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-white">
+                        THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">PIXEL</span> ARCHIVE
+                    </h1>
+                    <p className="text-slate-400 font-medium text-sm md:text-base max-w-lg leading-relaxed">
+                        Synchronizing community vision with architectural implementation. Explore the latest terminal ideas.
+                    </p>
+                </div>
+                <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-600/20 rounded-full blur-[120px]" />
+                <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
+            </div>
+
+            <div className="lg:col-span-4 bg-gradient-to-br from-blue-600 to-indigo-700 p-8 rounded-[2rem] shadow-xl shadow-blue-500/20 flex flex-col items-center justify-center text-center group">
+                <h3 className="text-white text-xl font-black mb-3 uppercase tracking-tighter group-hover:scale-105 transition-transform">Broadcast Vision</h3>
+                <p className="text-blue-100 text-xs mb-6 font-medium leading-relaxed opacity-80">Initialize a new project proposal and recruit contributors from the network.</p>
+                <div className="w-full">
+                    <FeedActions />
+                </div>
+            </div>
         </div>
 
-        {/* Right Sidebar - Vibe Multipliers */}
-        <aside className="lg:col-span-4 space-y-8 sticky top-24">
-            {/* Builders Online */}
-            <div className="glass p-6 rounded-3xl">
-                <BuildersOnline />
+        {/* MAIN BENTO GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            {/* LEFT COLUMN: Main Feed */}
+            <div className="lg:col-span-8 space-y-6">
+                <div className="flex items-center justify-between px-2 mb-2">
+                    <h2 className="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Streamed Packets</h2>
+                    <div className="flex items-center gap-4 text-[10px] font-mono font-bold text-slate-500">
+                        <span className="hover:text-blue-500 cursor-pointer text-blue-500">RECENT</span>
+                        <span className="hover:text-blue-500 cursor-pointer">TRENDING</span>
+                        <span className="hover:text-blue-500 cursor-pointer">COMPLETED</span>
+                    </div>
+                </div>
+                <ProposalFeed proposals={proposals as any[]} title="" />
             </div>
 
-            {/* Live Activity */}
-            <div className="glass p-6 rounded-3xl">
-                <LiveActivityStream />
-            </div>
+            {/* RIGHT COLUMN: Intelligence Hub */}
+            <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-8">
+                
+                {/* System Activity */}
+                <div className="bg-white dark:bg-slate-900/50 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm backdrop-blur-xl">
+                    <LiveActivityStream />
+                </div>
 
-            {/* Leaderboard */}
-            <div className="glass p-6 rounded-3xl">
-                <TopBuildersLeaderboard />
-            </div>
+                {/* Network Nodes (Builders) */}
+                <div className="bg-white dark:bg-slate-900/50 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm backdrop-blur-xl">
+                    <BuildersOnline />
+                </div>
 
-            {/* Floating Action Button Simulation (Actually in FeedActions, but can add another here) */}
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-3xl shadow-xl text-white">
-                <h3 className="text-sm font-black mb-1 uppercase tracking-wider">Got a Vision?</h3>
-                <p className="text-blue-100 text-xs mb-4">Dont just watch. Build the next big project at Pixel.</p>
-                <button className="w-full py-2.5 bg-white text-blue-600 rounded-xl text-[10px] font-black shadow-lg hover:scale-[1.02] active:scale-95 transition-all uppercase tracking-widest">
-                    Pitch Your Idea
-                </button>
-            </div>
-        </aside>
+                {/* Leaderboard */}
+                <div className="bg-white dark:bg-slate-900/50 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm backdrop-blur-xl">
+                    <TopBuildersLeaderboard />
+                </div>
+
+                {/* Footer / System Info */}
+                <div className="px-4 text-[9px] font-mono text-slate-400 uppercase flex justify-between tracking-widest opacity-50">
+                    <span>© 2026 PIXEL.OS</span>
+                    <span>V.2.4.9-STABLE</span>
+                </div>
+            </aside>
+        </div>
       </div>
     </div>
   );
