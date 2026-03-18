@@ -7,8 +7,8 @@ import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export default async function UserProfilePage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default async function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   await dbConnect();
 
   const user = await User.findById(id).lean();
