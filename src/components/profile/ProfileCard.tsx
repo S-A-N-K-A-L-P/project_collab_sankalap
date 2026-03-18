@@ -3,9 +3,11 @@
 import { motion } from "framer-motion";
 import { MapPin, Link as LinkIcon, Calendar, Camera, Edit2, Hexagon } from "lucide-react";
 import Image from "next/image";
+import ConnectButton from "./ConnectButton";
 
 interface ProfileCardProps {
   user: {
+    _id: string;
     name: string;
     role: string;
     universityName: string;
@@ -15,6 +17,10 @@ interface ProfileCardProps {
     skills?: string[];
     location?: string;
     createdAt?: string;
+    proposalsCount?: number;
+    followersCount?: number;
+    followingCount?: number;
+    isConnected?: boolean;
   };
   isOwnProfile?: boolean;
 }
@@ -61,52 +67,55 @@ export default function ProfileCard({ user, isOwnProfile }: ProfileCardProps) {
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-white capitalize">{user.name}</h1>
                 <Hexagon className="w-5 h-5 text-blue-500 fill-blue-500/20" />
               </div>
-              <p className="text-slate-600 dark:text-slate-400 font-medium">
-                {user.role.replace('_', ' ').toUpperCase()} at {user.universityName}
+              <p className="text-slate-600 dark:text-slate-400 font-medium text-sm">
+                {(user.role || "user").replace('_', ' ').toUpperCase()} at {user.universityName}
               </p>
             </div>
 
             {user.bio && (
-              <p className="text-slate-700 dark:text-slate-300 max-w-2xl">{user.bio}</p>
+              <p className="text-slate-700 dark:text-slate-300 max-w-2xl text-sm leading-relaxed">{user.bio}</p>
             )}
 
-            <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-sm text-slate-500 dark:text-slate-400">
+            <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight">
               {user.location && (
                 <div className="flex items-center gap-1">
-                  <MapPin className="w-4 h-4" /> {user.location}
+                  <MapPin className="w-3.5 h-3.5 text-blue-500" /> {user.location}
                 </div>
               )}
-              <div className="flex items-center gap-1 text-blue-600 font-semibold cursor-pointer hover:underline">
-                <LinkIcon className="w-4 h-4" /> 500+ Proposals
+              <div className="flex items-center gap-1 text-blue-600 cursor-pointer hover:underline">
+                <LinkIcon className="w-3.5 h-3.5" /> {user.proposalsCount || 0} Proposals
               </div>
               <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" /> Joined February 2024
+                <Calendar className="w-3.5 h-3.5" /> Joined {user.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, { month: 'long', year: 'numeric' }) : "Recently"}
               </div>
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-              <div className="w-10 h-10 bg-white dark:bg-slate-900 rounded-lg flex items-center justify-center p-2 shadow-sm">
-                 {/* Placeholder for University Logo */}
-                 <span className="text-xs font-bold text-slate-400">UNI</span>
+            <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800/50">
+              <div className="w-10 h-10 bg-white dark:bg-slate-900 rounded-lg flex items-center justify-center p-2 shadow-sm text-xs font-black text-slate-400">
+                 UNI
               </div>
-              <p className="text-sm font-bold text-slate-900 dark:text-white leading-tight">
+              <p className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
                 {user.universityName}
               </p>
             </div>
 
-            <div className="flex -space-x-2 overflow-hidden">
-                {[1,2,3,4].map(i => (
-                    <div key={i} className="inline-block h-8 w-8 rounded-full ring-2 ring-white dark:ring-slate-900 bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold">
-                        U{i}
-                    </div>
-                ))}
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 ring-2 ring-white dark:ring-slate-900 dark:bg-slate-800 text-[10px] font-bold text-slate-500">
-                    +12
+            <div className="flex items-center justify-between p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100/50 dark:border-blue-800/50">
+                <div className="text-center flex-1">
+                    <p className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Followers</p>
+                    <p className="text-lg font-black text-slate-900 dark:text-white leading-none">{user.followersCount || 0}</p>
+                </div>
+                <div className="w-px h-8 bg-slate-200 dark:bg-slate-800 mx-2" />
+                <div className="text-center flex-1">
+                    <p className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Following</p>
+                    <p className="text-lg font-black text-slate-900 dark:text-white leading-none">{user.followingCount || 0}</p>
                 </div>
             </div>
-            <p className="text-xs text-slate-500 font-medium cursor-pointer hover:text-blue-600">See 48 mutual connections</p>
+            
+            {!isOwnProfile && (
+                <ConnectButton targetId={user._id} initialIsConnected={!!user.isConnected} />
+            )}
           </div>
         </div>
       </div>

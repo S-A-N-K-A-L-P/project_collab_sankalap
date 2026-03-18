@@ -40,11 +40,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const isAdmin = role === "pixel_head";
 
   const navItems = [
-    { name: "Feed", href: "/proposals", icon: Layers }, 
-    { name: "Notifications", href: "/notifications", icon: Bell },
+    { name: "Feed", href: "/dashboard/feed", icon: Layers }, 
+    { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
+    { name: "Discover", href: "/dashboard/discover", icon: Search },
     { name: "My Ideas", href: "/dashboard", icon: LayoutDashboard }, 
-    { name: "My Profile", href: `/user/${(session?.user as any)?.id}`, icon: User },
-    { name: "Settings", href: "/settings", icon: Settings },
+    { name: "My Profile", href: `/dashboard/profile/${(session?.user as any)?.id}`, icon: User },
+    { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 
   if (isAdmin) {

@@ -6,9 +6,14 @@ export default withAuth(
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
 
-    // Redirect to respective feed if trying to access the generic /dashboard or /proposals
-    if (path === "/dashboard" || path === "/feed" || path === "/proposals") {
+    // Redirect legacy routes to their new dashboard counterparts
+    if (path === "/dashboard" || path === "/feed" || path.startsWith("/proposals")) {
       return NextResponse.redirect(new URL("/dashboard/feed", req.url));
+    }
+
+    if (path.startsWith("/user/")) {
+      const id = path.split("/")[2];
+      return NextResponse.redirect(new URL(`/dashboard/profile/${id}`, req.url));
     }
 
     // Role-based protection for specific dashboard sub-routes
@@ -28,5 +33,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/feed", "/proposals", "/user/:path*"],
 };

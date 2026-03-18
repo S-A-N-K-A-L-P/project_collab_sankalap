@@ -4,14 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 
-const projects = [
-  { title: "Protocol X", category: "Core Infrastructure", link: "#" },
-  { title: "Neon Wallet", category: "DeFi", link: "#" },
-  { title: "Sovereign ID", category: "Identity", link: "#" },
-  { title: "Pulse Analytics", category: "Data Science", link: "#" }
-];
-
-export const ProjectShowcase = () => {
+export const ProjectShowcase = ({ projects }: { projects: any[] }) => {
   return (
     <section className="py-24 bg-white dark:bg-slate-950 px-6">
       <div className="max-w-7xl mx-auto">
@@ -39,7 +32,7 @@ export const ProjectShowcase = () => {
               </div>
 
               <div className="absolute bottom-10 left-10 z-20">
-                <p className="text-indigo-400 font-mono text-sm mb-2 uppercase tracking-widest">{project.category}</p>
+                <p className="text-indigo-400 font-mono text-sm mb-2 uppercase tracking-widest">{project.type || "System"}</p>
                 <h3 className="text-3xl font-bold text-white">{project.title}</h3>
               </div>
 

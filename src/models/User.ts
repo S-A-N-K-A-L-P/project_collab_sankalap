@@ -55,11 +55,19 @@ const UserSchema = new Schema(
       enum: ["user", "pixel_head", "project_lead", "pixel_member", "normal_user"],
       default: ["user"],
     },
-    role: { // Keeping single role for backward compatibility if needed, but the spec says "assigned role: user, pixel_head, project_lead"
+    role: { 
       type: String,
       enum: ["user", "pixel_head", "project_lead", "pixel_member", "normal_user"],
       default: "user",
     },
+    followers: [{
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    }],
+    following: [{
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    }],
   },
   {
     timestamps: true,

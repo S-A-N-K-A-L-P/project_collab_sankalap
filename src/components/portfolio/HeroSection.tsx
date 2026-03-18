@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { MousePointer2, Sparkles } from 'lucide-react';
 
 export const HeroSection = () => {
@@ -59,20 +60,24 @@ export const HeroSection = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-semibold text-lg flex items-center gap-2 shadow-xl shadow-indigo-500/20"
-          >
-            Explore Projects
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-8 py-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white rounded-2xl font-semibold text-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-          >
-            Join Collective
-          </motion.button>
+          <Link href="/dashboard/feed">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black text-sm flex items-center gap-3 shadow-xl shadow-indigo-500/20 uppercase tracking-widest"
+            >
+              <span className="opacity-40 font-mono">01_</span> Explore Protocols
+            </motion.button>
+          </Link>
+          <Link href="/login">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-8 py-4 bg-blue-600 border border-blue-500 text-white rounded-2xl font-black text-sm flex items-center gap-3 shadow-xl shadow-blue-500/40 uppercase tracking-widest hover:bg-blue-700 transition-all"
+            >
+              <span className="opacity-40 font-mono text-blue-200">02_</span> Initialize Sync
+            </motion.button>
+          </Link>
         </div>
       </motion.div>
 

@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { motion } from "framer-motion";
 import { ThumbsUp, ThumbsDown, MessageSquare, Share2, MoreHorizontal, Rocket, Code, Layers, FileText, UserPlus, Heart, ExternalLink, Plus } from "lucide-react";
 import { useState } from "react";
@@ -107,21 +109,21 @@ export default function ProposalCard({ proposal }: ProposalCardProps) {
     >
       <div className="p-4 sm:p-5">
         <div className="flex justify-between items-start mb-4">
-          <div className="flex gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-bold text-blue-600 shadow-sm overflow-hidden relative">
-              {proposal.createdBy?.avatar ? (
-                <img src={proposal.createdBy.avatar} alt={proposal.createdBy.name} className="object-cover w-full h-full" />
-              ) : (
-                proposal.createdBy?.name ? proposal.createdBy.name[0] : "?"
-              )}
-            </div>
-            <div className="min-w-0">
-              <h4 className="font-black text-slate-900 dark:text-white text-sm leading-none hover:text-blue-600 cursor-pointer transition-colors truncate tracking-tight">{proposal.createdBy?.name || "Unknown"}</h4>
-              <p className="text-[10px] text-slate-500 font-mono mt-1 opacity-70">
-                {new Date(proposal.createdAt).toLocaleDateString()} • <span className={style.color}>{style.label}</span>
-              </p>
-            </div>
-          </div>
+            <Link href={`/dashboard/profile/${proposal.createdBy?._id}`} className="min-w-0 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-bold text-blue-600 shadow-sm overflow-hidden relative">
+                {proposal.createdBy?.avatar ? (
+                  <img src={proposal.createdBy.avatar} alt={proposal.createdBy.name} className="object-cover w-full h-full" />
+                ) : (
+                  proposal.createdBy?.name ? proposal.createdBy.name[0] : "?"
+                )}
+              </div>
+              <div className="min-w-0">
+                <h4 className="font-black text-slate-900 dark:text-white text-sm leading-none hover:text-blue-600 cursor-pointer transition-colors truncate tracking-tight">{proposal.createdBy?.name || "Unknown"}</h4>
+                <p className="text-[10px] text-slate-500 font-mono mt-1 opacity-70">
+                  {new Date(proposal.createdAt).toLocaleDateString()} • <span className={style.color}>{style.label}</span>
+                </p>
+              </div>
+            </Link>
           <div className="flex items-center gap-2">
             <div className={`px-2 py-1 rounded-lg text-[9px] font-black flex items-center gap-1 ${style.bg} ${style.color} uppercase tracking-wider`}>
               <style.icon className="w-2.5 h-2.5" />

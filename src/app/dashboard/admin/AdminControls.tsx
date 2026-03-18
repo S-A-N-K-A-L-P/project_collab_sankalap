@@ -52,7 +52,7 @@ export default function AdminControls({ proposalId, leads }: { proposalId: strin
         onClick={handleApprove}
         className="flex items-center gap-2 px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold text-sm transition-all shadow-lg shadow-green-500/20 disabled:opacity-70"
       >
-        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4" /> Approve & Active</>}
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Check className="w-4 h-4" /> Approve & Activate</>}
       </button>
     </div>
   );

@@ -12,17 +12,15 @@ export default function TopBuildersLeaderboard() {
     try {
       // In a real app, this would be a dedicated leaderboard API
       // For now, we'll fetch top users by something or mock but with 'dynamic' intention
-      const res = await fetch("/api/builders/online"); // Reusing for now, but will improve
+      const res = await fetch("/api/builders/rankings");
       const data = await res.json();
-      if (Array.isArray(data)) {
-          const ranked = data.map((u, i) => ({
+          const ranked = data.map((u: any, i: number) => ({
               ...u,
               rank: i + 1,
-              points: Math.floor(Math.random() * 50) + 50, // Random for demo, but structure is real
-              trend: `+${Math.floor(Math.random() * 10)}`
+              points: u.points || 0,
+              trend: u.trend || "SYNC"
           }));
           setRankings(ranked);
-      }
     } catch (err) {
       console.error(err);
     } finally {

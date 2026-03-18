@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { Layers, ChevronRight, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 
@@ -34,10 +35,10 @@ export default function StageTracker({ proposalId, currentStage, canUpdate }: { 
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-2">
-        <Layers className="w-4 h-4 text-blue-600" />
-        <h4 className="text-xs font-bold uppercase tracking-widest text-slate-500">Project Lifecycle</h4>
-      </div>
+      <Link href="/dashboard/feed" className="flex items-center gap-2 text-slate-500 hover:text-blue-600 transition-colors mb-6">
+        <Layers className="w-4 h-4" />
+        <span className="text-xs font-bold uppercase tracking-widest italic">Back to Archive</span>
+      </Link>
       
       <div className="flex flex-wrap items-center gap-2">
         {stages.map((s, i) => {

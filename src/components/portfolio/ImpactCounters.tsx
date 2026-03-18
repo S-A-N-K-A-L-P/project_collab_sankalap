@@ -4,12 +4,7 @@ import React from 'react';
 import { motion, useInView } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
 
-const stats = [
-  { label: "Active Nodes", value: 1240, suffix: "+", color: "text-blue-500" },
-  { label: "Open Proposals", value: 86, suffix: "", color: "text-emerald-500" },
-  { label: "Community Value", value: 4.2, suffix: "M+", prefix: "$", color: "text-amber-500" },
-  { label: "Success Rate", value: 99.9, suffix: "%", color: "text-rose-500" }
-];
+
 
 const Counter = ({ value, duration = 2 }: { value: number; duration?: number }) => {
   const [count, setCount] = useState(0);
@@ -42,7 +37,7 @@ const Counter = ({ value, duration = 2 }: { value: number; duration?: number }) 
   return <span ref={nodeRef}>{count.toLocaleString(undefined, { maximumFractionDigits: 1 })}</span>;
 };
 
-export const ImpactCounters = () => {
+export const ImpactCounters = ({ stats }: { stats: { label: string, value: number, suffix: string, color: string, prefix?: string }[] }) => {
   return (
     <section className="py-24 bg-white dark:bg-slate-950 px-6">
       <div className="max-w-7xl mx-auto">
