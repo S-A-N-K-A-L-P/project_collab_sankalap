@@ -17,9 +17,18 @@ import { TrackerTabs } from "@/components/tracker/TrackerTabs";
 import { Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+
+// Core Functional Components
 import { TaskList } from "@/components/tracker/TaskComponents";
 import { ContributorList } from "@/components/tracker/ContributorComponents";
 import { VerificationPanel, ContributionLog } from "@/components/tracker/VerificationComponents";
+
+// Advanced Tactical Components
+import { KanbanBoard, WorkflowStages, AutomationRules, TaskHistory } from "@/components/tracker/advanced/KanbanBoard";
+import { SkillMatrix, BandwidthTracker, TeamHeatmap, ReputationAllocation } from "@/components/tracker/advanced/ResourceManagement";
+import { DeploymentPulse, BuildLogViewer, GitHubSyncCard, ActivityPulse } from "@/components/tracker/advanced/TelemetryComponents";
+import { BurnDownChart, VelocityTracker, ComplexityIndicator } from "@/components/tracker/advanced/AnalyticsComponents";
+import { SocialStats, TaskComments, NodeContextCard } from "@/components/tracker/advanced/SocialComponents";
 
 export default function ProjectTrackerPage() {
   const { id } = useParams();
@@ -31,7 +40,7 @@ export default function ProjectTrackerPage() {
     const fetchProject = async () => {
       try {
         const res = await fetch(`/api/projects?id=${id}`);
-        // For demonstration, since we might not have a real project ID yet, we'll mock if it fails 404
+        // Mocking for demonstration if project not found
         if (res.status === 404 || true) {
              setProject({
                 _id: "demo_id",
@@ -94,14 +103,6 @@ export default function ProjectTrackerPage() {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-8"
             >
-import { KanbanBoard, WorkflowStages, AutomationRules, TaskHistory } from "@/components/tracker/advanced/KanbanBoard";
-import { SkillMatrix, BandwidthTracker, TeamHeatmap, ReputationAllocation } from "@/components/tracker/advanced/ResourceManagement";
-import { DeploymentPulse, BuildLogViewer, GitHubSyncCard, ActivityPulse } from "@/components/tracker/advanced/TelemetryComponents";
-import { BurnDownChart, VelocityTracker, ComplexityIndicator } from "@/components/tracker/advanced/AnalyticsComponents";
-import { SocialStats, TaskComments, NodeContextCard } from "@/components/tracker/advanced/SocialComponents";
-
-// ... (In the component)
-
               {activeTab === "overview" && (
                 <div className="space-y-8">
                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -118,17 +119,17 @@ import { SocialStats, TaskComments, NodeContextCard } from "@/components/tracker
                        <div className="space-y-8">
                           <ComplexityIndicator score={84} />
                           <div className="bg-[#121214] border border-[#1f1f23] rounded-3xl p-8 space-y-4">
-                            <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1f1f23] font-mono">System Summary</h4>
-                            <p className="text-[14px] text-[#9ca3af] leading-relaxed italic">
-                               This project is currently in the <strong>TACTICAL SPRINT</strong> phase. All active nodes (12/12) are reporting synchronized states across the collective layer.
-                            </p>
-                            <div className="pt-4 flex flex-wrap gap-2">
-                               {["NEXT.JS", "MONGODB", "FRAMER", "OBSIDIAN", "TAILWIND"].map(tag => (
-                                 <span key={tag} className="px-3 py-1.5 rounded-lg bg-[#17171a] border border-[#1f1f23] text-[10px] font-mono font-bold text-[#e5e7eb] uppercase tracking-widest">
-                                   {tag}
-                                 </span>
-                               ))}
-                            </div>
+                             <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1f1f23] font-mono">System Summary</h4>
+                             <p className="text-[14px] text-[#9ca3af] leading-relaxed italic">
+                                This project is currently in the <strong>TACTICAL SPRINT</strong> phase. All active nodes (12/12) are reporting synchronized states across the collective layer.
+                             </p>
+                             <div className="pt-4 flex flex-wrap gap-2">
+                                {["NEXT.JS", "MONGODB", "FRAMER", "OBSIDIAN", "TAILWIND"].map(tag => (
+                                  <span key={tag} className="px-3 py-1.5 rounded-lg bg-[#17171a] border border-[#1f1f23] text-[10px] font-mono font-bold text-[#e5e7eb] uppercase tracking-widest">
+                                    {tag}
+                                  </span>
+                                ))}
+                             </div>
                           </div>
                        </div>
                    </div>
