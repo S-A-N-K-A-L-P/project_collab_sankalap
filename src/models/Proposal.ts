@@ -47,6 +47,18 @@ const ProposalSchema = new Schema(
       type: [String], // Cloudinary URLs
       default: [],
     },
+    contributors: [{
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    }],
+    commentsCount: {
+      type: Number,
+      default: 0,
+    },
+    sharesCount: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

@@ -22,5 +22,21 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+.glass {
+  @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-white/20 dark:border-slate-800/50;
+}
+
+.text-dense {
+  @apply text-sm leading-snug tracking-tight;
+}
+
+.text-metadata {
+  @apply font-mono text-[10px] uppercase tracking-wider opacity-70;
 }
