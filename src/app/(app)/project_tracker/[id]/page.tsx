@@ -17,6 +17,9 @@ import { TrackerTabs } from "@/components/tracker/TrackerTabs";
 import { Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { TaskList } from "@/components/tracker/TaskComponents";
+import { ContributorList } from "@/components/tracker/ContributorComponents";
+import { VerificationPanel, ContributionLog } from "@/components/tracker/VerificationComponents";
 
 export default function ProjectTrackerPage() {
   const { id } = useParams();
@@ -91,11 +94,6 @@ export default function ProjectTrackerPage() {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-8"
             >
-import { TaskList } from "@/components/tracker/TaskComponents";
-import { ContributorList } from "@/components/tracker/ContributorComponents";
-import { VerificationPanel, ContributionLog } from "@/components/tracker/VerificationComponents";
-
-// ... (inside the component)
               {activeTab === "overview" && (
                 <div className="space-y-8">
                    <ProjectProgressBar progress={project.progress} />

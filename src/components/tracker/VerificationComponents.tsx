@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle2, XCircle, FileText, Send, Paperclip } from "lucide-react";
+import { CheckCircle2, XCircle, FileText, Send, Paperclip, Clock } from "lucide-react";
 
 export function VerificationPanel({ contributions, onVerify }: { contributions: any[], onVerify: (id: string, status: string) => void }) {
   return (
