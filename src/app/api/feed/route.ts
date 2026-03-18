@@ -17,10 +17,14 @@ export async function GET(req: Request) {
 
     // 2. Fetch Recent Activity
     const activity = await Activity.find({})
-      .populate("actorId", "name avatar role")
+      .populate({
+        path: "actorId",
+        model: User,
+        select: "name avatar role"
+      })
       .sort({ createdAt: -1 })
       .limit(15)
-      .lean();
+      .lean({ strictPopulate: false });
 
     // 3. Return structured feed
     // In the future, we can interleave these

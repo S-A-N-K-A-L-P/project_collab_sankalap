@@ -16,10 +16,14 @@ export default async function NotificationsPage() {
   // Fetch activities meant for the user or global relevant signals
   // For now, let's fetch global signals excluding the user's own actions
   const activitiesItems = await Activity.find({ actorId: { $ne: userId } })
-    .populate("actorId", "name avatar role")
+    .populate({
+      path: "actorId",
+      model: User,
+      select: "name avatar role"
+    })
     .sort({ createdAt: -1 })
     .limit(20)
-    .lean();
+    .lean({ strictPopulate: false });
 
   const activities = JSON.parse(JSON.stringify(activitiesItems));
 

@@ -7,10 +7,14 @@ export async function GET() {
   try {
     await dbConnect();
     const activities = await Activity.find({})
-      .populate("actorId", "name avatar role")
+      .populate({
+        path: "actorId",
+        model: User,
+        select: "name avatar role"
+      })
       .sort({ createdAt: -1 })
       .limit(10)
-      .lean();
+      .lean({ strictPopulate: false });
 
     return NextResponse.json(JSON.parse(JSON.stringify(activities)));
   } catch (error: any) {
