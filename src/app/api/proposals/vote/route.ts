@@ -13,6 +13,7 @@ export async function POST(req: Request) {
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { proposalId, voteType } = await req.json();
+    const value = voteType === "up" ? 1 : -1;
 
     await dbConnect();
 
@@ -21,55 +22,62 @@ export async function POST(req: Request) {
 
     const userId = user._id;
 
-    // Check existing vote
+    // Use our new Vote model logic
     const existingVote = await Vote.findOne({ userId, proposalId });
     let actionTaken = "";
 
     if (existingVote) {
-      if (existingVote.voteType === voteType) {
+      if (existingVote.value === value) {
         await Vote.findByIdAndDelete(existingVote._id);
-        await Proposal.findByIdAndUpdate(proposalId, { $inc: { votes: voteType === "up" ? -1 : 1 } });
         actionTaken = "removed";
       } else {
-        existingVote.voteType = voteType;
+        existingVote.value = value;
         await existingVote.save();
-        await Proposal.findByIdAndUpdate(proposalId, { $inc: { votes: voteType === "up" ? 2 : -2 } });
         actionTaken = "changed";
       }
     } else {
-      await Vote.create({ userId, proposalId, voteType });
-      await Proposal.findByIdAndUpdate(proposalId, { $inc: { votes: voteType === "up" ? 1 : -1 } });
+      await Vote.create({ userId, proposalId, value });
       actionTaken = "created";
     }
 
-    const updatedProposal = await Proposal.findById(proposalId);
+    // Sync totalVotes on Proposal
+    const allVotes = await Vote.find({ proposalId });
+    const totalVotes = allVotes.reduce((acc, v) => acc + v.value, 0);
     
-    // Log Activity if it's an upvote or change to upvote
-    if (voteType === "up" && (actionTaken === "created" || actionTaken === "changed")) {
+    const updatedProposal = await Proposal.findByIdAndUpdate(
+        proposalId, 
+        { totalVotes }, 
+        { new: true }
+    );
+    
+    // Log Activity
+    if (value === 1 && (actionTaken === "created" || actionTaken === "changed")) {
         await Activity.create({
-            user: userId,
-            type: "vote",
+            actorId: userId,
+            type: "VOTE",
             targetId: proposalId,
-            targetName: updatedProposal.title
+            targetType: "PROPOSAL",
+            metadata: { title: updatedProposal.title, value: 1 }
         });
     }
 
-    // Logic: if votes >= 10 -> status = active
-    if (updatedProposal.votes >= 10 && updatedProposal.status === "proposal") {
+    // Status Activation Logic
+    if (updatedProposal.totalVotes >= 10 && updatedProposal.status === "proposal") {
         updatedProposal.status = "active";
         await updatedProposal.save();
         
         await Activity.create({
-            user: userId,
-            type: "proposal_created", // Or 'proposal_activated'
+            actorId: userId,
+            type: "CREATE_PROPOSAL",
             targetId: proposalId,
-            targetName: updatedProposal.title,
-            metadata: { info: "Project moved to ACTIVE stage" }
+            targetType: "PROPOSAL",
+            metadata: { title: updatedProposal.title, info: "Protocol ACTIVATED" }
         });
     }
 
     return NextResponse.json(updatedProposal);
   } catch (error: any) {
+    console.error("LEGACY_VOTE_ERROR:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

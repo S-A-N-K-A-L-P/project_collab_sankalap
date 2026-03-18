@@ -6,12 +6,12 @@ export async function GET() {
   try {
     await dbConnect();
     const activities = await Activity.find({})
-      .populate("user", "name avatar")
+      .populate("actorId", "name avatar role")
       .sort({ createdAt: -1 })
-      .limit(20)
+      .limit(10)
       .lean();
 
-    return NextResponse.json(activities);
+    return NextResponse.json(JSON.parse(JSON.stringify(activities)));
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
