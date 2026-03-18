@@ -14,11 +14,11 @@ export default async function ProposalsPage() {
     .lean();
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-8">
-      <div className="flex justify-between items-center bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Community Proposals</h1>
-          <p className="text-sm text-slate-500">Vote for the projects you want to see built.</p>
+    <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-10">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 gap-6">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Community Proposals</h1>
+          <p className="text-slate-500 font-medium tracking-tight">Discover and shape the future projects of Pixel Club.</p>
         </div>
         <FeedActions />
       </div>

@@ -14,7 +14,7 @@ export async function GET(req: Request) {
     
     const query = userId ? { createdBy: userId } : {};
     const proposals = await Proposal.find(query)
-      .populate("createdBy", "name avatar role")
+      .populate("createdBy", "name avatar role universityName")
       .sort({ createdAt: -1 });
 
     return NextResponse.json(proposals);
