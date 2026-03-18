@@ -5,6 +5,7 @@ import dbConnect from "@/lib/mongodb";
 import Proposal from "@/models/Proposal";
 import Vote from "@/models/Vote";
 import User from "@/models/User";
+import Activity from "@/models/Activity";
 
 export async function POST(req: Request) {
   try {
@@ -22,31 +23,49 @@ export async function POST(req: Request) {
 
     // Check existing vote
     const existingVote = await Vote.findOne({ userId, proposalId });
+    let actionTaken = "";
 
     if (existingVote) {
       if (existingVote.voteType === voteType) {
-        // Remove vote if same type (toggle)
         await Vote.findByIdAndDelete(existingVote._id);
         await Proposal.findByIdAndUpdate(proposalId, { $inc: { votes: voteType === "up" ? -1 : 1 } });
+        actionTaken = "removed";
       } else {
-        // Change vote type
         existingVote.voteType = voteType;
         await existingVote.save();
         await Proposal.findByIdAndUpdate(proposalId, { $inc: { votes: voteType === "up" ? 2 : -2 } });
+        actionTaken = "changed";
       }
     } else {
-      // Create new vote
       await Vote.create({ userId, proposalId, voteType });
       await Proposal.findByIdAndUpdate(proposalId, { $inc: { votes: voteType === "up" ? 1 : -1 } });
+      actionTaken = "created";
     }
 
-    // Refresh proposal to check for status update
     const updatedProposal = await Proposal.findById(proposalId);
     
+    // Log Activity if it's an upvote or change to upvote
+    if (voteType === "up" && (actionTaken === "created" || actionTaken === "changed")) {
+        await Activity.create({
+            user: userId,
+            type: "vote",
+            targetId: proposalId,
+            targetName: updatedProposal.title
+        });
+    }
+
     // Logic: if votes >= 10 -> status = active
     if (updatedProposal.votes >= 10 && updatedProposal.status === "proposal") {
         updatedProposal.status = "active";
         await updatedProposal.save();
+        
+        await Activity.create({
+            user: userId,
+            type: "proposal_created", // Or 'proposal_activated'
+            targetId: proposalId,
+            targetName: updatedProposal.title,
+            metadata: { info: "Project moved to ACTIVE stage" }
+        });
     }
 
     return NextResponse.json(updatedProposal);

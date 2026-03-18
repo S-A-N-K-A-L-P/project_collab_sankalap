@@ -3,6 +3,7 @@ import Proposal from "@/models/Proposal";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { NextResponse } from "next/server";
+import Activity from "@/models/Activity";
 
 export async function POST(req: Request) {
   try {
@@ -20,13 +21,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Proposal not found" }, { status: 404 });
     }
 
-    // Check if user is already a contributor
     const userId = (session.user as any).id;
     const isContributor = proposal.contributors.includes(userId);
 
     if (isContributor) {
-      // Toggle off if they want to leave? Or just return success.
-      // For now, let's allow leaving if they click again.
       await Proposal.findByIdAndUpdate(proposalId, {
         $pull: { contributors: userId }
       });
@@ -35,6 +33,15 @@ export async function POST(req: Request) {
       await Proposal.findByIdAndUpdate(proposalId, {
         $addToSet: { contributors: userId }
       });
+
+      // Log Activity
+      await Activity.create({
+        user: userId,
+        type: "join",
+        targetId: proposalId,
+        targetName: proposal.title
+      });
+
       return NextResponse.json({ message: "Joined project", status: "joined" });
     }
 
