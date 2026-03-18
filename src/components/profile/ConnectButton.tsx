@@ -1,39 +1,35 @@
 "use client";
 
 import { useState } from "react";
-import { UserPlus, UserMinus, Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { useSession } from "next-auth/react";
+import { UserPlus, UserCheck, Loader2 } from "lucide-react";
 
 interface ConnectButtonProps {
   targetId: string;
   initialIsConnected: boolean;
-  onUpdate?: (count: number) => void;
-  variant?: "icon" | "full";
+  variant?: "default" | "icon" | "outline";
 }
 
-export default function ConnectButton({ targetId, initialIsConnected, onUpdate, variant = "full" }: ConnectButtonProps) {
+export default function ConnectButton({ targetId, initialIsConnected, variant = "default" }: ConnectButtonProps) {
+  const { data: session } = useSession();
   const [isConnected, setIsConnected] = useState(initialIsConnected);
   const [loading, setLoading] = useState(false);
 
   const handleConnect = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+    if (!session) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/user/connect", {
+      const res = await fetch(`/api/user/${targetId}/following`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ targetId }),
       });
-      const data = await res.json();
-      
-      if (data.connected !== undefined) {
-        setIsConnected(data.connected);
-        if (onUpdate) onUpdate(data.followersCount);
+      if (res.ok) {
+        const data = await res.json();
+        setIsConnected(data.status === "following");
       }
     } catch (err) {
-      console.error("Connection failed:", err);
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -41,38 +37,41 @@ export default function ConnectButton({ targetId, initialIsConnected, onUpdate, 
 
   if (variant === "icon") {
     return (
-      <button 
+      <button
         onClick={handleConnect}
         disabled={loading}
-        className={`p-2.5 rounded-xl transition-all border ${
+        className={`p-2.5 rounded-xl border transition-all duration-150 ${
           isConnected 
-            ? "bg-blue-600 text-white border-blue-500 shadow-lg shadow-blue-500/20" 
-            : "bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-blue-500 hover:bg-white dark:hover:bg-slate-700 border-transparent hover:border-slate-100 dark:hover:border-slate-600"
+            ? "bg-[#6366f1]/10 border-[#6366f1]/30 text-[#6366f1]" 
+            : "bg-[#17171a] border-[#1f1f23] text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-[#1f1f23] hover:border-[#2a2a2f]"
         }`}
       >
-        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : isConnected ? <UserMinus className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : isConnected ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
       </button>
     );
   }
 
   return (
-    <motion.button
-      whileTap={{ scale: 0.95 }}
+    <button
       onClick={handleConnect}
       disabled={loading}
-      className={`w-full py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${
-        isConnected
-          ? "bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700"
-          : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20"
-      } flex items-center justify-center gap-2`}
+      className={`px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-tight transition-all duration-150 flex items-center justify-center gap-2 ${
+        isConnected 
+          ? "bg-[#121214] text-[#9ca3af] border border-[#1f1f23] hover:border-[#6366f1]/30" 
+          : "bg-[#6366f1] text-white shadow-sm hover:bg-[#4f46e5] active:scale-95"
+      }`}
     >
       {loading ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
+        <Loader2 className="w-3.5 h-3.5 animate-spin" />
       ) : isConnected ? (
-        <>Connected</>
+        <>
+          <UserCheck className="w-4 h-4" /> Synchronized
+        </>
       ) : (
-        <>Connect +</>
+        <>
+          <UserPlus className="w-4 h-4" /> Synchronize
+        </>
       )}
-    </motion.button>
+    </button>
   );
 }

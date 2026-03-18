@@ -28,7 +28,7 @@ const UserSchema = new Schema(
     password: {
       type: String,
       required: [true, "Password is required"],
-      select: false, // Don't return password by default
+      select: false,
     },
     avatar: {
       type: String,
@@ -50,15 +50,14 @@ const UserSchema = new Schema(
       type: String,
       default: "",
     },
-    roles: {
-      type: [String],
-      enum: ["user", "pixel_head", "project_lead", "pixel_member", "normal_user"],
-      default: ["user"],
-    },
     role: { 
       type: String,
       enum: ["user", "pixel_head", "project_lead", "pixel_member", "normal_user"],
       default: "user",
+    },
+    reputation: {
+      type: Number,
+      default: 0,
     },
     followers: [{
       type: Schema.Types.ObjectId,

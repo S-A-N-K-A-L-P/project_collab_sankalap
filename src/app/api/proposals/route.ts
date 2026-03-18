@@ -4,6 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/lib/mongodb";
 import Proposal from "@/models/Proposal";
 import User from "@/models/User";
+import Activity from "@/models/Activity";
 
 export async function GET(req: Request) {
   try {
@@ -32,7 +33,6 @@ export async function POST(req: Request) {
 
     await dbConnect();
 
-    // Get the actual user ID from the database using the email from session
     const user = await User.findOne({ email: session.user?.email });
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
@@ -46,8 +46,18 @@ export async function POST(req: Request) {
       status: "proposal",
     });
 
+    // Record Activity
+    await Activity.create({
+      actorId: user._id,
+      type: "CREATE_PROPOSAL",
+      targetId: proposal._id,
+      targetType: "PROPOSAL",
+      metadata: { title: proposal.title }
+    });
+
     return NextResponse.json(proposal, { status: 201 });
   } catch (error: any) {
+    console.error("PROPOSAL_CREATE_ERROR:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

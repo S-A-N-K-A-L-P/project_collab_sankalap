@@ -35,7 +35,7 @@ export default function StageTracker({ proposalId, currentStage, canUpdate }: { 
 
   return (
     <div className="space-y-4">
-      <Link href="/dashboard/feed" className="flex items-center gap-2 text-slate-500 hover:text-blue-600 transition-colors mb-6">
+      <Link href="/feed" className="flex items-center gap-2 text-slate-500 hover:text-blue-600 transition-colors mb-6">
         <Layers className="w-4 h-4" />
         <span className="text-xs font-bold uppercase tracking-widest italic">Back to Archive</span>
       </Link>

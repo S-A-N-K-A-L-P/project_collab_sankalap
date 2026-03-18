@@ -2,27 +2,28 @@ import mongoose, { Schema, model, models } from "mongoose";
 
 const ActivitySchema = new Schema(
   {
-    user: {
+    actorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
     type: {
       type: String,
-      enum: ["vote", "join", "proposal_created", "comment", "profile_update"],
+      enum: ["VOTE", "JOIN", "CREATE_PROPOSAL", "FOLLOW", "COMMENT"],
       required: true,
     },
     targetId: {
       type: Schema.Types.ObjectId,
-      required: false, // Could be proposal id, for example
+      required: true,
     },
-    targetName: {
-      type: String, // Cached name for quick feed rendering
-      required: false,
+    targetType: {
+      type: String,
+      enum: ["USER", "PROPOSAL", "COMMENT"],
+      required: true,
     },
     metadata: {
       type: Schema.Types.Map,
-      of: String,
+      of: Schema.Types.Mixed,
       default: {},
     },
   },

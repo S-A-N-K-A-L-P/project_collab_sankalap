@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { MapPin, Link as LinkIcon, Calendar, Camera, Edit2, Hexagon } from "lucide-react";
+import { MapPin, Link as LinkIcon, Calendar, Camera, Edit2, Hexagon, Zap } from "lucide-react";
 import Image from "next/image";
 import ConnectButton from "./ConnectButton";
 
@@ -27,95 +27,96 @@ interface ProfileCardProps {
 
 export default function ProfileCard({ user, isOwnProfile }: ProfileCardProps) {
   return (
-    <div className="w-full bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-      {/* Banner */}
-      <div className="h-32 md:h-48 bg-gradient-to-r from-blue-600 to-indigo-700 relative">
+    <div className="w-full bg-[#121214] rounded-2xl border border-[#1f1f23] overflow-hidden shadow-sm">
+      {/* Banner - Professional Subtlety */}
+      <div className="h-32 md:h-40 bg-[#17171a] relative overflow-hidden border-b border-[#1f1f23]">
+        <div className="absolute inset-0 bg-[#6366f1]/5 opacity-10" />
         {isOwnProfile && (
-          <button className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full text-white transition-all">
-            <Camera className="w-5 h-5" />
+          <button className="absolute top-4 right-4 p-2 bg-black/40 hover:bg-black/60 rounded-full text-[#9ca3af] hover:text-[#e5e7eb] transition-all border border-white/10">
+            <Camera className="w-4 h-4" />
           </button>
         )}
       </div>
 
       {/* Profile Info */}
-      <div className="px-6 pb-6 relative">
+      <div className="px-8 pb-8 relative">
         <div className="flex justify-between items-start">
-          <div className="relative -mt-16 mb-4">
-            <div className="w-32 h-32 rounded-2xl border-4 border-white dark:border-slate-900 bg-slate-100 dark:bg-slate-800 overflow-hidden relative shadow-lg">
+          <div className="relative -mt-10 mb-6">
+            <div className="w-24 h-24 rounded-2xl border-4 border-[#0b0b0c] bg-[#121214] overflow-hidden relative shadow-md">
               {user.avatar ? (
                 <Image src={user.avatar} alt={user.name} fill className="object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-blue-600">
-                  {user.name[0]}
+                <div className="w-full h-full flex items-center justify-center text-2xl font-black text-[#6366f1] italic uppercase">
+                  {user.name?.[0]}
                 </div>
               )}
             </div>
           </div>
-          <div className="pt-4 flex gap-2">
-            {isOwnProfile && (
-              <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-full text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
-                <Edit2 className="w-4 h-4" /> Edit Profile
+          <div className="pt-6 flex gap-3">
+            {isOwnProfile ? (
+              <button className="flex items-center gap-2 px-5 py-2.5 bg-[#6366f1] hover:bg-[#4f46e5] text-white rounded-xl text-[11px] font-bold uppercase tracking-tight transition-all shadow-sm active:scale-95">
+                <Edit2 className="w-3.5 h-3.5" /> Edit Profile
               </button>
+            ) : (
+                <ConnectButton targetId={user._id} initialIsConnected={!!user.isConnected} />
             )}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-8 space-y-4">
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold text-slate-900 dark:text-white capitalize">{user.name}</h1>
-                <Hexagon className="w-5 h-5 text-blue-500 fill-blue-500/20" />
+                <h1 className="text-2xl font-bold text-[#e5e7eb] tracking-tight">{user.name}</h1>
+                <Hexagon className="w-4 h-4 text-[#6366f1]" />
               </div>
-              <p className="text-slate-600 dark:text-slate-400 font-medium text-sm">
-                {(user.role || "user").replace('_', ' ').toUpperCase()} at {user.universityName}
+              <p className="text-[#6366f1] font-mono font-bold text-[10px] uppercase tracking-widest mt-1 leading-none">
+                {(user.role || "user").replace('_', ' ')} <span className="text-[#1f1f23] mx-2">|</span> {user.universityName}
               </p>
             </div>
 
-            {user.bio && (
-              <p className="text-slate-700 dark:text-slate-300 max-w-2xl text-sm leading-relaxed">{user.bio}</p>
+            {user.bio ? (
+              <p className="text-[#9ca3af] text-[13px] leading-relaxed font-medium max-w-2xl">{user.bio}</p>
+            ) : (
+                <p className="text-slate-700 text-[10px] italic font-mono uppercase tracking-widest">No telemetry broadcasted yet.</p>
             )}
 
-            <div className="flex flex-wrap items-center gap-y-2 gap-x-4 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight">
+            <div className="flex flex-wrap items-center gap-y-3 gap-x-6 text-[10px] font-bold text-[#9ca3af] uppercase tracking-wider font-mono pt-2">
               {user.location && (
-                <div className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-blue-500" /> {user.location}
+                <div className="flex items-center gap-1.5 cursor-default">
+                  <MapPin className="w-3.5 h-3.5 text-[#1f1f23]" /> {user.location}
                 </div>
               )}
-              <div className="flex items-center gap-1 text-blue-600 cursor-pointer hover:underline">
-                <LinkIcon className="w-3.5 h-3.5" /> {user.proposalsCount || 0} Proposals
+              <div className="flex items-center gap-1.5 text-[#6366f1]/80 cursor-pointer hover:text-[#6366f1] hover:underline">
+                <LinkIcon className="w-3.5 h-3.5" /> {user.proposalsCount || 0} Signals
               </div>
-              <div className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" /> Joined {user.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, { month: 'long', year: 'numeric' }) : "Recently"}
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-[#1f1f23]" /> Joined {user.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, { year: 'numeric' }) : "2026"}
               </div>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800/50">
-              <div className="w-10 h-10 bg-white dark:bg-slate-900 rounded-lg flex items-center justify-center p-2 shadow-sm text-xs font-black text-slate-400">
-                 UNI
-              </div>
-              <p className="text-xs font-bold text-slate-900 dark:text-white leading-tight">
-                {user.universityName}
-              </p>
+          <div className="lg:col-span-4 space-y-4">
+            <div className="flex items-center justify-between p-5 bg-[#17171a] rounded-2xl border border-[#1f1f23] shadow-sm">
+                <div className="text-center flex-1">
+                    <p className="text-[9px] font-black text-[#9ca3af] uppercase tracking-widest mb-1.5 font-mono">Nodes</p>
+                    <p className="text-xl font-bold text-[#e5e7eb] leading-none">{user.followersCount || 0}</p>
+                </div>
+                <div className="w-px h-10 bg-[#1f1f23] mx-2" />
+                <div className="text-center flex-1">
+                    <p className="text-[9px] font-black text-[#9ca3af] uppercase tracking-widest mb-1.5 font-mono">Syncs</p>
+                    <p className="text-xl font-bold text-[#e5e7eb] leading-none">{user.followingCount || 0}</p>
+                </div>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100/50 dark:border-blue-800/50">
-                <div className="text-center flex-1">
-                    <p className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Followers</p>
-                    <p className="text-lg font-black text-slate-900 dark:text-white leading-none">{user.followersCount || 0}</p>
+            <div className="flex items-center gap-3 p-4 bg-[#121214] rounded-2xl border border-[#1f1f23] hover:border-[#6366f1]/30 transition-all cursor-default group">
+                <div className="w-8 h-8 bg-[#17171a] border border-[#1f1f23] rounded-lg flex items-center justify-center p-2 text-[10px] font-bold text-[#9ca3af] uppercase">
+                   <Zap className="w-4 h-4 text-[#1f1f23]" />
                 </div>
-                <div className="w-px h-8 bg-slate-200 dark:bg-slate-800 mx-2" />
-                <div className="text-center flex-1">
-                    <p className="text-[9px] font-mono font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Following</p>
-                    <p className="text-lg font-black text-slate-900 dark:text-white leading-none">{user.followingCount || 0}</p>
-                </div>
+                <p className="text-[11px] font-bold text-[#e5e7eb] leading-tight uppercase tracking-tight group-hover:text-[#6366f1] transition-colors">
+                    {user.universityName}
+                </p>
             </div>
-            
-            {!isOwnProfile && (
-                <ConnectButton targetId={user._id} initialIsConnected={!!user.isConnected} />
-            )}
           </div>
         </div>
       </div>

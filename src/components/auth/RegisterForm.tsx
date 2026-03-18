@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { User, Mail, Lock, Building, Hash, Code, Briefcase, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { User, Mail, Lock, Building, Hash, Code, Briefcase, Loader2, CheckCircle2, AlertCircle, Zap } from "lucide-react";
 import Link from "next/link";
 
 export default function RegisterForm() {
@@ -61,44 +61,47 @@ export default function RegisterForm() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="w-full max-w-lg p-8 space-y-6 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800"
+      transition={{ duration: 0.2, ease: "easeOut" }}
+      className="w-full max-w-lg p-10 space-y-8 bg-[#121214] rounded-2xl border border-[#1f1f23] shadow-md relative"
     >
-      <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Create an Account</h2>
-        <p className="text-slate-500 dark:text-slate-400">Join the Pixel community today</p>
+      <div className="text-center space-y-3">
+        <div className="mx-auto w-10 h-10 bg-[#6366f1] rounded-xl flex items-center justify-center text-white shadow-sm mb-4">
+            <Zap className="w-5 h-5 fill-current" />
+        </div>
+        <h2 className="text-2xl font-bold tracking-tight text-[#e5e7eb]">Build Identity</h2>
+        <p className="text-[#9ca3af] text-[13px] font-medium leading-relaxed">Join the collective protocol network</p>
       </div>
 
       {error && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center gap-3 border border-red-100 dark:border-red-900/30"
+          className="p-4 rounded-xl bg-red-500/10 text-red-500 flex items-center gap-3 border border-red-500/20"
         >
-          <AlertCircle className="w-5 h-5" />
-          <p className="text-sm font-medium">{error}</p>
+          <AlertCircle className="w-4 h-4" />
+          <p className="text-[11px] font-bold uppercase tracking-tight">{error}</p>
         </motion.div>
       )}
 
       {success && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 flex items-center gap-3 border border-green-100 dark:border-green-900/30"
+          className="p-4 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center gap-3 border border-emerald-500/20"
         >
-          <CheckCircle2 className="w-5 h-5" />
-          <p className="text-sm font-medium">Registration successful! Redirecting...</p>
+          <CheckCircle2 className="w-4 h-4" />
+          <p className="text-[11px] font-bold uppercase tracking-tight">Identity Initialized. Redirecting to auth center...</p>
         </motion.div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Name</label>
+          <div className="space-y-2">
+            <label className="text-[10px] font-mono font-bold text-[#9ca3af] uppercase tracking-widest ml-1">Agent Name</label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1f1f23]" />
               <input
                 type="text"
                 name="name"
@@ -106,66 +109,66 @@ export default function RegisterForm() {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="John Doe"
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
+                className="w-full pl-12 pr-4 py-3 bg-[#0b0b0c] border border-[#1f1f23] rounded-xl focus:border-[#6366f1]/50 outline-none transition-all text-[#e5e7eb] text-[13px] placeholder:text-[#1f1f23]"
               />
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Email</label>
+          <div className="space-y-2">
+            <label className="text-[10px] font-mono font-bold text-[#9ca3af] uppercase tracking-widest ml-1">Network Vector (Email)</label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1f1f23]" />
               <input
                 type="email"
                 name="email"
                 required
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="john@example.com"
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
+                placeholder="agent@pixel.os"
+                className="w-full pl-12 pr-4 py-3 bg-[#0b0b0c] border border-[#1f1f23] rounded-xl focus:border-[#6366f1]/50 outline-none transition-all text-[#e5e7eb] text-[13px] placeholder:text-[#1f1f23]"
               />
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">University Name</label>
+          <div className="space-y-2">
+            <label className="text-[10px] font-mono font-bold text-[#9ca3af] uppercase tracking-widest ml-1">Institution</label>
             <div className="relative">
-              <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Building className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1f1f23]" />
               <input
                 type="text"
                 name="universityName"
                 required
                 value={formData.universityName}
                 onChange={handleChange}
-                placeholder="Oxford University"
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
+                placeholder="Oxford HQ"
+                className="w-full pl-12 pr-4 py-3 bg-[#0b0b0c] border border-[#1f1f23] rounded-xl focus:border-[#6366f1]/50 outline-none transition-all text-[#e5e7eb] text-[13px] placeholder:text-[#1f1f23]"
               />
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Enrollment Number</label>
+          <div className="space-y-2">
+            <label className="text-[10px] font-mono font-bold text-[#9ca3af] uppercase tracking-widest ml-1">Enrollment Key</label>
             <div className="relative">
-              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1f1f23]" />
               <input
                 type="text"
                 name="enrollmentNumber"
                 required
                 value={formData.enrollmentNumber}
                 onChange={handleChange}
-                placeholder="ENR12345"
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
+                placeholder="ENR-092X"
+                className="w-full pl-12 pr-4 py-3 bg-[#0b0b0c] border border-[#1f1f23] rounded-xl focus:border-[#6366f1]/50 outline-none transition-all text-[#e5e7eb] text-[13px] placeholder:text-[#1f1f23]"
               />
             </div>
           </div>
         </div>
 
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Tech Stack Preference</label>
+        <div className="space-y-2">
+          <label className="text-[10px] font-mono font-bold text-[#9ca3af] uppercase tracking-widest ml-1">Tech Stack Telemetry</label>
           <div className="relative">
-            <Code className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Code className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1f1f23]" />
             <input
               type="text"
               name="techStackPreference"
@@ -173,32 +176,32 @@ export default function RegisterForm() {
               value={formData.techStackPreference}
               onChange={handleChange}
               placeholder="Next.js, Tailwind, MongoDB"
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
+              className="w-full pl-12 pr-4 py-3 bg-[#0b0b0c] border border-[#1f1f23] rounded-xl focus:border-[#6366f1]/50 outline-none transition-all text-[#e5e7eb] text-[13px] placeholder:text-[#1f1f23]"
             />
           </div>
         </div>
 
-        <div className="space-y-1">
-          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">User Type</label>
+        <div className="space-y-2">
+          <label className="text-[10px] font-mono font-bold text-[#9ca3af] uppercase tracking-widest ml-1">Assigned Layer</label>
           <div className="relative">
-            <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1f1f23]" />
             <select
               name="role"
               value={formData.role}
               onChange={handleChange}
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white appearance-none cursor-pointer"
+              className="w-full pl-12 pr-4 py-3 bg-[#0b0b0c] border border-[#1f1f23] rounded-xl focus:border-[#6366f1]/50 outline-none transition-all text-[#e5e7eb] text-[13px] font-black uppercase appearance-none cursor-pointer"
             >
-              <option value="normal_user">Normal User</option>
-              <option value="pixel_member">Pixel Member</option>
+              <option value="normal_user">USER / NODE</option>
+              <option value="pixel_member">PIXEL MEMBER / CORE</option>
             </select>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Password</label>
+          <div className="space-y-2">
+            <label className="text-[10px] font-mono font-bold text-[#9ca3af] uppercase tracking-widest ml-1">Access Key</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1f1f23]" />
               <input
                 type="password"
                 name="password"
@@ -206,15 +209,15 @@ export default function RegisterForm() {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
+                className="w-full pl-12 pr-4 py-3 bg-[#0b0b0c] border border-[#1f1f23] rounded-xl focus:border-[#6366f1]/50 outline-none transition-all text-[#e5e7eb] text-[13px] placeholder:text-[#1f1f23]"
               />
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Confirm Password</label>
+          <div className="space-y-2">
+            <label className="text-[10px] font-mono font-bold text-[#9ca3af] uppercase tracking-widest ml-1">Confirm Key</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1f1f23]" />
               <input
                 type="password"
                 name="confirmPassword"
@@ -222,7 +225,7 @@ export default function RegisterForm() {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all dark:text-white"
+                className="w-full pl-12 pr-4 py-3 bg-[#0b0b0c] border border-[#1f1f23] rounded-xl focus:border-[#6366f1]/50 outline-none transition-all text-[#e5e7eb] text-[13px] placeholder:text-[#1f1f23]"
               />
             </div>
           </div>
@@ -231,21 +234,21 @@ export default function RegisterForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-lg shadow-blue-500/30 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
+          className="w-full py-3.5 px-4 bg-[#6366f1] hover:bg-[#4f46e5] text-white font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed mt-4 uppercase tracking-wider text-[11px]"
         >
           {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            "Create Account"
+            "Initialize Node"
           )}
         </button>
       </form>
 
       <div className="text-center pt-2">
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Already have an account?{" "}
-          <Link href="/login" className="text-blue-600 hover:underline font-semibold">
-            Login
+        <p className="text-[11px] text-[#9ca3af] font-bold uppercase tracking-widest">
+          Existing Identity?{" "}
+          <Link href="/login" className="text-[#6366f1] hover:underline font-bold ml-2">
+            Authenticate
           </Link>
         </p>
       </div>

@@ -13,22 +13,18 @@ const ProposalSchema = new Schema(
     },
     type: {
       type: String,
-      enum: ["idea", "research", "implementation", "collaboration"],
+      enum: ["idea", "research", "implementation", "collaboration", "protocol", "node", "infrastructure"],
       default: "idea",
     },
     status: {
       type: String,
-      enum: ["proposal", "active", "disabled"],
+      enum: ["proposal", "active", "closed", "draft", "disabled"],
       default: "proposal",
     },
     stage: {
       type: String,
       enum: ["proposal", "planning", "ideation", "architecture", "setup", "development", "completed"],
       default: "proposal",
-    },
-    votes: {
-      type: Number,
-      default: 0,
     },
     techStack: {
       type: [String],
@@ -43,14 +39,39 @@ const ProposalSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
-    media: {
-      type: [String], // Cloudinary URLs
-      default: [],
+    startTime: {
+      type: Date,
+      default: Date.now,
+    },
+    endTime: {
+      type: Date,
+      default: () => new Date(+new Date() + 7*24*60*60*1000), // Default 7 days from now
+    },
+    maxVotesPerUser: {
+      type: Number,
+      default: 1,
+    },
+    allowVoteEdit: {
+      type: Boolean,
+      default: false,
+    },
+    voteMode: {
+      type: String,
+      enum: ["fixed", "flexible"],
+      default: "fixed",
+    },
+    totalVotes: {
+      type: Number,
+      default: 0,
     },
     contributors: [{
       type: Schema.Types.ObjectId,
       ref: "User",
     }],
+    media: {
+      type: [String],
+      default: [],
+    },
     commentsCount: {
       type: Number,
       default: 0,

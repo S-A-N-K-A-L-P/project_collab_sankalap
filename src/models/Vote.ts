@@ -12,9 +12,9 @@ const VoteSchema = new Schema(
       ref: "Proposal",
       required: true,
     },
-    voteType: {
-      type: String,
-      enum: ["up", "down"],
+    value: {
+      type: Number,
+      default: 1,
       required: true,
     },
   },
@@ -23,7 +23,8 @@ const VoteSchema = new Schema(
   }
 );
 
-// Compound index to ensure one vote per user per proposal
+// Compound index to ensure one vote entry per user per proposal
+// If multiple votes allowed, we still only store one row per user/proposal with a 'value'
 VoteSchema.index({ userId: 1, proposalId: 1 }, { unique: true });
 
 const Vote = models.Vote || model("Vote", VoteSchema);
