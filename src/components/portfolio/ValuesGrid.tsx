@@ -67,7 +67,7 @@ export const ValuesGrid = () => {
               className="p-8 bg-white dark:bg-slate-950 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 transition-all group"
             >
               <div className="w-14 h-14 rounded-2xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                {React.cloneElement(value.icon as React.ReactElement, { size: 28 })}
+                {React.cloneElement(value.icon as React.ReactElement<{ size?: number }>, { size: 28 })}
               </div>
               <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{value.title}</h3>
               <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
