@@ -62,6 +62,11 @@ export async function POST(req: Request) {
         metadata: { value, title: proposal.title }
     });
 
+    // 7. Reward Reputation to Creator
+    if (value > 0) {
+        await User.findByIdAndUpdate(proposal.createdBy, { $inc: { reputation: value } });
+    }
+
     return NextResponse.json({ 
         message: "Vote recorded", 
         totalVotes,

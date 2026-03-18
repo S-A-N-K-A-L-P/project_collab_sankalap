@@ -21,34 +21,31 @@ export async function POST(req: Request) {
     if (!currentUser || !targetUser) return NextResponse.json({ error: "User not found" }, { status: 404 });
     if (currentUser._id.toString() === targetId) return NextResponse.json({ error: "Self-connection prohibited" }, { status: 400 });
 
-    // Toggle follow
     const isFollowing = currentUser.following.includes(targetId);
     
     if (isFollowing) {
-      // Unfollow
-      currentUser.following.pull(targetId);
-      targetUser.followers.pull(currentUser._id);
+      await User.findByIdAndUpdate(currentUser._id, { $pull: { following: targetId } });
+      await User.findByIdAndUpdate(targetId, { $pull: { followers: currentUser._id } });
     } else {
-      // Follow
-      currentUser.following.push(targetId);
-      targetUser.followers.push(currentUser._id);
+      await User.findByIdAndUpdate(currentUser._id, { $push: { following: targetId } });
+      await User.findByIdAndUpdate(targetId, { $push: { followers: currentUser._id } });
 
-      // Create activity
+      // Record Activity
       await Activity.create({
-        type: "join",
-        user: currentUser._id,
-        targetName: targetUser.name,
-        message: `Connected with ${targetUser.name}`,
+        actorId: currentUser._id,
+        type: "FOLLOW",
+        targetId: targetId,
+        targetType: "USER",
+        metadata: { name: targetUser.name }
       });
     }
 
-    await Promise.all([currentUser.save(), targetUser.save()]);
-
     return NextResponse.json({ 
       connected: !isFollowing,
-      followersCount: targetUser.followers.length,
+      followersCount: isFollowing ? targetUser.followers.length - 1 : targetUser.followers.length + 1,
     });
   } catch (error: any) {
+    console.error("CONNECT_ERROR:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -21,16 +21,21 @@ export async function POST(req: Request) {
     const targetUser = await User.findById(targetId);
     if (!targetUser) return NextResponse.json({ error: "Target not found" }, { status: 404 });
 
-    // Create activity for endorsement
+    // Record Activity
     await Activity.create({
-      type: "endorse",
-      user: currentUser._id,
-      targetName: targetUser.name,
-      message: `Endorsed ${targetUser.name} for ${skill}`,
+      actorId: currentUser._id,
+      type: "VOTE", // Or add 'ENDORSE' if preferred, using 'VOTE' as generic signal for now
+      targetId: targetId,
+      targetType: "USER",
+      metadata: { skill, name: targetUser.name }
     });
+
+    // Simple Reputation Boost for receiving endorsement
+    await User.findByIdAndUpdate(targetId, { $inc: { reputation: 1 } });
 
     return NextResponse.json({ success: true, message: `Skill ${skill} endorsed.` });
   } catch (error: any) {
+    console.error("ENDORSE_ERROR:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -22,7 +22,8 @@ export async function POST(req: Request) {
     }
 
     const userId = (session.user as any).id;
-    const isContributor = proposal.contributors.includes(userId);
+    // Ensure comparing objectId strings or types correctly
+    const isContributor = proposal.contributors.some((c: any) => c.toString() === userId);
 
     if (isContributor) {
       await Proposal.findByIdAndUpdate(proposalId, {
@@ -34,13 +35,17 @@ export async function POST(req: Request) {
         $addToSet: { contributors: userId }
       });
 
-      // Log Activity
+      // Record Activity
       await Activity.create({
-        user: userId,
-        type: "join",
+        actorId: userId,
+        type: "JOIN",
         targetId: proposalId,
-        targetName: proposal.title
+        targetType: "PROPOSAL",
+        metadata: { title: proposal.title }
       });
+
+      // Reward Reputation for joining a team
+      await User.findByIdAndUpdate(userId, { $inc: { reputation: 5 } });
 
       return NextResponse.json({ message: "Joined project", status: "joined" });
     }
