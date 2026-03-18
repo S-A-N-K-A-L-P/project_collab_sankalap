@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { LayoutDashboard, User, Settings, LogOut, Loader2, Menu, X } from "lucide-react";
+import { LayoutDashboard, User, Settings, LogOut, Loader2, Menu, X, Layers } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -40,6 +40,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             <nav className="flex-1 px-4 space-y-2">
               <Link
+                href="/proposals"
+                className="flex items-center gap-3 px-4 py-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all font-medium border-l-4 border-transparent hover:border-blue-600"
+              >
+                <Layers className="w-5 h-5" />
+                Proposals Feed
+              </Link>
+              <Link
                 href="/dashboard"
                 className="flex items-center gap-3 px-4 py-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all font-medium"
               >
@@ -47,11 +54,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 Dashboard
               </Link>
               <Link
-                href="/profile"
+                href={`/user/${(session?.user as any)?.id}`}
                 className="flex items-center gap-3 px-4 py-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all font-medium"
               >
                 <User className="w-5 h-5" />
-                Profile
+                My Profile
               </Link>
               <Link
                 href="/settings"
