@@ -61,3 +61,65 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+
+export async function PATCH(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { id, title, description, type, techStack } = await req.json();
+    if (!id) return NextResponse.json({ error: "Proposal ID required" }, { status: 400 });
+
+    await dbConnect();
+    
+    const proposal = await Proposal.findById(id);
+    if (!proposal) return NextResponse.json({ error: "Proposal not found" }, { status: 404 });
+
+    // Verify Ownership
+    const user = await User.findOne({ email: session.user?.email });
+    if (proposal.createdBy.toString() !== user?._id.toString()) {
+      return NextResponse.json({ error: "Forbidden: Not the creator" }, { status: 403 });
+    }
+
+    const updated = await Proposal.findByIdAndUpdate(
+      id,
+      { $set: { title, description, type, techStack } },
+      { new: true }
+    );
+
+    return NextResponse.json(updated);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    if (!id) return NextResponse.json({ error: "Proposal ID required" }, { status: 400 });
+
+    await dbConnect();
+
+    const proposal = await Proposal.findById(id);
+    if (!proposal) return NextResponse.json({ error: "Proposal not found" }, { status: 404 });
+
+    // Verify Ownership
+    const user = await User.findOne({ email: session.user?.email });
+    if (proposal.createdBy.toString() !== user?._id.toString()) {
+      return NextResponse.json({ error: "Forbidden: Not the creator" }, { status: 403 });
+    }
+
+    await Proposal.findByIdAndDelete(id);
+
+    // Optional: Delete associated activities
+    await Activity.deleteMany({ targetId: id });
+
+    return NextResponse.json({ message: "Proposal neutralized" });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
