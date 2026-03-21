@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { unstable_noStore as noStore } from "next/cache";
 import Sidebar from "@/components/layout/Sidebar";
 import RightPanel from "@/components/layout/RightPanel";
 
@@ -12,6 +13,8 @@ export default function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
+  noStore();
+
   return (
     <div className="flex min-h-screen bg-[#0b0b0c] text-[#e5e7eb] font-sans antialiased">
       {/* Left Sidebar - Fixed */}

@@ -5,14 +5,56 @@ import dbConnect from "@/lib/mongodb";
 import Proposal from "@/models/Proposal";
 import User from "@/models/User";
 import Activity from "@/models/Activity";
+import { mkdir, writeFile } from "fs/promises";
+import path from "path";
+import { randomUUID } from "crypto";
+
+export const runtime = "nodejs";
+
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
+const ALLOWED_EXTENSIONS = new Set([".pdf", ".docx", ".png", ".jpg", ".jpeg"]);
+const ALLOWED_MIME_TYPES = new Set([
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "image/png",
+  "image/jpeg",
+]);
+
+function getExtension(filename: string): string {
+  const ext = path.extname(filename || "").toLowerCase();
+  return ext;
+}
+
+async function saveAttachment(file: File): Promise<string> {
+  const extension = getExtension(file.name);
+
+  if (!ALLOWED_EXTENSIONS.has(extension) || !ALLOWED_MIME_TYPES.has(file.type)) {
+    throw new Error("Invalid file type. Allowed: PDF, DOCX, PNG, JPG.");
+  }
+
+  if (file.size > MAX_FILE_SIZE_BYTES) {
+    throw new Error("File is too large. Maximum size is 5 MB.");
+  }
+
+  const uploadDir = path.join(process.cwd(), "public", "uploads", "proposals");
+  await mkdir(uploadDir, { recursive: true });
+
+  const fileName = `${Date.now()}-${randomUUID()}${extension}`;
+  const fullPath = path.join(uploadDir, fileName);
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  await writeFile(fullPath, buffer);
+
+  return `/uploads/proposals/${fileName}`;
+}
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
-    
+
     await dbConnect();
-    
+
     const query = userId ? { createdBy: userId } : {};
     const proposals = await Proposal.find(query)
       .populate("createdBy", "name avatar role universityName")
@@ -32,7 +74,40 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { title, description, type, techStack } = await req.json();
+    const contentType = req.headers.get("content-type") || "";
+
+    let title = "";
+    let description = "";
+    let type = "idea";
+    let techStack: string[] = [];
+    let media: string[] = [];
+
+    if (contentType.includes("multipart/form-data")) {
+      const formData = await req.formData();
+      title = String(formData.get("title") || "").trim();
+      description = String(formData.get("description") || "").trim();
+      type = String(formData.get("type") || "idea").trim();
+      techStack = String(formData.get("techStack") || "")
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+      const attachment = formData.get("attachment");
+      if (attachment instanceof File && attachment.size > 0) {
+        const attachmentUrl = await saveAttachment(attachment);
+        media = [attachmentUrl];
+      }
+    } else {
+      const payload = await req.json();
+      title = String(payload?.title || "").trim();
+      description = String(payload?.description || "").trim();
+      type = String(payload?.type || "idea").trim();
+      techStack = Array.isArray(payload?.techStack) ? payload.techStack : [];
+    }
+
+    if (!title || !description) {
+      return NextResponse.json({ error: "Title and description are required" }, { status: 400 });
+    }
 
     await dbConnect();
 
@@ -44,6 +119,7 @@ export async function POST(req: Request) {
       description,
       type,
       techStack,
+      media,
       createdBy: user._id,
       stage: "proposal",
       status: "proposal",
@@ -74,7 +150,7 @@ export async function PATCH(req: Request) {
     if (!id) return NextResponse.json({ error: "Proposal ID required" }, { status: 400 });
 
     await dbConnect();
-    
+
     const proposal = await Proposal.findById(id);
     if (!proposal) return NextResponse.json({ error: "Proposal not found" }, { status: 404 });
 

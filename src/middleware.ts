@@ -7,18 +7,18 @@ export default withAuth(
 
     // Redirect legacy dashboard routes to new routes
     if (path.startsWith("/dashboard")) {
-        const subPath = path.replace("/dashboard", "");
-        
-        // Handle specific renames
-        if (subPath === "" || subPath === "/feed") {
-            return NextResponse.redirect(new URL("/feed", req.url));
-        }
-        if (subPath.startsWith("/profile/")) {
-            return NextResponse.redirect(new URL(subPath, req.url));
-        }
-        
-        // Fallback: try to redirect to the subpath directly if it exists in the new structure
-        return NextResponse.redirect(new URL(subPath || "/feed", req.url));
+      const subPath = path.replace("/dashboard", "");
+
+      // Handle specific renames
+      if (subPath === "" || subPath === "/feed") {
+        return NextResponse.redirect(new URL("/feed", req.url));
+      }
+      if (subPath.startsWith("/profile/")) {
+        return NextResponse.redirect(new URL(subPath, req.url));
+      }
+
+      // Fallback: try to redirect to the subpath directly if it exists in the new structure
+      return NextResponse.redirect(new URL(subPath || "/feed", req.url));
     }
 
     if (path.startsWith("/user/")) {
@@ -35,14 +35,14 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    "/dashboard/:path*", 
-    "/feed", 
-    "/notifications", 
-    "/discover", 
-    "/profile/:path*", 
-    "/settings", 
+    "/dashboard/:path*",
+    "/feed",
+    "/notifications",
+    "/discover",
+    "/profile/:path*",
+    "/settings",
     "/admin",
-    "/ideas",
+    "/ideas/:path*",
     "/user/:path*"
   ],
 };

@@ -30,7 +30,7 @@ import Activity from "@/models/Activity";
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
-  
+
   if (session) {
     redirect("/feed");
   }
@@ -44,7 +44,7 @@ export default async function Home() {
   ]);
 
   // Fetch featured projects
-  const featuredProjects = await Proposal.find()
+  const featuredProjects = await Proposal.find({ createdBy: { $type: "objectId" } })
     .sort({ votes: -1 })
     .limit(3)
     .populate("createdBy", "name avatar")
@@ -63,7 +63,7 @@ export default async function Home() {
               <span className="text-[10px] font-mono font-black text-blue-600 uppercase tracking-widest">OS_INITIALIZER</span>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-8">
             <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
               <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>

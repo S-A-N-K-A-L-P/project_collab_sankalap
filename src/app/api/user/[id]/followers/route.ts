@@ -7,7 +7,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const { id } = await params;
     await dbConnect();
 
-    const user = await User.findById(id).populate("followers", "name avatar role universityName").lean();
+    const user = (await User.findById(id)
+      .populate("followers", "name avatar role universityName")
+      .lean()) as { followers?: unknown[] } | null;
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
     return NextResponse.json(user.followers || []);

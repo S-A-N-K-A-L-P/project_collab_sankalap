@@ -8,7 +8,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const { id } = await params;
     await dbConnect();
 
-    const user = await User.findById(id).select("followers following").lean();
+    const user = (await User.findById(id).select("followers following").lean()) as
+      | { followers?: unknown[]; following?: unknown[] }
+      | null;
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
     const pCount = await Proposal.countDocuments({ createdBy: id });

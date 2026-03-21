@@ -8,11 +8,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     await dbConnect();
 
     const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
-    const user = await User.findById(id).select("updatedAt").lean();
-    
+    const user = (await User.findById(id).select("updatedAt").lean()) as
+      | { updatedAt?: Date | string }
+      | null;
+
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-    const isOnline = user.updatedAt >= fifteenMinutesAgo;
+    const lastUpdated = user.updatedAt ? new Date(user.updatedAt) : null;
+    const isOnline = lastUpdated ? lastUpdated >= fifteenMinutesAgo : false;
 
     return NextResponse.json({ isOnline });
   } catch (error: any) {
