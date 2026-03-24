@@ -52,18 +52,31 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "50", 10);
+    const skip = (page - 1) * limit;
 
     await dbConnect();
 
     const query = userId ? { createdBy: userId } : {};
     const proposals = await Proposal.find(query)
       .populate("createdBy", "name avatar role universityName")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Proposal.countDocuments(query);
 
     // Filter out orphaned data
     const validProposals = proposals.filter((p: any) => p.createdBy);
+    const pages = Math.ceil(total / limit);
 
-    return NextResponse.json(validProposals);
+    return NextResponse.json({
+      proposals: validProposals,
+      total,
+      page,
+      pages,
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

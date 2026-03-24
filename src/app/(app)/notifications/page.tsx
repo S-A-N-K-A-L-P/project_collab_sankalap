@@ -56,6 +56,16 @@ export default async function NotificationsPage() {
     }
   };
 
+  const formatDate = (value: string) => {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "unknown-date" : date.toISOString().split("T")[0];
+  };
+
+  const formatTime = (value: string) => {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "--:--" : date.toISOString().slice(11, 16);
+  };
+
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <div className="bg-[#121214] p-8 rounded-2xl border border-[#1f1f23] shadow-sm">
@@ -81,9 +91,9 @@ export default async function NotificationsPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3 mt-1.5 font-mono text-[9px] font-bold uppercase tracking-widest text-[#1f1f23]">
-                  <span>{new Date(activity.createdAt).toLocaleDateString()}</span>
+                  <span>{formatDate(activity.createdAt)}</span>
                   <div className="w-1 h-1 rounded-full bg-[#1f1f23]" />
-                  <span>{new Date(activity.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  <span>{formatTime(activity.createdAt)}</span>
                 </div>
               </div>
             </div>

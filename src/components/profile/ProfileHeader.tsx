@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Camera, Edit2, Hexagon, MapPin, Calendar, Link as LinkIcon } from "lucide-react";
 import ConnectButton from "./ConnectButton";
+import { formatIsoYear } from "@/lib/hydration-safe-date";
 
 interface ProfileHeaderProps {
   user: any;
@@ -11,6 +12,8 @@ interface ProfileHeaderProps {
 }
 
 export default function ProfileHeader({ user, isOwnProfile, isConnected }: ProfileHeaderProps) {
+  const joinedYear = formatIsoYear(user?.createdAt, "unknown-year");
+
   return (
     <div className="w-full bg-[#121214] rounded-2xl border border-[#1f1f23] overflow-hidden shadow-sm">
       {/* Banner */}
@@ -61,7 +64,7 @@ export default function ProfileHeader({ user, isOwnProfile, isConnected }: Profi
               </div>
             )}
             <div className="flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-[#1f1f23]" /> Synchronization since {new Date(user.createdAt).getFullYear()}
+              <Calendar className="w-3.5 h-3.5 text-[#1f1f23]" /> Synchronization since {joinedYear}
             </div>
           </div>
         </div>

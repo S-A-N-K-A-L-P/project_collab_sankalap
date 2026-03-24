@@ -26,6 +26,9 @@ interface ProfileCardProps {
 }
 
 export default function ProfileCard({ user, isOwnProfile }: ProfileCardProps) {
+  const joinedDate = user.createdAt ? new Date(user.createdAt) : null;
+  const joinedYear = joinedDate && !Number.isNaN(joinedDate.getTime()) ? String(joinedDate.getUTCFullYear()) : "2026";
+
   return (
     <div className="w-full bg-[#121214] rounded-2xl border border-[#1f1f23] overflow-hidden shadow-sm">
       {/* Banner - Professional Subtlety */}
@@ -91,7 +94,7 @@ export default function ProfileCard({ user, isOwnProfile }: ProfileCardProps) {
                 <LinkIcon className="w-3.5 h-3.5" /> {user.proposalsCount || 0} Signals
               </div>
               <div className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-[#1f1f23]" /> Joined {user.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, { year: 'numeric' }) : "2026"}
+                <Calendar className="w-3.5 h-3.5 text-[#1f1f23]" /> Joined {joinedYear}
               </div>
             </div>
           </div>

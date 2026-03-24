@@ -34,6 +34,10 @@ export default function GitProfileMetrics({ userId }: { userId: string }) {
   const totalCommits = repos.reduce((acc, r) => acc + (r.stats?.commits || 0), 0);
   const totalStars = repos.reduce((acc, r) => acc + (r.stats?.stars || 0), 0);
   const totalRepos = repos.length;
+  const formatDate = (value: string) => {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? 'unknown-date' : date.toISOString().split('T')[0];
+  };
 
   return (
     <div className="space-y-6">
@@ -65,7 +69,7 @@ export default function GitProfileMetrics({ userId }: { userId: string }) {
                 </div>
                 <div className="flex flex-col">
                    <span className="text-[13px] font-bold text-[#e5e7eb] tracking-tight">{repo.repoName}</span>
-                   <span className="text-[8px] font-mono font-bold text-[#1f1f23] uppercase">SYNCED: {new Date(repo.updatedAt).toLocaleDateString()}</span>
+                   <span className="text-[8px] font-mono font-bold text-[#1f1f23] uppercase">SYNCED: {formatDate(repo.updatedAt)}</span>
                 </div>
              </div>
              <div className="flex items-center gap-4 text-[10px] font-mono font-black text-[#e5e7eb] italic">

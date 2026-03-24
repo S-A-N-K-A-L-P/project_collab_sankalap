@@ -41,7 +41,7 @@ export const config = {
     "/discover",
     "/profile/:path*",
     "/settings",
-    "/admin",
+    "/admin/:path*",
     "/ideas/:path*",
     "/user/:path*"
   ],

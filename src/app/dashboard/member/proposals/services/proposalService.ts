@@ -9,10 +9,18 @@ type ListResponse = {
 };
 
 async function parseResponse<T>(res: Response): Promise<T> {
-  const payload = await res.json();
+  let payload: any;
+
+  try {
+    payload = await res.json();
+  } catch (e) {
+    throw new Error('Invalid JSON response from server');
+  }
+
   if (!res.ok) {
     throw new Error(payload?.error || 'Request failed');
   }
+
   return payload as T;
 }
 
@@ -41,7 +49,20 @@ export const proposalService = {
       cache: 'no-store',
     });
 
-    return parseResponse<ListResponse>(res);
+    const payload: any = await parseResponse<any>(res);
+
+    // 🔥 HANDLE ALL POSSIBLE API SHAPES
+    const proposals =
+      payload.proposals ||
+      payload.data ||
+      [];
+
+    return {
+      proposals: Array.isArray(proposals) ? proposals : [],
+      total: payload.total || proposals.length || 0,
+      page: payload.page || 1,
+      pages: payload.pages || 1,
+    };
   },
 
   async getById(id: string): Promise<Proposal> {
@@ -50,8 +71,9 @@ export const proposalService = {
       cache: 'no-store',
     });
 
-    const payload = await parseResponse<{ proposal: Proposal }>(res);
-    return payload.proposal;
+    const payload = await parseResponse<any>(res);
+
+    return payload.proposal || payload.data;
   },
 
   async create(input: { question: string; options: string[] }): Promise<Proposal> {
@@ -61,16 +83,15 @@ export const proposalService = {
       body: JSON.stringify(input),
     });
 
-    const data = await parseResponse<{ proposal?: Proposal }>(res);
-    console.log('API response:', data);
-    console.log('Extracted proposalId:', data.proposal?._id);
+    const payload = await parseResponse<any>(res);
 
-    const proposalId = data.proposal?._id;
-    if (!proposalId || typeof proposalId !== 'string') {
-      throw new Error('Proposal created but proposal ID is missing in API response.');
+    const proposal = payload.proposal || payload.data;
+
+    if (!proposal?._id) {
+      throw new Error('Proposal created but ID missing in response');
     }
 
-    return data.proposal as Proposal;
+    return proposal;
   },
 
   async update(id: string, input: { question?: string; options?: string[]; status?: string }): Promise<Proposal> {
@@ -80,8 +101,8 @@ export const proposalService = {
       body: JSON.stringify(input),
     });
 
-    const payload = await parseResponse<{ proposal: Proposal }>(res);
-    return payload.proposal;
+    const payload = await parseResponse<any>(res);
+    return payload.proposal || payload.data;
   },
 
   async remove(id: string): Promise<void> {
@@ -94,14 +115,13 @@ export const proposalService = {
   },
 
   async vote(proposalId: string, optionIndex: number): Promise<Proposal> {
-    console.log('Vote request payload:', { proposalId, optionIndex });
     const res = await fetch('/api/votes', {
       method: 'POST',
       headers: requestHeaders(),
       body: JSON.stringify({ proposalId, optionIndex }),
     });
 
-    const payload = await parseResponse<{ proposal: Proposal }>(res);
-    return payload.proposal;
+    const payload = await parseResponse<any>(res);
+    return payload.proposal || payload.data;
   },
 };

@@ -4,6 +4,12 @@ import { motion } from "framer-motion";
 import { CheckCircle2, XCircle, FileText, Send, Paperclip, Clock } from "lucide-react";
 
 export function VerificationPanel({ contributions, onVerify }: { contributions: any[], onVerify: (id: string, status: string) => void }) {
+   const formatSubmittedDate = (value?: string) => {
+      if (!value) return "unknown-date";
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? "unknown-date" : date.toISOString().split('T')[0];
+   };
+
   return (
     <div className="space-y-6">
       <div className="bg-[#121214] border border-[#1f1f23] p-6 rounded-3xl space-y-4">
@@ -25,7 +31,7 @@ export function VerificationPanel({ contributions, onVerify }: { contributions: 
                    </div>
                    <p className="text-[13px] text-[#9ca3af] leading-relaxed line-clamp-2">{con.description}</p>
                    <div className="flex items-center gap-2 mt-2 font-mono text-[9px] font-bold text-[#1f1f23] uppercase">
-                      <Clock className="w-3 h-3" /> Submitted {new Date().toLocaleDateString()}
+                      <Clock className="w-3 h-3" /> Submitted {formatSubmittedDate(con.createdAt)}
                    </div>
                 </div>
              </div>

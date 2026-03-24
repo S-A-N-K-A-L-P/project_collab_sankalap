@@ -34,7 +34,7 @@ const Counter = ({ value, duration = 2 }: { value: number; duration?: number }) 
     }
   }, [isInView, value, duration]);
 
-  return <span ref={nodeRef}>{count.toLocaleString(undefined, { maximumFractionDigits: 1 })}</span>;
+  return <span ref={nodeRef}>{count.toLocaleString('en-US', { maximumFractionDigits: 1 })}</span>;
 };
 
 export const ImpactCounters = ({ stats }: { stats: { label: string, value: number, suffix: string, color: string, prefix?: string }[] }) => {

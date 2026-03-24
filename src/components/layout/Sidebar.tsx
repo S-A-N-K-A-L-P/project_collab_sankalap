@@ -9,6 +9,7 @@ import {
   User,
   Settings,
   ShieldCheck,
+  ListChecks,
   Lightbulb,
   Zap,
   LogOut
@@ -69,8 +70,8 @@ export default function Sidebar() {
                     key={item.name}
                     href={href}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-all group relative ${isActive
-                        ? "text-[#e5e7eb] bg-white/[0.03]"
-                        : "text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-white/[0.02]"
+                      ? "text-[#e5e7eb] bg-white/[0.03]"
+                      : "text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-white/[0.02]"
                       }`}
                   >
                     {isActive && (
@@ -93,8 +94,8 @@ export default function Sidebar() {
             <Link
               href="/admin"
               className={`flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-all group relative ${pathname === "/admin"
-                  ? "text-[#e5e7eb] bg-white/[0.03]"
-                  : "text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-white/[0.02]"
+                ? "text-[#e5e7eb] bg-white/[0.03]"
+                : "text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-white/[0.02]"
                 }`}
             >
               {pathname === "/admin" && (
@@ -102,6 +103,19 @@ export default function Sidebar() {
               )}
               <ShieldCheck className={`w-4 h-4 ${pathname === "/admin" ? "text-[#6366f1]" : "text-[#9ca3af] group-hover:text-[#e5e7eb]"}`} />
               Control Room
+            </Link>
+            <Link
+              href="/admin/projects"
+              className={`mt-1 flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-all group relative ${pathname.startsWith("/admin/projects")
+                ? "text-[#e5e7eb] bg-white/[0.03]"
+                : "text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-white/[0.02]"
+                }`}
+            >
+              {pathname.startsWith("/admin/projects") && (
+                <div className="absolute left-0 w-0.5 h-4 bg-[#6366f1] rounded-full" />
+              )}
+              <ListChecks className={`w-4 h-4 ${pathname.startsWith("/admin/projects") ? "text-[#6366f1]" : "text-[#9ca3af] group-hover:text-[#e5e7eb]"}`} />
+              Project Progress
             </Link>
           </div>
         )}

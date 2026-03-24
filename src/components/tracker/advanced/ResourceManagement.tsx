@@ -79,6 +79,8 @@ export function BandwidthTracker({ team }: { team: any[] }) {
 
 // 3. Team Heatmap (Commit/Activity density)
 export function TeamHeatmap() {
+   const getIntensity = (index: number) => ((index * 37) % 100) / 100;
+
   return (
     <div className="p-6 bg-[#121214] border border-[#1f1f23] rounded-3xl space-y-6">
        <div className="flex items-center gap-3">
@@ -88,7 +90,7 @@ export function TeamHeatmap() {
        
        <div className="grid grid-cols-12 gap-1 px-1">
           {[...Array(72)].map((_, i) => {
-            const intensity = Math.random();
+                  const intensity = getIntensity(i);
             return (
               <div 
                 key={i} 

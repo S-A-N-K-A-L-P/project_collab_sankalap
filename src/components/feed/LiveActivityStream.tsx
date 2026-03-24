@@ -61,6 +61,8 @@ export default function LiveActivityStream() {
             ) : (
                 activities.map((act) => {
                     const actorName = act.actorId?.name || "System Agent";
+                  const created = new Date(act.createdAt);
+                  const timeLabel = Number.isNaN(created.getTime()) ? '--:--' : created.toISOString().slice(11, 16);
                     return (
                         <motion.div
                             key={act._id}
@@ -88,7 +90,7 @@ export default function LiveActivityStream() {
                                 </p>
                                 <div className="flex items-center gap-2 mt-1 opacity-60">
                                     <span className="text-[9px] font-mono font-bold text-[#1f1f23] uppercase tracking-tighter">
-                                        {new Date(act.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                      {timeLabel}
                                     </span>
                                     <div className="w-1 h-1 rounded-full bg-[#1f1f23]" />
                                     <span className="text-[9px] font-mono font-bold text-[#1f1f23] uppercase tracking-tighter">

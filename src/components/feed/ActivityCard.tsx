@@ -20,6 +20,11 @@ interface ActivityCardProps {
 }
 
 export default function ActivityCard({ activity }: ActivityCardProps) {
+  const created = new Date(activity.createdAt);
+  const timeLabel = Number.isNaN(created.getTime())
+    ? '--:--'
+    : created.toISOString().slice(11, 16);
+
   const getIcon = (type: string) => {
     switch(type) {
       case 'FOLLOW': return <UserPlus className="w-3.5 h-3.5 text-[#6366f1]" />;
@@ -60,7 +65,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
             </p>
             <div className="flex items-center gap-3 mt-1.5">
                 <span className="text-[10px] font-mono font-bold text-[#1f1f23] uppercase tracking-widest">
-                    {new Date(activity.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {timeLabel}
                 </span>
                 <div className="w-1 h-1 rounded-full bg-[#1f1f23]" />
                 <button className="text-[10px] font-bold text-[#6366f1] uppercase tracking-tight hover:underline">Details</button>

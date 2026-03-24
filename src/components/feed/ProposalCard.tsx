@@ -19,6 +19,7 @@ import VoteLimitIndicator from "../proposal/VoteLimitIndicator";
 import VotingTimer from "../proposal/VotingTimer";
 import EditProposalModal from "../proposal/EditProposalModal";
 import { useSession } from "next-auth/react";
+import { formatIsoDate } from "@/lib/hydration-safe-date";
 
 interface ProposalCardProps {
     proposal: {
@@ -50,6 +51,8 @@ export default function ProposalCard({ proposal }: ProposalCardProps) {
     const [userVotes, setUserVotes] = useState(0);
     const [showMenu, setShowMenu] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
+
+    const createdLabel = formatIsoDate(proposal.createdAt, "unknown-date");
 
     const isAuthor = (session?.user as any)?.id === proposal.createdBy?._id;
 
@@ -87,7 +90,7 @@ export default function ProposalCard({ proposal }: ProposalCardProps) {
                                     {proposal.createdBy?.name || "Unknown Agent"}
                                 </Link>
                                 <p className="text-[10px] text-[#9ca3af] font-mono uppercase tracking-[0.05em] leading-none mt-1">
-                                    {proposal.createdBy?.role?.replace('_', ' ') || "unverified"} • {new Date(proposal.createdAt || '').toLocaleDateString()}
+                                    {proposal.createdBy?.role?.replace('_', ' ') || "unverified"} • {createdLabel}
                                 </p>
                             </div>
                         </div>

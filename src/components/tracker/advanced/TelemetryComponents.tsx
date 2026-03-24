@@ -7,6 +7,8 @@ import {
   FileCode, Play, Monitor, Gauge
 } from "lucide-react";
 
+const LOG_TIMESTAMPS = ["00:00:01", "00:00:02", "00:00:03", "00:00:04", "00:00:05", "00:00:06"];
+
 // 1. Deployment Pulse (Deployment status card)
 export function DeploymentPulse({ project }: { project: any }) {
   return (
@@ -76,7 +78,7 @@ export function BuildLogViewer() {
                transition={{ delay: i * 0.2 }}
                className="flex gap-3 leading-relaxed"
             >
-               <span className="text-[#1f1f23] font-bold">[{new Date().toLocaleTimeString([], { hour12: false })}]</span>
+               <span className="text-[#1f1f23] font-bold">[{LOG_TIMESTAMPS[i] || "00:00:00"}]</span>
                <span className="text-[#9ca3af]">{log}</span>
             </motion.div>
           ))}
@@ -126,6 +128,11 @@ export function GitHubSyncCard({ repo }: { repo: any }) {
 
 // 4. Activity Pulse (Real-time signal chart simulation)
 export function ActivityPulse() {
+   const bars = Array.from({ length: 30 }, (_, i) => ({
+      height: `${20 + ((i * 17) % 80)}%`,
+      duration: 1 + ((i % 5) * 0.25),
+   }));
+
   return (
     <div className="p-6 bg-[#121214] border border-[#1f1f23] rounded-3xl space-y-6 overflow-hidden">
        <div className="flex items-center justify-between">
@@ -137,12 +144,12 @@ export function ActivityPulse() {
        </div>
        
        <div className="h-24 flex items-end gap-1 px-1">
-          {[...Array(30)].map((_, i) => (
+          {bars.map((bar, i) => (
             <motion.div 
                key={i}
                initial={{ height: 2 }}
-               animate={{ height: `${20 + Math.random() * 80}%` }}
-               transition={{ repeat: Infinity, duration: 1 + Math.random(), repeatType: "reverse" }}
+               animate={{ height: bar.height }}
+               transition={{ repeat: Infinity, duration: bar.duration, repeatType: "reverse" }}
                className="flex-1 bg-gradient-to-t from-[#6366f1]/20 to-[#6366f1] rounded-t-sm"
             />
           ))}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Proposal } from '../types/proposal.types';
 import { VoteButtons } from './VoteButtons';
+import { formatIsoDate } from '@/lib/hydration-safe-date';
 
 type ProposalCardProps = {
   proposal: Proposal;
@@ -12,8 +13,7 @@ type ProposalCardProps = {
 export function ProposalCard({ proposal, canManage, onVote, onDelete }: ProposalCardProps) {
   const [busy, setBusy] = useState(false);
 
-  const created = new Date(proposal.createdAt);
-  const createdLabel = Number.isNaN(created.getTime()) ? 'Unknown date' : created.toLocaleString();
+  const createdLabel = formatIsoDate(proposal.createdAt, 'Unknown date');
 
   return (
     <article className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">

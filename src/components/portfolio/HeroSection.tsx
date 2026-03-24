@@ -5,28 +5,38 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { MousePointer2, Sparkles } from 'lucide-react';
 
+const ORBS = Array.from({ length: 20 }, (_, i) => ({
+  width: 100 + ((i * 37) % 400),
+  height: 100 + ((i * 53) % 400),
+  left: `${(i * 13) % 100}%`,
+  top: `${(i * 29) % 100}%`,
+  x: ((i * 19) % 100) - 50,
+  y: ((i * 23) % 100) - 50,
+  duration: 10 + ((i * 7) % 10),
+}));
+
 export const HeroSection = () => {
   return (
     <section className="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden bg-white dark:bg-slate-950 px-6">
       {/* Background Micro-animations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
+        {ORBS.map((orb, i) => (
           <motion.div
             key={i}
             className="absolute rounded-full bg-indigo-500/10 dark:bg-indigo-400/5 blur-xl"
             style={{
-              width: Math.random() * 400 + 100,
-              height: Math.random() * 400 + 100,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
+              width: orb.width,
+              height: orb.height,
+              left: orb.left,
+              top: orb.top,
             }}
             animate={{
-              x: [0, Math.random() * 100 - 50],
-              y: [0, Math.random() * 100 - 50],
+              x: [0, orb.x],
+              y: [0, orb.y],
               scale: [1, 1.2, 1],
             }}
             transition={{
-              duration: Math.random() * 10 + 10,
+              duration: orb.duration,
               repeat: Infinity,
               ease: "linear"
             }}
