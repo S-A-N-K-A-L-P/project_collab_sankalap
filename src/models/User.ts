@@ -50,9 +50,9 @@ const UserSchema = new Schema(
       type: String,
       default: "",
     },
-    role: { 
+    role: {
       type: String,
-      enum: ["user", "pixel_head", "project_lead", "pixel_member", "normal_user"],
+      enum: ["admin", "user", "pixel_head", "project_lead", "pixel_member", "normal_user"],
       default: "user",
     },
     reputation: {

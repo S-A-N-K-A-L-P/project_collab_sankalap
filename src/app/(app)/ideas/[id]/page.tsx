@@ -2,23 +2,9 @@ import dbConnect from "@/lib/mongodb";
 import Proposal from "@/models/Proposal";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import ProposalComments from "@/components/proposal/ProposalComments";
 
 type Props = {
     params: Promise<{ id: string }>;
-};
-
-type ProposalDetail = {
-    _id: string | { toString: () => string };
-    type?: string;
-    title?: string;
-    description?: string;
-    totalVotes?: number;
-    media?: string[];
-    techStack?: string[];
-    createdBy?: {
-        name?: string;
-    } | null;
 };
 
 function isImageFile(url: string): boolean {
@@ -35,18 +21,15 @@ export default async function IdeaDetailPage({ params }: Props) {
 
     await dbConnect();
 
-    const proposal = (await Proposal.findById(id)
+    const proposal = await Proposal.findById(id)
         .populate("createdBy", "name role")
-        .lean()) as ProposalDetail | null;
+        .lean();
 
     if (!proposal) {
         notFound();
     }
 
-    const media = Array.isArray(proposal.media) ? proposal.media : [];
-    const techStack = Array.isArray(proposal.techStack) ? proposal.techStack : [];
-    const totalVotes = Number(proposal.totalVotes || 0);
-    const proposalId = typeof proposal._id === "string" ? proposal._id : proposal._id.toString();
+    const media = Array.isArray((proposal as any).media) ? ((proposal as any).media as string[]) : [];
 
     return (
         <div className="max-w-3xl mx-auto space-y-6">
@@ -59,25 +42,18 @@ export default async function IdeaDetailPage({ params }: Props) {
 
             <article className="rounded-2xl border border-[#1f1f23] bg-[#121214] p-6 shadow-sm space-y-5">
                 <div className="space-y-2">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#9ca3af]">{proposal.type || "idea"}</p>
-                    <h2 className="text-2xl font-bold text-[#e5e7eb] tracking-tight">{proposal.title}</h2>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#9ca3af]">{(proposal as any).type || "idea"}</p>
+                    <h2 className="text-2xl font-bold text-[#e5e7eb] tracking-tight">{(proposal as any).title}</h2>
                     <p className="text-sm text-[#9ca3af]">
-                        Created by {proposal.createdBy?.name || "Unknown"}
+                        Created by {(proposal as any).createdBy?.name || "Unknown"}
                     </p>
                 </div>
 
-                <p className="text-sm leading-relaxed text-[#d1d5db]">{proposal.description}</p>
+                <p className="text-sm leading-relaxed text-[#d1d5db]">{(proposal as any).description}</p>
 
-                <section className="space-y-2 pt-2 border-t border-[#1f1f23]">
-                    <h3 className="text-sm font-semibold text-[#e5e7eb]">Upvotes</h3>
-                    <p className="text-sm text-[#9ca3af]">
-                        {totalVotes} endorsement{totalVotes === 1 ? "" : "s"}
-                    </p>
-                </section>
-
-                {techStack.length > 0 ? (
+                {Array.isArray((proposal as any).techStack) && (proposal as any).techStack.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
-                        {techStack.map((tag) => (
+                        {((proposal as any).techStack as string[]).map((tag) => (
                             <span
                                 key={tag}
                                 className="rounded-md border border-[#2a2a2f] bg-[#0f0f11] px-2.5 py-1 text-[11px] font-semibold text-[#9ca3af]"
@@ -117,7 +93,7 @@ export default async function IdeaDetailPage({ params }: Props) {
                                             href={url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="inline-flex rounded-md border border-[#2a2a2f] px-3 py-2 text-xs font-medium text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-white/3"
+                                            className="inline-flex rounded-md border border-[#2a2a2f] px-3 py-2 text-xs font-medium text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-white/[0.03]"
                                         >
                                             Preview File
                                         </a>
@@ -128,8 +104,6 @@ export default async function IdeaDetailPage({ params }: Props) {
                     )}
                 </section>
             </article>
-
-            <ProposalComments proposalId={proposalId} />
         </div>
     );
 }
