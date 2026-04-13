@@ -8,40 +8,40 @@ import { useTheme } from "next-themes";
 import { THEME_MODES, type ThemeMode } from "@/lib/theme";
 
 const options: Array<{ value: ThemeMode; label: string; icon: ComponentType<{ className?: string }> }> = [
-    { value: "light", label: "Light", icon: SunMedium },
-    { value: "dark", label: "Dark", icon: Moon },
-    { value: "system", label: "System", icon: Monitor },
+  { value: "light", label: "Light", icon: SunMedium },
+  { value: "dark", label: "Dark", icon: Moon },
+  { value: "system", label: "System", icon: Monitor },
 ];
 
-export default function ThemeModeToggle() {https://github.com/S-A-N-K-A-L-P/project_collab_sankalap/pull/8/conflict?name=src%252Fcomponents%252Fproposal%252FProposalComments.tsx&ancestor_oid=1cc698f2dcd860e3137bc8fbdcbae1290f0c722f&base_oid=e4e55d59278066183ae01c383cb1f14b6fd21ed7&head_oid=41f4f2697d1b3bdd91636f9c5472de5e65e3f5cd
-    const { theme, setTheme } = useTheme();
+export default function ThemeModeToggle() {
+  const { theme, setTheme } = useTheme();
 
-    const activeTheme = THEME_MODES.includes(theme as ThemeMode) ? (theme as ThemeMode) : "system";
+  const activeTheme = THEME_MODES.includes(theme as ThemeMode) ? (theme as ThemeMode) : "system";
 
-    return (
-        <div className="rounded-xl border border-border-subtle bg-surface p-1 shadow-sm" role="radiogroup" aria-label="Theme mode">
-            <div className="grid grid-cols-3 gap-1">
-                {options.map(({ value, label, icon: Icon }) => {
-                    const isActive = activeTheme === value;
+  return (
+    <div className="rounded-xl border border-border-subtle bg-surface p-1 shadow-sm" role="radiogroup" aria-label="Theme mode">
+      <div className="grid grid-cols-3 gap-1">
+        {options.map(({ value, label, icon: Icon }) => {
+          const isActive = activeTheme === value;
 
-                    return (
-                        <button
-                            key={value}
-                            type="button"
-                            role="radio"
-                            aria-checked={isActive}
-                            aria-label={label}
-                            onClick={() => setTheme(value)}
-                            className={`flex h-10 min-w-0 items-center justify-center rounded-lg border text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${isActive
-                                ? "border-accent bg-accent/10 text-foreground shadow-[0_0_0_1px_var(--accent-glow)]"
-                                : "border-transparent text-muted hover:border-border-subtle hover:bg-surface-alt hover:text-foreground"
-                                }`}
-                        >
-                            <Icon className="h-4 w-4" />
-                        </button>
-                    );
-                })}
-            </div>
-        </div>
-    );
+          return (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={isActive}
+              aria-label={label}
+              onClick={() => setTheme(value)}
+              className={`flex h-10 min-w-0 items-center justify-center rounded-lg border text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${isActive
+                ? "border-accent bg-accent/10 text-foreground shadow-[0_0_0_1px_var(--accent-glow)]"
+                : "border-transparent text-muted hover:border-border-subtle hover:bg-surface-alt hover:text-foreground"
+                }`}
+            >
+              <Icon className="h-4 w-4" />
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 }

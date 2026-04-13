@@ -18,8 +18,6 @@ import {
 import { signOut, useSession } from "next-auth/react";
 import ThemeModeToggle from "@/components/theme/ThemeModeToggle";
 
-import ThemeModeToggle from "@/components/theme/ThemeModeToggle";
-
 const navigation = [
   {
     group: "Primary", items: [
@@ -155,10 +153,6 @@ export default function Sidebar() {
           <LogOut className="w-4 h-4" />
           Logout
         </button>
-
-        <div className="mt-3">
-          <ThemeModeToggle />
-        </div>
       </div>
     </aside>
   );
