@@ -56,13 +56,26 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const orgId = searchParams.get("orgId");
+    const id = searchParams.get("id");
     
     await dbConnect();
     
+    if (id) {
+      const project = await Project.findById(id)
+        .populate("orgId", "name slug")
+        .populate("lead", "name avatar")
+        .populate("gitRepo")
+        .lean();
+      
+      if (!project) return NextResponse.json({ message: "Project not found" }, { status: 404 });
+      return NextResponse.json(project);
+    }
+
     const query = orgId ? { orgId } : {};
     const projects = await Project.find(query)
       .populate("orgId", "name slug")
       .populate("lead", "name avatar")
+      .populate("gitRepo")
       .sort({ updatedAt: -1 })
       .lean();
 

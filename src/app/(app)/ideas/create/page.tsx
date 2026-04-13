@@ -103,23 +103,23 @@ export default function CreateIdeaPage() {
     return (
         <div className="max-w-3xl mx-auto space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-[#e5e7eb] tracking-tight">Create Proposal</h1>
-                <Link href="/ideas" className="text-sm text-[#9ca3af] hover:text-[#e5e7eb] transition-colors">
+                <h1 className="text-2xl font-bold text-foreground tracking-tight">Create Proposal</h1>
+                <Link href="/ideas" className="text-sm text-muted hover:text-foreground transition-colors">
                     Back to My Ideas
                 </Link>
             </div>
 
             <form
                 onSubmit={handleSubmit}
-                className="space-y-5 rounded-2xl border border-[#1f1f23] bg-[#121214] p-6 shadow-sm"
+                className="space-y-5 rounded-2xl border border-border-subtle bg-surface p-6 shadow-sm"
             >
                 <div className="space-y-1.5">
-                    <label htmlFor="title" className="text-[11px] font-bold uppercase tracking-widest text-[#9ca3af]">
+                    <label htmlFor="title" className="text-[11px] font-bold uppercase tracking-widest text-muted">
                         Title
                     </label>
                     <input
                         id="title"
-                        className="w-full rounded-lg border border-[#1f1f23] bg-[#0f0f11] px-3 py-2.5 text-sm text-[#e5e7eb] outline-none focus:border-[#6366f1]"
+                        className="w-full rounded-lg border border-border-subtle bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent"
                         placeholder="Give your proposal a clear title"
                         value={title}
                         onChange={(event) => setTitle(event.target.value)}
@@ -130,14 +130,14 @@ export default function CreateIdeaPage() {
                 <div className="space-y-1.5">
                     <label
                         htmlFor="description"
-                        className="text-[11px] font-bold uppercase tracking-widest text-[#9ca3af]"
+                        className="text-[11px] font-bold uppercase tracking-widest text-muted"
                     >
                         Description
                     </label>
                     <textarea
                         id="description"
                         rows={6}
-                        className="w-full rounded-lg border border-[#1f1f23] bg-[#0f0f11] px-3 py-2.5 text-sm text-[#e5e7eb] outline-none focus:border-[#6366f1]"
+                        className="w-full rounded-lg border border-border-subtle bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent"
                         placeholder="Describe the problem, proposed solution, and expected impact"
                         value={description}
                         onChange={(event) => setDescription(event.target.value)}
@@ -147,12 +147,12 @@ export default function CreateIdeaPage() {
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="space-y-1.5">
-                        <label htmlFor="type" className="text-[11px] font-bold uppercase tracking-widest text-[#9ca3af]">
+                        <label htmlFor="type" className="text-[11px] font-bold uppercase tracking-widest text-muted">
                             Type
                         </label>
                         <select
                             id="type"
-                            className="w-full rounded-lg border border-[#1f1f23] bg-[#0f0f11] px-3 py-2.5 text-sm text-[#e5e7eb] outline-none focus:border-[#6366f1]"
+                            className="w-full rounded-lg border border-border-subtle bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent"
                             value={type}
                             onChange={(event) => setType(event.target.value as ProposalType)}
                         >
@@ -169,13 +169,13 @@ export default function CreateIdeaPage() {
                     <div className="space-y-1.5">
                         <label
                             htmlFor="techStack"
-                            className="text-[11px] font-bold uppercase tracking-widest text-[#9ca3af]"
+                            className="text-[11px] font-bold uppercase tracking-widest text-muted"
                         >
                             Tech Stack
                         </label>
                         <input
                             id="techStack"
-                            className="w-full rounded-lg border border-[#1f1f23] bg-[#0f0f11] px-3 py-2.5 text-sm text-[#e5e7eb] outline-none focus:border-[#6366f1]"
+                            className="w-full rounded-lg border border-border-subtle bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent"
                             placeholder="React, Node.js, MongoDB"
                             value={techStackInput}
                             onChange={(event) => setTechStackInput(event.target.value)}
@@ -186,7 +186,7 @@ export default function CreateIdeaPage() {
                 <div className="space-y-1.5">
                     <label
                         htmlFor="attachment"
-                        className="text-[11px] font-bold uppercase tracking-widest text-[#9ca3af]"
+                        className="text-[11px] font-bold uppercase tracking-widest text-muted"
                     >
                         Attach File (Optional)
                     </label>
@@ -194,15 +194,15 @@ export default function CreateIdeaPage() {
                         id="attachment"
                         type="file"
                         accept=".pdf,.docx,.png,.jpg,.jpeg"
-                        className="w-full rounded-lg border border-[#1f1f23] bg-[#0f0f11] px-3 py-2.5 text-sm text-[#e5e7eb] file:mr-3 file:rounded-md file:border-0 file:bg-[#6366f1] file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white hover:file:bg-[#4f46e5]"
+                        className="w-full rounded-lg border border-border-subtle bg-background px-3 py-2.5 text-sm text-foreground file:mr-3 file:rounded-md file:border-0 file:bg-accent file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white hover:file:bg-accent/90"
                         onChange={(event) => {
                             const file = event.target.files?.[0] || null;
                             setAttachment(file);
                         }}
                     />
-                    <p className="text-xs text-[#9ca3af]">Allowed: PDF, DOCX, PNG, JPG. Max size: 5 MB.</p>
+                    <p className="text-xs text-muted">Allowed: PDF, DOCX, PNG, JPG. Max size: 5 MB.</p>
                     {attachment ? (
-                        <p className="text-xs text-[#9ca3af]">
+                        <p className="text-xs text-muted">
                             Selected: {attachment.name} ({(attachment.size / 1024 / 1024).toFixed(2)} MB)
                         </p>
                     ) : null}
@@ -211,11 +211,11 @@ export default function CreateIdeaPage() {
                 {error ? <p className="rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-300">{error}</p> : null}
 
                 <div className="flex items-center justify-between gap-3 pt-2">
-                    <p className="text-xs text-[#9ca3af]">{techStack.length > 0 ? `Tags: ${techStack.join(', ')}` : 'Add comma-separated tags (optional)'}</p>
+                    <p className="text-xs text-muted">{techStack.length > 0 ? `Tags: ${techStack.join(', ')}` : 'Add comma-separated tags (optional)'}</p>
                     <button
                         type="submit"
                         disabled={submitting}
-                        className="rounded-lg bg-[#6366f1] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#4f46e5] disabled:cursor-not-allowed disabled:opacity-60"
+                        className="rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         {submitting ? 'Creating...' : 'Create Proposal'}
                     </button>

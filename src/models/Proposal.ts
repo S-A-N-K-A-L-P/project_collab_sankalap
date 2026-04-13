@@ -85,6 +85,22 @@ const ProposalSchema = new Schema(
       type: Number,
       default: 0,
     },
+    upvotes: {
+      type: Number,
+      default: 0,
+    },
+    downvotes: {
+      type: Number,
+      default: 0,
+    },
+    voters: [{
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    }],
+    teamSize: {
+      type: Number,
+      default: 1,
+    },
   },
   {
     timestamps: true,

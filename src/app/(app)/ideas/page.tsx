@@ -11,7 +11,7 @@ export default async function MyIdeasPage() {
   if (!session) redirect("/login");
 
   await dbConnect();
-  
+
   const userId = (session.user as any).id;
   const rawProposals = await Proposal.find({ createdBy: userId })
     .populate("createdBy", "name avatar role")
@@ -22,15 +22,15 @@ export default async function MyIdeasPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
-      <div className="bg-[#121214] p-8 rounded-2xl border border-[#1f1f23] shadow-sm">
-        <h1 className="text-3xl font-bold tracking-tight text-[#e5e7eb]">My Protocols</h1>
-        <p className="text-[#9ca3af] text-[13px] font-medium mt-2 leading-relaxed">Manage your active network proposals and internal protocol contributions.</p>
+      <div className="bg-surface p-8 rounded-2xl border border-border-subtle shadow-sm">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">My Protocols</h1>
+        <p className="text-muted text-[13px] font-medium mt-2 leading-relaxed">Manage your active network proposals and internal protocol contributions.</p>
       </div>
 
       <div className="space-y-6">
         <div className="flex items-center gap-2.5 px-1">
-          <Lightbulb className="w-4 h-4 text-[#6366f1]" />
-          <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#9ca3af] font-mono">Active Local Signals</h2>
+          <Lightbulb className="w-4 h-4 text-accent" />
+          <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted font-mono">Active Local Signals</h2>
         </div>
         <ProposalFeed proposals={proposals} />
       </div>

@@ -49,7 +49,15 @@ const ProjectSchema = new Schema(
     techStack: {
       type: [String],
       default: [],
-    }
+    },
+    gitRepo: {
+      type: Schema.Types.ObjectId,
+      ref: "GitRepo",
+    },
+    tags: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,

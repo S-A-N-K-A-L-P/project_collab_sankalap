@@ -46,6 +46,9 @@ const GitRepoSchema = new Schema(
       stars: { type: Number, default: 0 },
       forks: { type: Number, default: 0 },
       issues: { type: Number, default: 0 },
+      pullRequests: { type: Number, default: 0 },
+      contributorsCount: { type: Number, default: 0 },
+      lastCommitMessage: { type: String, default: "" },
     },
     commits: [{
       sha: String,

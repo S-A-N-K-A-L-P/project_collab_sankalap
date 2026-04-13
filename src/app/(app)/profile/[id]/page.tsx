@@ -86,19 +86,19 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
         </div>
 
         <div className="md:col-span-4 space-y-6">
-          <div className="bg-[#121214] border border-[#1f1f23] rounded-2xl p-5 shadow-sm">
-            <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#e5e7eb] mb-4">About Node</h3>
-            <p className="text-[13px] text-[#9ca3af] leading-relaxed font-medium">
+          <div className="bg-surface border border-border-subtle rounded-2xl p-5 shadow-sm">
+            <h3 className="text-[11px] font-bold uppercase tracking-widest text-foreground mb-4">About Node</h3>
+            <p className="text-[13px] text-muted leading-relaxed font-medium">
               {user.bio || "No telemetry broadcasted yet."}
             </p>
-            <div className="mt-6 pt-6 border-t border-[#1f1f23] space-y-3">
+            <div className="mt-6 pt-6 border-t border-border-subtle space-y-3">
               <div className="flex justify-between text-[11px] font-mono">
-                <span className="text-[#1f1f23] font-bold uppercase">Identity</span>
-                <span className="text-[#9ca3af] uppercase">Verified</span>
+                <span className="text-muted font-bold uppercase">Identity</span>
+                <span className="text-muted uppercase">Verified</span>
               </div>
               <div className="flex justify-between text-[11px] font-mono">
-                <span className="text-[#1f1f23] font-bold uppercase">Location</span>
-                <span className="text-[#9ca3af] uppercase">{user.location || "Private"}</span>
+                <span className="text-muted font-bold uppercase">Location</span>
+                <span className="text-muted uppercase">{user.location || "Private"}</span>
               </div>
             </div>
           </div>

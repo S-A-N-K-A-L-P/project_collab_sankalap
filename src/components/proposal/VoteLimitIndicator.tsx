@@ -10,17 +10,16 @@ export default function VoteLimitIndicator({ current, max }: VoteLimitIndicatorP
 
     return (
         <div className="flex flex-col gap-1.5 min-w-[60px]">
-            <div className="flex justify-between items-center text-[10px] font-mono font-bold uppercase tracking-widest text-[#9ca3af]">
+            <div className="flex justify-between items-center text-[10px] font-mono font-bold uppercase tracking-widest text-muted">
                 <span>Allocation</span>
-                <span className={current >= max ? "text-[#6366f1]" : ""}>{current}/{max}</span>
+                <span className={current >= max ? "text-accent" : ""}>{current}/{max}</span>
             </div>
-            <div className="h-1 bg-[#1f1f23] rounded-full overflow-hidden flex gap-0.5">
+            <div className="h-1 bg-border-subtle rounded-full overflow-hidden flex gap-0.5">
                 {Array.from({ length: max }).map((_, i) => (
-                    <div 
+                    <div
                         key={i}
-                        className={`flex-1 h-full rounded-full transition-all duration-300 ${
-                            i < current ? "bg-[#6366f1]" : "bg-transparent"
-                        }`}
+                        className={`flex-1 h-full rounded-full transition-all duration-300 ${i < current ? "bg-accent" : "bg-transparent"
+                            }`}
                     />
                 ))}
             </div>
