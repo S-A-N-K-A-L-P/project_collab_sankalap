@@ -42,7 +42,7 @@ export default function VoteButton({ proposalId, onVoteChange }: VoteButtonProps
     try {
       // Toggle logic or increment
       const newValue = userVotes >= maxVotes ? 0 : userVotes + 1;
-      
+
       const res = await fetch("/api/votes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -65,11 +65,10 @@ export default function VoteButton({ proposalId, onVoteChange }: VoteButtonProps
     <button
       onClick={handleVote}
       disabled={loading || !isActive}
-      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold uppercase transition-all ${
-        userVotes > 0 
-          ? 'text-[#e5e7eb] bg-[#6366f1]/20 border border-[#6366f1]/30' 
-          : 'text-[#9ca3af] hover:bg-white/[0.04] hover:text-[#e5e7eb] border border-transparent'
-      } ${!isActive ? 'opacity-50 cursor-not-allowed' : ''}`}
+      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold uppercase transition-all ${userVotes > 0
+          ? 'text-foreground bg-accent/20 border border-accent/30'
+          : 'text-muted hover:bg-[color-mix(in_srgb,var(--foreground)_4%,transparent)] hover:text-foreground border border-transparent'
+        } ${!isActive ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
       {loading ? (
         <Loader2 className="w-4 h-4 animate-spin" />

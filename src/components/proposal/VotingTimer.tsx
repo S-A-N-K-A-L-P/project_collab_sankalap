@@ -36,9 +36,9 @@ export default function VotingTimer({ endTime }: { endTime: string }) {
     }, [endTime]);
 
     return (
-        <div className={`flex items-center gap-1.5 px-2 py-1 rounded bg-[#17171a] border border-[#1f1f23] ${isExpired ? 'opacity-50' : ''}`}>
-            <Clock className={`w-3 h-3 ${isExpired ? 'text-[#9ca3af]' : 'text-[#6366f1]'}`} />
-            <span className={`text-[9px] font-mono font-black uppercase tracking-widest ${isExpired ? 'text-[#9ca3af]' : 'text-[#e5e7eb]'}`}>
+        <div className={`flex items-center gap-1.5 px-2 py-1 rounded bg-surface-alt border border-border-subtle ${isExpired ? 'opacity-50' : ''}`}>
+            <Clock className={`w-3 h-3 ${isExpired ? 'text-muted' : 'text-accent'}`} />
+            <span className={`text-[9px] font-mono font-black uppercase tracking-widest ${isExpired ? 'text-muted' : 'text-foreground'}`}>
                 {timeLeft}
             </span>
         </div>

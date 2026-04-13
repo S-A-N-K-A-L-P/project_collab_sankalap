@@ -98,8 +98,8 @@ export default function WeeklyReviewPage() {
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <form onSubmit={handleSubmit} className="rounded-2xl border border-[#1f1f23] bg-[#121214] p-5 space-y-3">
-                <h2 className="text-lg font-semibold text-[#e5e7eb]">Submit Weekly Report</h2>
+            <form onSubmit={handleSubmit} className="rounded-2xl border border-border-subtle bg-surface p-5 space-y-3">
+                <h2 className="text-lg font-semibold text-foreground">Submit Weekly Report</h2>
                 {error ? (
                     <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-300">{error}</div>
                 ) : null}
@@ -107,46 +107,46 @@ export default function WeeklyReviewPage() {
                     value={form.completedTasks}
                     onChange={(event) => setForm((state) => ({ ...state, completedTasks: event.target.value }))}
                     placeholder="Completed tasks (one per line)"
-                    className="w-full rounded-lg border border-[#1f1f23] bg-[#17171a] px-3 py-2 text-sm text-[#e5e7eb] outline-none min-h-28"
+                    className="w-full rounded-lg border border-border-subtle bg-surface-alt px-3 py-2 text-sm text-foreground outline-none min-h-28 placeholder:text-muted"
                 />
                 <textarea
                     value={form.blockers}
                     onChange={(event) => setForm((state) => ({ ...state, blockers: event.target.value }))}
                     placeholder="Blockers"
-                    className="w-full rounded-lg border border-[#1f1f23] bg-[#17171a] px-3 py-2 text-sm text-[#e5e7eb] outline-none min-h-20"
+                    className="w-full rounded-lg border border-border-subtle bg-surface-alt px-3 py-2 text-sm text-foreground outline-none min-h-20 placeholder:text-muted"
                 />
                 <textarea
                     value={form.nextWeekPlan}
                     onChange={(event) => setForm((state) => ({ ...state, nextWeekPlan: event.target.value }))}
                     placeholder="Next week plan"
-                    className="w-full rounded-lg border border-[#1f1f23] bg-[#17171a] px-3 py-2 text-sm text-[#e5e7eb] outline-none min-h-20"
+                    className="w-full rounded-lg border border-border-subtle bg-surface-alt px-3 py-2 text-sm text-foreground outline-none min-h-20 placeholder:text-muted"
                 />
                 <button
                     type="submit"
                     disabled={saving}
-                    className="rounded-lg bg-[#6366f1] px-3 py-2 text-sm font-semibold text-white hover:bg-[#4f46e5] disabled:opacity-60"
+                    className="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-white hover:bg-accent/90 disabled:opacity-60"
                 >
                     {saving ? "Submitting..." : "Submit Report"}
                 </button>
             </form>
 
-            <div className="rounded-2xl border border-[#1f1f23] bg-[#121214] p-5">
-                <h2 className="text-lg font-semibold text-[#e5e7eb]">Submitted Reports</h2>
-                {loading ? <p className="text-sm text-[#9ca3af] mt-3">Loading reports...</p> : null}
+            <div className="rounded-2xl border border-border-subtle bg-surface p-5">
+                <h2 className="text-lg font-semibold text-foreground">Submitted Reports</h2>
+                {loading ? <p className="text-sm text-muted mt-3">Loading reports...</p> : null}
 
                 <div className="mt-3 space-y-2">
                     {reports.map((report) => (
-                        <div key={report._id} className="rounded-lg border border-[#1f1f23] bg-[#17171a] p-3">
-                            <p className="text-sm text-[#e5e7eb]">{report.userName || "Unknown"}</p>
-                            <p className="text-xs text-[#9ca3af] mt-1">{formatDateTime(report.createdAt)}</p>
-                            <p className="text-xs text-[#9ca3af] mt-2">
+                        <div key={report._id} className="rounded-lg border border-border-subtle bg-surface-alt p-3">
+                            <p className="text-sm text-foreground">{report.userName || "Unknown"}</p>
+                            <p className="text-xs text-muted mt-1">{formatDateTime(report.createdAt)}</p>
+                            <p className="text-xs text-muted mt-2">
                                 Completed: {report.completedTasks.length ? report.completedTasks.join(", ") : "None"}
                             </p>
-                            <p className="text-xs text-[#9ca3af] mt-1">Blockers: {report.blockers || "None"}</p>
-                            <p className="text-xs text-[#9ca3af] mt-1">Next: {report.nextWeekPlan || "None"}</p>
+                            <p className="text-xs text-muted mt-1">Blockers: {report.blockers || "None"}</p>
+                            <p className="text-xs text-muted mt-1">Next: {report.nextWeekPlan || "None"}</p>
                         </div>
                     ))}
-                    {!loading && reports.length === 0 ? <p className="text-sm text-[#9ca3af]">No reports submitted yet.</p> : null}
+                    {!loading && reports.length === 0 ? <p className="text-sm text-muted">No reports submitted yet.</p> : null}
                 </div>
             </div>
         </div>

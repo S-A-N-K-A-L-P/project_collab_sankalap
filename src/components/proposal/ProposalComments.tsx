@@ -111,7 +111,7 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
     const [voteLoadingId, setVoteLoadingId] = useState<string | null>(null);
 
     const currentUserId = useMemo(() => {
-        return String((session?.user as SessionLike | undefined)?.id || "");
+        return String((session?.user as SessionLike["user"] | undefined)?.id || "");
     }, [session]);
 
     const commentTree = useMemo(() => buildCommentTree(comments, repliesByParent), [comments, repliesByParent]);
@@ -161,7 +161,7 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
                 body: JSON.stringify({ proposalId, content }),
             });
 
-            const data = (await response.json()) as { error?: string };
+            const data = (await response.json()) as { error?: string; voteCount?: number; hasVoted?: boolean };
 
             if (!response.ok) {
                 throw new Error(data?.error || "Failed to post comment");
@@ -207,7 +207,7 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
                 body: JSON.stringify({ proposalId, content, parentCommentId: activeReplyId }),
             });
 
-            const data = (await response.json()) as { error?: string };
+            const data = (await response.json()) as { error?: string; voteCount?: number; hasVoted?: boolean };
 
             if (!response.ok) {
                 throw new Error(data?.error || "Failed to post reply");
@@ -256,7 +256,7 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
                 body: JSON.stringify({ content }),
             });
 
-            const data = (await response.json()) as { error?: string };
+            const data = (await response.json()) as { error?: string; voteCount?: number; hasVoted?: boolean };
 
             if (!response.ok) {
                 throw new Error(data?.error || "Failed to update comment");
@@ -317,7 +317,7 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
                 body: JSON.stringify({ commentId }),
             });
 
-            const data = (await response.json()) as { error?: string };
+            const data = (await response.json()) as { error?: string; voteCount?: number; hasVoted?: boolean };
 
             if (!response.ok) {
                 throw new Error(data?.error || "Failed to update vote");
@@ -330,10 +330,10 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
                 const applyVoteUpdate = (item: CommentItem): CommentItem =>
                     item._id === commentId
                         ? {
-                              ...item,
-                              voteCount: nextVoteCount,
-                              hasVotedByCurrentUser: hasVoted,
-                          }
+                            ...item,
+                            voteCount: nextVoteCount,
+                            hasVotedByCurrentUser: hasVoted,
+                        }
                         : item;
 
                 setComments((currentComments) => updateCommentCollection(currentComments, repliesByParent, commentId, applyVoteUpdate).comments);
@@ -348,27 +348,27 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
         }
     };
 
-    const renderComment = (comment: CommentNode, depth = 1): JSX.Element => {
+    const renderComment = (comment: CommentNode, depth = 1): React.ReactElement => {
         const isOwner = currentUserId && currentUserId === comment.authorId;
         const isEditing = editingId === comment._id;
         const isReplying = activeReplyId === comment._id;
         const canReply = depth < MAX_COMMENT_DEPTH;
 
         return (
-            <div key={comment._id} className={depth > 1 ? "ml-4 pl-4 border-l border-[#1f1f23]" : ""}>
-                <article className="rounded-xl border border-[#1f1f23] bg-[#0f0f11] p-4 space-y-3">
+            <div key={comment._id} className={depth > 1 ? "ml-4 pl-4 border-l border-border-subtle" : ""}>
+                <article className="rounded-xl border border-border-subtle bg-surface p-4 space-y-3">
                     <div className="flex items-start justify-between gap-3">
                         <div>
                             <div className="flex items-center gap-2 flex-wrap">
-                                <p className="text-sm font-semibold text-[#e5e7eb]">{comment.authorName}</p>
-                                <span className="text-[10px] text-[#9ca3af]">{formatTimestamp(comment.createdAt)}</span>
+                                <p className="text-sm font-semibold text-foreground">{comment.authorName}</p>
+                                <span className="text-[10px] text-muted">{formatTimestamp(comment.createdAt)}</span>
                                 {comment.replyCount > 0 ? (
-                                    <span className="text-[10px] text-[#6366f1]">{comment.replyCount} repl{comment.replyCount === 1 ? "y" : "ies"}</span>
+                                    <span className="text-[10px] text-accent">{comment.replyCount} repl{comment.replyCount === 1 ? "y" : "ies"}</span>
                                 ) : null}
                             </div>
                             <div className="mt-2">
                                 {!isEditing ? (
-                                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#d1d5db]">{comment.content}</p>
+                                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-secondary)]">{comment.content}</p>
                                 ) : (
                                     <div className="space-y-2">
                                         <textarea
@@ -376,14 +376,14 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
                                             onChange={(event) => setEditingDraft(event.target.value)}
                                             rows={3}
                                             maxLength={MAX_COMMENT_LENGTH}
-                                            className="w-full resize-y rounded-lg border border-[#1f1f23] bg-[#121214] px-3 py-2 text-sm text-[#e5e7eb] outline-none focus:border-[#6366f1]/50"
+                                            className="w-full resize-y rounded-lg border border-border-subtle bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent/50"
                                         />
                                         <div className="flex items-center justify-end gap-2">
                                             <button
                                                 type="button"
                                                 onClick={handleCancelEdit}
                                                 disabled={savingEdit}
-                                                className="text-xs text-[#9ca3af] hover:text-[#e5e7eb] disabled:opacity-50"
+                                                className="text-xs text-muted hover:text-foreground disabled:opacity-50"
                                             >
                                                 Cancel
                                             </button>
@@ -391,7 +391,7 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
                                                 type="button"
                                                 onClick={handleSaveEdit}
                                                 disabled={savingEdit || !editingDraft.trim()}
-                                                className="rounded-md border border-[#2a2a2f] bg-[#17171a] px-3 py-1 text-xs font-semibold text-[#e5e7eb] hover:border-[#6366f1]/50 hover:text-[#6366f1] disabled:opacity-50"
+                                                className="rounded-md border border-border-strong bg-surface-alt px-3 py-1 text-xs font-semibold text-foreground hover:border-accent/50 hover:text-accent disabled:opacity-50"
                                             >
                                                 {savingEdit ? "Saving..." : "Save"}
                                             </button>
@@ -405,11 +405,10 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
                             type="button"
                             onClick={() => handleToggleVote(comment._id)}
                             disabled={!canInteract || voteLoadingId === comment._id}
-                            className={`flex shrink-0 items-center gap-1 rounded-md border px-2.5 py-1 text-[11px] font-semibold transition-colors ${
-                                comment.hasVotedByCurrentUser
+                            className={`flex shrink-0 items-center gap-1 rounded-md border px-2.5 py-1 text-[11px] font-semibold transition-colors ${comment.hasVotedByCurrentUser
                                     ? "border-[#6366f1]/50 bg-[#6366f1]/10 text-[#e5e7eb]"
                                     : "border-[#2a2a2f] text-[#9ca3af] hover:border-[#6366f1]/50 hover:text-[#e5e7eb]"
-                            } disabled:opacity-50`}
+                                } disabled:opacity-50`}
                         >
                             <span>👍</span>
                             <span>{comment.voteCount}</span>
@@ -422,12 +421,12 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
                                 type="button"
                                 onClick={() => handleStartReply(comment._id)}
                                 disabled={!canInteract}
-                                className="text-[#9ca3af] hover:text-[#e5e7eb] disabled:opacity-50"
+                                className="text-muted hover:text-foreground disabled:opacity-50"
                             >
                                 Reply
                             </button>
                         ) : (
-                            <span className="text-[#6366f1]">Max depth reached</span>
+                            <span className="text-accent">Max depth reached</span>
                         )}
 
                         {isOwner ? (
@@ -436,7 +435,7 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
                                     <button
                                         type="button"
                                         onClick={() => handleStartEdit(comment)}
-                                        className="text-[#9ca3af] hover:text-[#e5e7eb]"
+                                        className="text-muted hover:text-foreground"
                                     >
                                         Edit
                                     </button>
@@ -445,7 +444,7 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
                                     type="button"
                                     onClick={() => handleDelete(comment._id)}
                                     disabled={deletingId === comment._id}
-                                    className="text-[#9ca3af] hover:text-red-400 disabled:opacity-50"
+                                    className="text-muted hover:text-red-400 disabled:opacity-50"
                                 >
                                     {deletingId === comment._id ? "Deleting..." : "Delete"}
                                 </button>
@@ -454,21 +453,21 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
                     </div>
 
                     {isReplying ? (
-                        <div className="space-y-2 rounded-lg border border-[#1f1f23] bg-[#121214] p-3">
+                        <div className="space-y-2 rounded-lg border border-border-subtle bg-surface p-3">
                             <textarea
                                 value={replyDraft}
                                 onChange={(event) => setReplyDraft(event.target.value)}
                                 rows={3}
                                 maxLength={MAX_COMMENT_LENGTH}
                                 placeholder="Write a reply..."
-                                className="w-full resize-y rounded-lg border border-[#1f1f23] bg-[#0f0f11] px-3 py-2 text-sm text-[#e5e7eb] outline-none focus:border-[#6366f1]/50"
+                                className="w-full resize-y rounded-lg border border-border-subtle bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent/50"
                             />
                             <div className="flex items-center justify-end gap-2">
                                 <button
                                     type="button"
                                     onClick={handleCancelReply}
                                     disabled={replySubmitting}
-                                    className="text-xs text-[#9ca3af] hover:text-[#e5e7eb] disabled:opacity-50"
+                                    className="text-xs text-muted hover:text-foreground disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
@@ -476,7 +475,7 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
                                     type="button"
                                     onClick={handleSubmitReply}
                                     disabled={replySubmitting || !replyDraft.trim()}
-                                    className="rounded-md border border-[#2a2a2f] bg-[#17171a] px-3 py-1 text-xs font-semibold text-[#e5e7eb] hover:border-[#6366f1]/50 hover:text-[#6366f1] disabled:opacity-50"
+                                    className="rounded-md border border-border-strong bg-surface-alt px-3 py-1 text-xs font-semibold text-foreground hover:border-accent/50 hover:text-accent disabled:opacity-50"
                                 >
                                     {replySubmitting ? "Posting..." : "Post Reply"}
                                 </button>
@@ -495,10 +494,10 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
     };
 
     return (
-        <section className="rounded-2xl border border-[#1f1f23] bg-[#121214] p-6 shadow-sm space-y-5">
+        <section className="rounded-2xl border border-border-subtle bg-surface p-6 shadow-sm space-y-5">
             <div className="space-y-1">
-                <h3 className="text-lg font-bold tracking-tight text-[#e5e7eb]">Comments</h3>
-                <p className="text-xs text-[#9ca3af]">Share your thoughts about this proposal.</p>
+                <h3 className="text-lg font-bold tracking-tight text-foreground">Comments</h3>
+                <p className="text-xs text-muted">Share your thoughts about this proposal.</p>
             </div>
 
             <div className="space-y-2">
@@ -509,17 +508,17 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
                     disabled={!canInteract || submitting}
                     maxLength={MAX_COMMENT_LENGTH}
                     rows={4}
-                    className="w-full resize-y rounded-xl border border-[#1f1f23] bg-[#0f0f11] px-3 py-2 text-sm text-[#e5e7eb] outline-none focus:border-[#6366f1]/50 disabled:opacity-60"
+                    className="w-full resize-y rounded-xl border border-border-subtle bg-background px-3 py-2 text-sm text-foreground outline-none focus:border-accent/50 disabled:opacity-60"
                 />
                 <div className="flex items-center justify-between">
-                    <p className="text-[11px] text-[#9ca3af]">
+                    <p className="text-[11px] text-muted">
                         {draft.trim().length}/{MAX_COMMENT_LENGTH}
                     </p>
                     <button
                         type="button"
                         onClick={handleCreate}
                         disabled={!canInteract || submitting || !draft.trim()}
-                        className="rounded-md border border-[#2a2a2f] bg-[#17171a] px-3 py-1.5 text-xs font-semibold text-[#e5e7eb] transition-colors hover:border-[#6366f1]/50 hover:text-[#6366f1] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="rounded-md border border-border-strong bg-surface-alt px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-accent/50 hover:text-accent disabled:cursor-not-allowed disabled:opacity-50"
                     >
                         {submitting ? "Posting..." : "Post Comment"}
                     </button>
@@ -528,11 +527,11 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
 
             {error ? <p className="text-sm text-red-400">{error}</p> : null}
 
-            <div className="space-y-4 border-t border-[#1f1f23] pt-4">
-                {loading ? <p className="text-sm text-[#9ca3af]">Loading comments...</p> : null}
+            <div className="space-y-4 border-t border-border-subtle pt-4">
+                {loading ? <p className="text-sm text-muted">Loading comments...</p> : null}
 
                 {!loading && commentTree.length === 0 ? (
-                    <p className="text-sm text-[#9ca3af]">No comments yet. Be the first to comment.</p>
+                    <p className="text-sm text-muted">No comments yet. Be the first to comment.</p>
                 ) : null}
 
                 {!loading ? commentTree.map((comment) => renderComment(comment)) : null}
