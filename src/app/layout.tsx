@@ -7,6 +7,20 @@ export const metadata: Metadata = {
   description: "Project Collaboration Platform",
 };
 
+const themeScript = `
+(function(){
+  try {
+    var stored = localStorage.getItem('pixel-platform-theme');
+    var mode = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+    var resolved = mode === 'system'
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : mode;
+    document.documentElement.setAttribute('data-theme', resolved);
+    document.documentElement.style.colorScheme = resolved;
+  } catch(e) {}
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -15,6 +29,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       style={
         {
           "--font-geist-sans": "'Geist', system-ui, -apple-system, sans-serif",
@@ -22,6 +37,9 @@ export default function RootLayout({
         } as React.CSSProperties
       }
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="antialiased">
         <Providers>{children}</Providers>
       </body>

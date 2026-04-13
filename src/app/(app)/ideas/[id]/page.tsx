@@ -3,6 +3,7 @@ import Proposal from "@/models/Proposal";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ProposalComments from "@/components/proposal/ProposalComments";
+import ProposalDetailEditControls from "@/components/proposal/ProposalDetailEditControls";
 
 type Props = {
     params: Promise<{ id: string }>;
@@ -31,14 +32,26 @@ export default async function IdeaDetailPage({ params }: Props) {
     }
 
     const media = Array.isArray((proposal as any).media) ? ((proposal as any).media as string[]) : [];
+    const editableProposal = {
+        _id: String((proposal as any)._id || ""),
+        title: String((proposal as any).title || ""),
+        description: String((proposal as any).description || ""),
+        type: String((proposal as any).type || "idea"),
+        techStack: Array.isArray((proposal as any).techStack) ? ((proposal as any).techStack as string[]) : [],
+        media,
+        createdById: String((proposal as any).createdBy?._id || ""),
+    };
 
     return (
         <div className="max-w-3xl mx-auto space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold tracking-tight text-[#e5e7eb]">Proposal Details</h1>
-                <Link href="/ideas" className="text-sm text-[#9ca3af] hover:text-[#e5e7eb] transition-colors">
-                    Back to My Ideas
-                </Link>
+                <div className="flex items-center gap-3">
+                    <ProposalDetailEditControls proposal={editableProposal} />
+                    <Link href="/ideas" className="text-sm text-[#9ca3af] hover:text-[#e5e7eb] transition-colors">
+                        Back to My Ideas
+                    </Link>
+                </div>
             </div>
 
             <article className="rounded-2xl border border-[#1f1f23] bg-[#121214] p-6 shadow-sm space-y-5">
@@ -94,7 +107,7 @@ export default async function IdeaDetailPage({ params }: Props) {
                                             href={url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="inline-flex rounded-md border border-[#2a2a2f] px-3 py-2 text-xs font-medium text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-white/[0.03]"
+                                            className="inline-flex rounded-md border border-[#2a2a2f] px-3 py-2 text-xs font-medium text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-white/3"
                                         >
                                             Preview File
                                         </a>

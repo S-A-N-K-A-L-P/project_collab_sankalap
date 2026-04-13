@@ -111,7 +111,7 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
     const [voteLoadingId, setVoteLoadingId] = useState<string | null>(null);
 
     const currentUserId = useMemo(() => {
-        return String((session?.user as SessionLike | undefined)?.id || "");
+        return String((session?.user as SessionLike["user"] | undefined)?.id || "");
     }, [session]);
 
     const commentTree = useMemo(() => buildCommentTree(comments, repliesByParent), [comments, repliesByParent]);
@@ -161,7 +161,7 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
                 body: JSON.stringify({ proposalId, content }),
             });
 
-            const data = (await response.json()) as { error?: string };
+            const data = (await response.json()) as { error?: string; voteCount?: number; hasVoted?: boolean };
 
             if (!response.ok) {
                 throw new Error(data?.error || "Failed to post comment");
@@ -207,7 +207,7 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
                 body: JSON.stringify({ proposalId, content, parentCommentId: activeReplyId }),
             });
 
-            const data = (await response.json()) as { error?: string };
+            const data = (await response.json()) as { error?: string; voteCount?: number; hasVoted?: boolean };
 
             if (!response.ok) {
                 throw new Error(data?.error || "Failed to post reply");
@@ -317,7 +317,7 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
                 body: JSON.stringify({ commentId }),
             });
 
-            const data = (await response.json()) as { error?: string };
+            const data = (await response.json()) as { error?: string; voteCount?: number; hasVoted?: boolean };
 
             if (!response.ok) {
                 throw new Error(data?.error || "Failed to update vote");
@@ -348,7 +348,7 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
         }
     };
 
-    const renderComment = (comment: CommentNode, depth = 1): JSX.Element => {
+    const renderComment = (comment: CommentNode, depth = 1): React.ReactElement => {
         const isOwner = currentUserId && currentUserId === comment.authorId;
         const isEditing = editingId === comment._id;
         const isReplying = activeReplyId === comment._id;
