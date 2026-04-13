@@ -19,13 +19,13 @@ export default async function AdminProjectsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="bg-[#121214] p-6 rounded-2xl border border-[#1f1f23]">
-                <h1 className="text-2xl font-bold tracking-tight text-[#e5e7eb]">Project Progress Hub</h1>
-                <p className="text-[#9ca3af] text-sm mt-1">Select a project to open the progress tracker.</p>
+            <div className="bg-surface p-6 rounded-2xl border border-border-subtle">
+                <h1 className="text-2xl font-bold tracking-tight text-foreground">Project Progress Hub</h1>
+                <p className="text-muted text-sm mt-1">Select a project to open the progress tracker.</p>
             </div>
 
             {projects.length === 0 ? (
-                <div className="rounded-2xl border border-[#1f1f23] bg-[#121214] p-8 text-sm text-[#9ca3af]">
+                <div className="rounded-2xl border border-border-subtle bg-surface p-8 text-sm text-muted">
                     No projects found yet.
                 </div>
             ) : (
@@ -34,10 +34,10 @@ export default async function AdminProjectsPage() {
                         <Link
                             key={project._id}
                             href={`/admin/projects/${project._id}/progress`}
-                            className="rounded-2xl border border-[#1f1f23] bg-[#121214] p-4 hover:border-[#2a2a2f] transition-colors"
+                            className="rounded-2xl border border-border-subtle bg-surface p-4 hover:border-border-strong transition-colors"
                         >
-                            <p className="text-[#e5e7eb] font-semibold">{project.title}</p>
-                            <p className="text-xs text-[#9ca3af] mt-1 line-clamp-2">{project.description || "No description provided."}</p>
+                            <p className="text-foreground font-semibold">{project.title}</p>
+                            <p className="text-xs text-muted mt-1 line-clamp-2">{project.description || "No description provided."}</p>
                         </Link>
                     ))}
                 </div>
