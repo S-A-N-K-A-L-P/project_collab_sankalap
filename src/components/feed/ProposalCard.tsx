@@ -168,10 +168,14 @@ export default function ProposalCard({ proposal }: ProposalCardProps) {
                                 <ArrowBigUp className="w-4 h-4 text-accent fill-current" />
                                 {currentTotalVotes} Endorsements
                             </div>
-                            <div className="flex items-center gap-1.5 group cursor-pointer hover:text-accent transition-colors">
+                            <Link
+                                href={`/ideas/${proposal._id}#comments`}
+                                className="flex items-center gap-1.5 group cursor-pointer hover:text-accent transition-colors"
+                                aria-label="Open proposal comments"
+                            >
                                 <MessageSquare className="w-4 h-4 text-muted" />
                                 {proposal.commentsCount || 0}
-                            </div>
+                            </Link>
                         </div>
 
                         {/* Vote Allocation Visualizer */}

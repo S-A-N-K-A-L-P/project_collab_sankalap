@@ -52,7 +52,7 @@ export default function ProposalComments({ proposalId }: ProposalCommentsProps) 
     };
 
     return (
-        <section className="rounded-2xl border border-border-subtle bg-surface p-6 shadow-sm space-y-6">
+        <section id="comments" className="rounded-2xl border border-border-subtle bg-surface p-6 shadow-sm space-y-6">
             <div className="space-y-1">
                 <h3 className="text-xl font-bold tracking-tight text-foreground italic uppercase italic">Field Notes / Transmission</h3>
                 <p className="text-xs text-muted font-mono tracking-wider uppercase">Secure peer-to-peer communication channel initialized.</p>
