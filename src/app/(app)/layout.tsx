@@ -16,7 +16,7 @@ export default function AppLayout({
   noStore();
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground font-sans antialiased">
+    <div className="flex min-h-screen bg-[var(--background-primary)] text-[var(--foreground)] font-sans antialiased">
       {/* Left Sidebar - Fixed */}
       <Sidebar />
 

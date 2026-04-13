@@ -48,7 +48,7 @@ export default function CreateProposalModal({ isOpen, onClose, onSuccess }: { is
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm">
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -94,11 +94,10 @@ export default function CreateProposalModal({ isOpen, onClose, onSuccess }: { is
                       key={t.id}
                       type="button"
                       onClick={() => setFormData({ ...formData, type: t.id })}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${
-                        formData.type === t.id
+                      className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${formData.type === t.id
                           ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                           : "border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
-                      }`}
+                        }`}
                     >
                       <t.icon className={`w-5 h-5 ${formData.type === t.id ? "text-blue-600" : "text-slate-400"}`} />
                       <span className={`text-[10px] font-bold uppercase ${formData.type === t.id ? "text-blue-600" : "text-slate-400"}`}>

@@ -40,11 +40,10 @@ export default function ConnectButton({ targetId, initialIsConnected, variant = 
       <button
         onClick={handleConnect}
         disabled={loading}
-        className={`p-2.5 rounded-xl border transition-all duration-150 ${
-          isConnected 
-            ? "bg-[#6366f1]/10 border-[#6366f1]/30 text-[#6366f1]" 
-            : "bg-[#17171a] border-[#1f1f23] text-[#9ca3af] hover:text-[#e5e7eb] hover:bg-[#1f1f23] hover:border-[#2a2a2f]"
-        }`}
+        className={`p-2.5 rounded-xl border transition-all duration-150 ${isConnected
+            ? "bg-accent/10 border-accent/30 text-accent"
+            : "bg-surface-alt border-border-subtle text-muted hover:text-foreground hover:bg-surface hover:border-border-strong"
+          }`}
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : isConnected ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
       </button>
@@ -55,11 +54,10 @@ export default function ConnectButton({ targetId, initialIsConnected, variant = 
     <button
       onClick={handleConnect}
       disabled={loading}
-      className={`px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-tight transition-all duration-150 flex items-center justify-center gap-2 ${
-        isConnected 
-          ? "bg-[#121214] text-[#9ca3af] border border-[#1f1f23] hover:border-[#6366f1]/30" 
-          : "bg-[#6366f1] text-white shadow-sm hover:bg-[#4f46e5] active:scale-95"
-      }`}
+      className={`px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-tight transition-all duration-150 flex items-center justify-center gap-2 ${isConnected
+          ? "bg-surface text-muted border border-border-subtle hover:border-accent/30"
+          : "bg-accent text-white shadow-sm hover:bg-[#4f46e5] active:scale-95"
+        }`}
     >
       {loading ? (
         <Loader2 className="w-3.5 h-3.5 animate-spin" />

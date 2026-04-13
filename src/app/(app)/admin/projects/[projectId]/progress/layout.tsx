@@ -43,17 +43,17 @@ export default async function ProjectProgressLayout({
 
     return (
         <div className="space-y-5">
-            <div className="rounded-2xl border border-[#1f1f23] bg-[#121214] p-5">
-                <p className="text-[11px] uppercase tracking-wider font-bold text-[#9ca3af]">Project Progress</p>
-                <h1 className="text-2xl font-bold text-[#e5e7eb] mt-1">{(project as any).title}</h1>
-                <p className="text-sm text-[#9ca3af] mt-1">Monitor tasks, activity, team load, and weekly reporting.</p>
+            <div className="rounded-2xl border border-border-subtle bg-surface p-5">
+                <p className="text-[11px] uppercase tracking-wider font-bold text-muted">Project Progress</p>
+                <h1 className="text-2xl font-bold text-foreground mt-1">{(project as any).title}</h1>
+                <p className="text-sm text-muted mt-1">Monitor tasks, activity, team load, and weekly reporting.</p>
 
                 <div className="mt-4 flex flex-wrap gap-2">
                     {TABS.map((tab) => (
                         <Link
                             key={tab.label}
                             href={`/admin/projects/${projectId}/progress${tab.href}`}
-                            className="rounded-lg border border-[#1f1f23] px-3 py-1.5 text-xs font-medium text-[#9ca3af] hover:text-[#e5e7eb] hover:border-[#2a2a2f]"
+                            className="rounded-lg border border-border-subtle px-3 py-1.5 text-xs font-medium text-muted hover:text-foreground hover:border-border-strong"
                         >
                             {tab.label}
                         </Link>

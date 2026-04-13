@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Home,
@@ -15,6 +16,8 @@ import {
   LogOut
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
+import ThemeModeToggle from "@/components/theme/ThemeModeToggle";
+
 import ThemeModeToggle from "@/components/theme/ThemeModeToggle";
 
 const navigation = [
@@ -48,7 +51,7 @@ export default function Sidebar() {
     <aside className="h-screen sticky top-0 flex flex-col bg-surface border-r border-border-subtle w-65 overflow-y-auto">
       {/* Brand Header */}
       <div className="p-6 flex items-center gap-3">
-        <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center text-white shadow-sm">
+        <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center text-white shadow-[0_0_18px_var(--accent-glow)]">
           <Zap className="w-5 h-5 fill-current" />
         </div>
         <span className="font-bold text-foreground tracking-tight text-lg">Pixel Platform</span>
@@ -71,12 +74,12 @@ export default function Sidebar() {
                     key={item.name}
                     href={href}
                     className={`flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-all group relative ${isActive
-                      ? "text-foreground bg-white/3"
-                      : "text-muted hover:text-foreground hover:bg-white/2"
+                      ? "text-foreground bg-[color-mix(in_srgb,var(--foreground)_4%,transparent)]"
+                      : "text-muted hover:text-foreground hover:bg-[color-mix(in_srgb,var(--foreground)_3%,transparent)]"
                       }`}
                   >
                     {isActive && (
-                      <div className="absolute left-0 w-0.5 h-4 bg-accent rounded-full" />
+                      <div className="absolute left-0 w-0.5 h-4 bg-accent rounded-full shadow-[0_0_12px_var(--accent-glow)]" />
                     )}
                     <item.icon className={`w-4 h-4 transition-colors ${isActive ? "text-accent" : "text-muted group-hover:text-foreground"
                       }`} />
@@ -95,12 +98,12 @@ export default function Sidebar() {
             <Link
               href="/admin"
               className={`flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-all group relative ${pathname === "/admin"
-                ? "text-foreground bg-white/3"
-                : "text-muted hover:text-foreground hover:bg-white/2"
+                ? "text-foreground bg-[color-mix(in_srgb,var(--foreground)_4%,transparent)]"
+                : "text-muted hover:text-foreground hover:bg-[color-mix(in_srgb,var(--foreground)_3%,transparent)]"
                 }`}
             >
               {pathname === "/admin" && (
-                <div className="absolute left-0 w-0.5 h-4 bg-accent rounded-full" />
+                <div className="absolute left-0 w-0.5 h-4 bg-accent rounded-full shadow-[0_0_12px_var(--accent-glow)]" />
               )}
               <ShieldCheck className={`w-4 h-4 ${pathname === "/admin" ? "text-accent" : "text-muted group-hover:text-foreground"}`} />
               Control Room
@@ -108,12 +111,12 @@ export default function Sidebar() {
             <Link
               href="/admin/projects"
               className={`mt-1 flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-all group relative ${pathname.startsWith("/admin/projects")
-                ? "text-foreground bg-white/3"
-                : "text-muted hover:text-foreground hover:bg-white/2"
+                ? "text-foreground bg-[color-mix(in_srgb,var(--foreground)_4%,transparent)]"
+                : "text-muted hover:text-foreground hover:bg-[color-mix(in_srgb,var(--foreground)_3%,transparent)]"
                 }`}
             >
               {pathname.startsWith("/admin/projects") && (
-                <div className="absolute left-0 w-0.5 h-4 bg-accent rounded-full" />
+                <div className="absolute left-0 w-0.5 h-4 bg-accent rounded-full shadow-[0_0_12px_var(--accent-glow)]" />
               )}
               <ListChecks className={`w-4 h-4 ${pathname.startsWith("/admin/projects") ? "text-accent" : "text-muted group-hover:text-foreground"}`} />
               Project Progress
@@ -124,13 +127,14 @@ export default function Sidebar() {
 
       {/* Profile Card Fixed at Bottom */}
       <div className="p-4 border-t border-border-subtle mt-auto">
+        <ThemeModeToggle />
         <Link
           href={userProfileHref}
-          className="flex items-center gap-3 p-2 hover:bg-white/2 rounded-xl transition-all group"
+          className="mt-3 flex items-center gap-3 p-2 hover:bg-[color-mix(in_srgb,var(--foreground)_3%,transparent)] rounded-xl transition-all group"
         >
           <div className="w-9 h-9 rounded-full bg-surface-alt border border-border-strong flex items-center justify-center text-[13px] font-black text-foreground uppercase overflow-hidden">
             {session?.user?.image ? (
-              <img src={session.user.image} alt="" className="w-full h-full object-cover" />
+              <Image src={session.user.image} alt="" width={36} height={36} className="w-full h-full object-cover" />
             ) : (
               session?.user?.name?.[0] || '?'
             )}
@@ -146,7 +150,7 @@ export default function Sidebar() {
         <button
           type="button"
           onClick={() => signOut({ callbackUrl: "/login" })}
-          className="mt-3 w-full flex items-center justify-center gap-2 rounded-lg border border-border-strong px-3 py-2 text-[12px] font-semibold text-muted transition-all hover:bg-white/3 hover:text-foreground"
+          className="mt-3 w-full flex items-center justify-center gap-2 rounded-lg border border-border-strong px-3 py-2 text-[12px] font-semibold text-muted transition-all hover:bg-[color-mix(in_srgb,var(--foreground)_3%,transparent)] hover:text-foreground"
         >
           <LogOut className="w-4 h-4" />
           Logout
