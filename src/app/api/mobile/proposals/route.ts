@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getMobileSession } from "@/lib/mobileAuth";
 import dbConnect from "@/lib/mongodb";
 import Proposal from "@/models/Proposal";
 import User from "@/models/User";
@@ -21,8 +20,7 @@ const ALLOWED_MIME_TYPES = new Set([
 ]);
 
 function getExtension(filename: string): string {
-  const ext = path.extname(filename || "").toLowerCase();
-  return ext;
+  return path.extname(filename || "").toLowerCase();
 }
 
 async function saveAttachment(file: File): Promise<string> {
@@ -48,6 +46,7 @@ async function saveAttachment(file: File): Promise<string> {
   return `/uploads/proposals/${fileName}`;
 }
 
+// ── GET — public ─────────────────────────────────────────────────────────────
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -66,26 +65,19 @@ export async function GET(req: Request) {
       .limit(limit);
 
     const total = await Proposal.countDocuments(query);
-
-    // Filter out orphaned data
     const validProposals = proposals.filter((p: any) => p.createdBy);
     const pages = Math.ceil(total / limit);
 
-    return NextResponse.json({
-      proposals: validProposals,
-      total,
-      page,
-      pages,
-    });
+    return NextResponse.json({ proposals: validProposals, total, page, pages });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
+// ── POST — requires Bearer token ─────────────────────────────────────────────
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = getMobileSession(req);
 
     const contentType = req.headers.get("content-type") || "";
 
@@ -124,7 +116,7 @@ export async function POST(req: Request) {
 
     await dbConnect();
 
-    const user = await User.findOne({ email: session.user?.email });
+    const user = await User.findById(session.id);
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
     const proposal = await Proposal.create({
@@ -138,26 +130,28 @@ export async function POST(req: Request) {
       status: "proposal",
     });
 
-    // Record Activity
     await Activity.create({
       actorId: user._id,
       type: "CREATE_PROPOSAL",
       targetId: proposal._id,
       targetType: "PROPOSAL",
-      metadata: { title: proposal.title }
+      metadata: { title: proposal.title },
     });
 
     return NextResponse.json(proposal, { status: 201 });
   } catch (error: any) {
+    if (error.message?.includes("Missing") || error.message?.includes("jwt")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     console.error("PROPOSAL_CREATE_ERROR:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
+// ── PATCH — requires Bearer token ────────────────────────────────────────────
 export async function PATCH(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = getMobileSession(req);
 
     const { id, title, description, type, techStack } = await req.json();
     if (!id) return NextResponse.json({ error: "Proposal ID required" }, { status: 400 });
@@ -167,9 +161,7 @@ export async function PATCH(req: Request) {
     const proposal = await Proposal.findById(id);
     if (!proposal) return NextResponse.json({ error: "Proposal not found" }, { status: 404 });
 
-    // Verify Ownership
-    const user = await User.findOne({ email: session.user?.email });
-    if (proposal.createdBy.toString() !== user?._id.toString()) {
+    if (proposal.createdBy.toString() !== session.id) {
       return NextResponse.json({ error: "Forbidden: Not the creator" }, { status: 403 });
     }
 
@@ -181,14 +173,17 @@ export async function PATCH(req: Request) {
 
     return NextResponse.json(updated);
   } catch (error: any) {
+    if (error.message?.includes("Missing") || error.message?.includes("jwt")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
 
+// ── DELETE — requires Bearer token ───────────────────────────────────────────
 export async function DELETE(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = getMobileSession(req);
 
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
@@ -199,19 +194,18 @@ export async function DELETE(req: Request) {
     const proposal = await Proposal.findById(id);
     if (!proposal) return NextResponse.json({ error: "Proposal not found" }, { status: 404 });
 
-    // Verify Ownership
-    const user = await User.findOne({ email: session.user?.email });
-    if (proposal.createdBy.toString() !== user?._id.toString()) {
+    if (proposal.createdBy.toString() !== session.id) {
       return NextResponse.json({ error: "Forbidden: Not the creator" }, { status: 403 });
     }
 
     await Proposal.findByIdAndDelete(id);
-
-    // Optional: Delete associated activities
     await Activity.deleteMany({ targetId: id });
 
     return NextResponse.json({ message: "Proposal neutralized" });
   } catch (error: any) {
+    if (error.message?.includes("Missing") || error.message?.includes("jwt")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
