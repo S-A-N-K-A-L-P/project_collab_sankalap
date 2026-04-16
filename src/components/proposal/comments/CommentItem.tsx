@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CommentNode, CommentItem as CommentItemType } from "./types";
+import { CommentNode } from "./types";
 import { CommentForm } from "./CommentForm";
 
 type CommentItemProps = {
@@ -37,7 +37,7 @@ export function CommentItem({
 }: CommentItemProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [isReplying, setIsReplying] = useState(false);
-    
+
     const isOwner = currentUserId && currentUserId === comment.authorId;
     const canReply = depth < maxDepth;
 
@@ -65,17 +65,18 @@ export function CommentItem({
                                 </span>
                             )}
                         </div>
-                        
+
                         <div className="mt-2">
                             {isEditing ? (
-                                <CommentForm 
-                                    onSubmit={handleEdit} 
-                                    buttonLabel="Save" 
+                                <CommentForm
+                                    initialContent={comment.content}
+                                    onSubmit={handleEdit}
+                                    buttonLabel="Save"
                                     onCancel={() => setIsEditing(false)}
                                     autoFocus
                                 />
                             ) : (
-                                <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-secondary)]">
+                                <p className="whitespace-pre-wrap text-sm leading-relaxed text-(--text-secondary)">
                                     {comment.content}
                                 </p>
                             )}
@@ -86,11 +87,10 @@ export function CommentItem({
                         type="button"
                         onClick={() => onToggleVote(comment._id)}
                         disabled={!canInteract || voteLoadingId === comment._id}
-                        className={`flex shrink-0 items-center gap-1 rounded-md border px-2.5 py-1 text-[11px] font-semibold transition-colors ${
-                            comment.hasVotedByCurrentUser
+                        className={`flex shrink-0 items-center gap-1 rounded-md border px-2.5 py-1 text-[11px] font-semibold transition-colors ${comment.hasVotedByCurrentUser
                                 ? "border-[#6366f1]/50 bg-[#6366f1]/10 text-[#e5e7eb]"
                                 : "border-[#2a2a2f] text-[#9ca3af] hover:border-[#6366f1]/50 hover:text-[#e5e7eb]"
-                        } disabled:opacity-50`}
+                            } disabled:opacity-50`}
                     >
                         <span>👍</span>
                         <span>{comment.voteCount}</span>
@@ -136,9 +136,9 @@ export function CommentItem({
 
                 {isReplying && (
                     <div className="mt-3 p-3 rounded-lg border border-border-subtle bg-surface-alt">
-                        <CommentForm 
-                            onSubmit={handleReply} 
-                            placeholder="Write a reply..." 
+                        <CommentForm
+                            onSubmit={handleReply}
+                            placeholder="Write a reply..."
                             buttonLabel="Post Reply"
                             onCancel={() => setIsReplying(false)}
                             autoFocus

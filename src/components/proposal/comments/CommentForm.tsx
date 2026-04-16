@@ -8,6 +8,7 @@ type CommentFormProps = {
     onCancel?: () => void;
     autoFocus?: boolean;
     maxLength?: number;
+    initialContent?: string;
 };
 
 export function CommentForm({
@@ -18,8 +19,9 @@ export function CommentForm({
     onCancel,
     autoFocus = false,
     maxLength = 1000,
+    initialContent = "",
 }: CommentFormProps) {
-    const [content, setContent] = useState("");
+    const [content, setContent] = useState(initialContent);
     const [submitting, setSubmitting] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
