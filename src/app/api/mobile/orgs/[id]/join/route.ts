@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getMobileSession } from "@/lib/mobileAuth";
 import dbConnect from "@/lib/mongodb";
 import Org from "@/models/Org";
 import OrgMember from "@/models/OrgMember";
@@ -10,11 +9,10 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const session = getMobileSession(req);
+    const userId = session.id;
 
     const { id: orgId } = await params;
-    const userId = (session.user as any).id;
 
     await dbConnect();
 
@@ -23,22 +21,18 @@ export async function POST(
 
     const existingMember = await OrgMember.findOne({ userId, orgId });
     if (existingMember) {
-        return NextResponse.json({ message: "Already a member" }, { status: 400 });
+      return NextResponse.json({ message: "Already a member" }, { status: 400 });
     }
 
-    // Add to Org
-    const membership = await OrgMember.create({
-      userId,
-      orgId,
-      role: "member"
-    });
+    const membership = await OrgMember.create({ userId, orgId, role: "member" });
 
-    await Org.findByIdAndUpdate(orgId, {
-      $push: { members: userId }
-    });
+    await Org.findByIdAndUpdate(orgId, { $push: { members: userId } });
 
     return NextResponse.json(membership, { status: 201 });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message?.includes("Missing") || error.message?.includes("jwt")) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.json({ message: "Internal Error" }, { status: 500 });
   }
 }

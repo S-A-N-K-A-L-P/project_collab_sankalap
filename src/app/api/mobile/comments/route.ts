@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getMobileSession, getMobileSessionSafe } from "@/lib/mobileAuth";
 import dbConnect from "@/lib/mongodb";
 import Comment from "@/models/Comment";
 import CommentVote from "@/models/CommentVote";
@@ -39,24 +38,15 @@ type SerializedComment = {
 
 type ReplyMap = Record<string, SerializedComment[]>;
 
-type SessionUser = {
-    id?: string;
-    email?: string | null;
-};
-
 function getErrorMessage(error: unknown): string {
     return error instanceof Error ? error.message : "Unexpected server error";
 }
 
 function toIdString(value: unknown): string {
-    if (typeof value === "string") {
-        return value;
-    }
-
+    if (typeof value === "string") return value;
     if (value && typeof (value as { toString?: () => string }).toString === "function") {
         return (value as { toString: () => string }).toString();
     }
-
     return "";
 }
 
@@ -89,18 +79,13 @@ async function getCommentDepth(commentId: string, proposalId: string): Promise<n
             .select("proposalId parentCommentId")
             .lean<{ proposalId: unknown; parentCommentId?: unknown }>();
 
-        if (!comment) {
-            throw new Error("Parent comment not found");
-        }
-
+        if (!comment) throw new Error("Parent comment not found");
         if (toIdString(comment.proposalId) !== proposalId) {
             throw new Error("Parent comment must belong to the same proposal");
         }
 
         const parentCommentId = toIdString(comment.parentCommentId);
-        if (!parentCommentId) {
-            return depth;
-        }
+        if (!parentCommentId) return depth;
 
         depth += 1;
         currentCommentId = parentCommentId;
@@ -110,18 +95,12 @@ async function getCommentDepth(commentId: string, proposalId: string): Promise<n
 }
 
 function buildReplyMap(replies: SerializedComment[]): ReplyMap {
-    return replies.reduce<ReplyMap>((accumulator, reply) => {
+    return replies.reduce<ReplyMap>((acc, reply) => {
         const parentId = reply.parentCommentId;
-        if (!parentId) {
-            return accumulator;
-        }
-
-        if (!accumulator[parentId]) {
-            accumulator[parentId] = [];
-        }
-
-        accumulator[parentId].push(reply);
-        return accumulator;
+        if (!parentId) return acc;
+        if (!acc[parentId]) acc[parentId] = [];
+        acc[parentId].push(reply);
+        return acc;
     }, {});
 }
 
@@ -137,7 +116,6 @@ function applyReplyCounts(
         items.map((item) => ({
             ...item,
             replyCount: replyCounts[item._id] ?? 0,
-            hasVotedByCurrentUser: item.hasVotedByCurrentUser,
         }));
 
     return {
@@ -148,6 +126,7 @@ function applyReplyCounts(
     };
 }
 
+// ── GET — public (optional auth for hasVotedByCurrentUser) ───────────────────
 export async function GET(req: Request) {
     try {
         const { searchParams } = new URL(req.url);
@@ -163,7 +142,10 @@ export async function GET(req: Request) {
 
         await dbConnect();
 
-        const [topLevelComments, replyComments, session] = await Promise.all([
+        const session = getMobileSessionSafe(req);
+        const currentUserId = session?.id ?? "";
+
+        const [topLevelComments, replyComments] = await Promise.all([
             Comment.find({ proposalId, parentCommentId: null })
                 .sort({ createdAt: -1 })
                 .select("_id proposalId parentCommentId authorId authorName content voteCount createdAt updatedAt")
@@ -172,30 +154,24 @@ export async function GET(req: Request) {
                 .sort({ createdAt: 1 })
                 .select("_id proposalId parentCommentId authorId authorName content voteCount createdAt updatedAt")
                 .lean<CommentRecord[]>(),
-            getServerSession(authOptions),
         ]);
 
-        const currentUserId = (session?.user as SessionUser | undefined)?.id || "";
-
         const allComments = [...topLevelComments, ...replyComments];
-        const allCommentIds = allComments.map((comment) => toIdString(comment._id)).filter(Boolean);
+        const allCommentIds = allComments.map((c) => toIdString(c._id)).filter(Boolean);
 
         const votedCommentIds = currentUserId && allCommentIds.length > 0
-            ? await CommentVote.find({
-                userId: currentUserId,
-                commentId: { $in: allCommentIds },
-            })
+            ? await CommentVote.find({ userId: currentUserId, commentId: { $in: allCommentIds } })
                 .select("commentId")
                 .lean<{ commentId: unknown }[]>()
             : [];
 
-        const votedCommentIdSet = new Set(votedCommentIds.map((vote) => toIdString(vote.commentId)));
+        const votedSet = new Set(votedCommentIds.map((v) => toIdString(v.commentId)));
 
-        const serializedTopLevel = topLevelComments.map((comment) =>
-            serializeComment(comment, votedCommentIdSet.has(toIdString(comment._id)))
+        const serializedTopLevel = topLevelComments.map((c) =>
+            serializeComment(c, votedSet.has(toIdString(c._id)))
         );
-        const serializedReplies = replyComments.map((comment) =>
-            serializeComment(comment, votedCommentIdSet.has(toIdString(comment._id)))
+        const serializedReplies = replyComments.map((c) =>
+            serializeComment(c, votedSet.has(toIdString(c._id)))
         );
 
         const repliesByParent = buildReplyMap(serializedReplies);
@@ -210,12 +186,10 @@ export async function GET(req: Request) {
     }
 }
 
+// ── POST — requires Bearer token ─────────────────────────────────────────────
 export async function POST(req: Request) {
     try {
-        const session = await getServerSession(authOptions);
-        if (!session) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+        const session = getMobileSession(req);
 
         const payload = await req.json();
         const proposalId = String(payload?.proposalId || "").trim();
@@ -245,16 +219,11 @@ export async function POST(req: Request) {
 
         const [proposal, user] = await Promise.all([
             Proposal.findById(proposalId).select("_id"),
-            User.findOne({ email: session.user?.email }).select("_id name"),
+            User.findById(session.id).select("_id name"),
         ]);
 
-        if (!proposal) {
-            return NextResponse.json({ error: "Proposal not found" }, { status: 404 });
-        }
-
-        if (!user) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 });
-        }
+        if (!proposal) return NextResponse.json({ error: "Proposal not found" }, { status: 404 });
+        if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
         let resolvedParentCommentId: string | null = null;
         if (parentCommentId) {
@@ -283,6 +252,10 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ comment }, { status: 201 });
     } catch (error: unknown) {
-        return NextResponse.json({ error: getErrorMessage(error) || "Failed to create comment" }, { status: 500 });
+        const msg = getErrorMessage(error);
+        if (msg.includes("Missing") || msg.includes("jwt")) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        return NextResponse.json({ error: msg || "Failed to create comment" }, { status: 500 });
     }
 }

@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getMobileSession } from "@/lib/mobileAuth";
 import dbConnect from "@/lib/mongodb";
 import Project from "@/models/Project";
 import Proposal from "@/models/Proposal";
@@ -8,31 +7,25 @@ import OrgMember from "@/models/OrgMember";
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const session = getMobileSession(req);
+    const userId = session.id;
 
     const { proposalId, orgId, title, description, leadId } = await req.json();
-    const userId = (session.user as any).id;
 
     await dbConnect();
 
-    // 1. Verify User is Lead/Admin in the Org
     const member = await OrgMember.findOne({ userId, orgId });
     if (!member || !["lead", "admin"].includes(member.role)) {
-        return NextResponse.json({ message: "Insufficient permissions to initialize project" }, { status: 403 });
+      return NextResponse.json({ message: "Insufficient permissions to initialize project" }, { status: 403 });
     }
 
-    // 2. Validate Proposal Status
     const proposal = await Proposal.findById(proposalId);
     if (!proposal || proposal.status !== "approved") {
-        // In a real system, you'd check if totalVotes exceeded threshold
-        // For simplicity, we allow conversion if status is 'approved' or 'active' (with high votes)
-        if (proposal?.totalVotes < 5) {
-            return NextResponse.json({ message: "Proposal has not reached the threshold for project conversion" }, { status: 400 });
-        }
+      if (proposal?.totalVotes < 5) {
+        return NextResponse.json({ message: "Proposal has not reached the threshold for project conversion" }, { status: 400 });
+      }
     }
 
-    // 3. Create Project
     const project = await Project.create({
       proposalId,
       orgId,
@@ -40,14 +33,16 @@ export async function POST(req: Request) {
       description,
       lead: leadId || userId,
       members: [leadId || userId],
-      status: "planning"
+      status: "planning",
     });
 
-    // 4. Update Proposal Stage
     await Proposal.findByIdAndUpdate(proposalId, { stage: "setup", status: "active" });
 
     return NextResponse.json(project, { status: 201 });
   } catch (error: any) {
+    if (error.message?.includes("Missing") || error.message?.includes("jwt")) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
@@ -56,9 +51,9 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const orgId = searchParams.get("orgId");
-    
+
     await dbConnect();
-    
+
     const query = orgId ? { orgId } : {};
     const projects = await Project.find(query)
       .populate("orgId", "name slug")

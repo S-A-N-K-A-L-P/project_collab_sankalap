@@ -1,23 +1,26 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getMobileSession } from "@/lib/mobileAuth";
 import dbConnect from "@/lib/mongodb";
 import Task from "@/models/Task";
 
 export async function GET(
-    _request: Request,
+    request: Request,
     { params }: { params: Promise<{ projectId: string }> }
 ) {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    try {
+        getMobileSession(request); // Validate Bearer token
+
+        const { projectId } = await params;
+
+        await dbConnect();
+
+        const tasks = await Task.find({ projectId }).sort({ createdAt: -1 }).lean();
+
+        return NextResponse.json({ tasks });
+    } catch (error: any) {
+        if (error.message?.includes("Missing") || error.message?.includes("jwt")) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
-
-    const { projectId } = await params;
-
-    await dbConnect();
-
-    const tasks = await Task.find({ projectId }).sort({ createdAt: -1 }).lean();
-
-    return NextResponse.json({ tasks });
 }

@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getMobileSession } from "@/lib/mobileAuth";
 import dbConnect from "@/lib/mongodb";
 import Comment from "@/models/Comment";
 import CommentVote from "@/models/CommentVote";
 import Proposal from "@/models/Proposal";
-import User from "@/models/User";
 
 interface RouteParams {
     params: Promise<{ commentId: string }>;
@@ -15,14 +13,10 @@ interface RouteParams {
 const MAX_COMMENT_LENGTH = 1000;
 
 function toIdString(value: unknown): string {
-    if (typeof value === "string") {
-        return value;
-    }
-
+    if (typeof value === "string") return value;
     if (value && typeof (value as { toString?: () => string }).toString === "function") {
         return (value as { toString: () => string }).toString();
     }
-
     return "";
 }
 
@@ -42,10 +36,7 @@ async function getDescendantCommentIds(rootCommentId: string): Promise<string[]>
         const nextLevel: string[] = [];
         for (const child of children) {
             const childId = toIdString(child._id);
-            if (!childId || collectedIds.has(childId)) {
-                continue;
-            }
-
+            if (!childId || collectedIds.has(childId)) continue;
             collectedIds.add(childId);
             nextLevel.push(childId);
         }
@@ -58,10 +49,8 @@ async function getDescendantCommentIds(rootCommentId: string): Promise<string[]>
 
 export async function PATCH(req: Request, { params }: RouteParams) {
     try {
-        const session = await getServerSession(authOptions);
-        if (!session) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+        const session = getMobileSession(req);
+        const userId = session.id;
 
         const { commentId } = await params;
         if (!mongoose.Types.ObjectId.isValid(commentId)) {
@@ -76,28 +65,18 @@ export async function PATCH(req: Request, { params }: RouteParams) {
         }
 
         if (content.length > MAX_COMMENT_LENGTH) {
-            return NextResponse.json(
-                { error: `Comment cannot exceed ${MAX_COMMENT_LENGTH} characters` },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: `Comment cannot exceed ${MAX_COMMENT_LENGTH} characters` }, { status: 400 });
         }
 
         await dbConnect();
 
-        const [comment, user] = await Promise.all([
-            Comment.findById(commentId),
-            User.findOne({ email: session.user?.email }).select("_id name"),
-        ]);
+        const comment = await Comment.findById(commentId);
 
         if (!comment) {
             return NextResponse.json({ error: "Comment not found" }, { status: 404 });
         }
 
-        if (!user) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 });
-        }
-
-        if (comment.authorId.toString() !== user._id.toString()) {
+        if (comment.authorId.toString() !== userId) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
@@ -106,16 +85,18 @@ export async function PATCH(req: Request, { params }: RouteParams) {
 
         return NextResponse.json({ comment });
     } catch (error: unknown) {
-        return NextResponse.json({ error: getErrorMessage(error) || "Failed to update comment" }, { status: 500 });
+        const msg = getErrorMessage(error);
+        if (msg.includes("Missing") || msg.includes("jwt")) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        return NextResponse.json({ error: msg || "Failed to update comment" }, { status: 500 });
     }
 }
 
-export async function DELETE(_req: Request, { params }: RouteParams) {
+export async function DELETE(req: Request, { params }: RouteParams) {
     try {
-        const session = await getServerSession(authOptions);
-        if (!session) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+        const session = getMobileSession(req);
+        const userId = session.id;
 
         const { commentId } = await params;
         if (!mongoose.Types.ObjectId.isValid(commentId)) {
@@ -124,20 +105,13 @@ export async function DELETE(_req: Request, { params }: RouteParams) {
 
         await dbConnect();
 
-        const [comment, user] = await Promise.all([
-            Comment.findById(commentId),
-            User.findOne({ email: session.user?.email }).select("_id"),
-        ]);
+        const comment = await Comment.findById(commentId);
 
         if (!comment) {
             return NextResponse.json({ error: "Comment not found" }, { status: 404 });
         }
 
-        if (!user) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 });
-        }
-
-        if (comment.authorId.toString() !== user._id.toString()) {
+        if (comment.authorId.toString() !== userId) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
@@ -155,6 +129,10 @@ export async function DELETE(_req: Request, { params }: RouteParams) {
 
         return NextResponse.json({ success: true, deletedCount });
     } catch (error: unknown) {
-        return NextResponse.json({ error: getErrorMessage(error) || "Failed to delete comment" }, { status: 500 });
+        const msg = getErrorMessage(error);
+        if (msg.includes("Missing") || msg.includes("jwt")) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        return NextResponse.json({ error: msg || "Failed to delete comment" }, { status: 500 });
     }
 }

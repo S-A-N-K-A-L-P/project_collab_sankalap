@@ -1,21 +1,18 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getMobileSession } from "@/lib/mobileAuth";
 import dbConnect from "@/lib/mongodb";
 import Org from "@/models/Org";
 import OrgMember from "@/models/OrgMember";
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const session = getMobileSession(req);
+    const userId = session.id;
 
     const { name, slug, description, rules, visibility } = await req.json();
-    const userId = (session.user as any).id;
 
     await dbConnect();
 
-    // Create the organization
     const org = await Org.create({
       name,
       slug,
@@ -24,20 +21,18 @@ export async function POST(req: Request) {
       visibility,
       createdBy: userId,
       admins: [userId],
-      members: [userId]
+      members: [userId],
     });
 
-    // Create the membership record for the creator as admin
-    await OrgMember.create({
-      userId,
-      orgId: org._id,
-      role: "admin"
-    });
+    await OrgMember.create({ userId, orgId: org._id, role: "admin" });
 
     return NextResponse.json(org, { status: 201 });
   } catch (error: any) {
+    if (error.message?.includes("Missing") || error.message?.includes("jwt")) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     if (error.code === 11000) {
-        return NextResponse.json({ message: "Slug already exists" }, { status: 400 });
+      return NextResponse.json({ message: "Slug already exists" }, { status: 400 });
     }
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

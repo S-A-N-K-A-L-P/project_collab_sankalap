@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getMobileSession } from "@/lib/mobileAuth";
 import dbConnect from "@/lib/mongodb";
 import { canManageTasks } from "@/lib/projectProgressPermissions";
 import ActivityLog from "@/models/ActivityLog";
@@ -17,43 +16,47 @@ type CreateTaskBody = {
 };
 
 export async function POST(request: Request) {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    try {
+        const session = getMobileSession(request);
+
+        if (!canManageTasks(session.role)) {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
+
+        const body = (await request.json()) as CreateTaskBody;
+        const { projectId, title, description, assignedTo, assignedToName, priority, deadline } = body;
+
+        if (!projectId || !title || !assignedTo || !deadline) {
+            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        }
+
+        await dbConnect();
+
+        const task = await Task.create({
+            projectId,
+            title,
+            description: description ?? "",
+            assignedTo,
+            assignedToName: assignedToName ?? "",
+            priority: priority ?? "medium",
+            deadline: new Date(deadline),
+            status: "pending",
+            progress: 0,
+        });
+
+        await ActivityLog.create({
+            projectId,
+            userId: session.id,
+            userName: session.email ?? session.name ?? "",
+            action: `Created task "${title}"`,
+            metadata: { taskId: task._id.toString(), assignedTo },
+        });
+
+        return NextResponse.json({ task }, { status: 201 });
+    } catch (error: any) {
+        if (error.message?.includes("Missing") || error.message?.includes("jwt")) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
-
-    if (!canManageTasks((session.user as any).role)) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const body = (await request.json()) as CreateTaskBody;
-    const { projectId, title, description, assignedTo, assignedToName, priority, deadline } = body;
-
-    if (!projectId || !title || !assignedTo || !deadline) {
-        return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
-
-    await dbConnect();
-
-    const task = await Task.create({
-        projectId,
-        title,
-        description: description ?? "",
-        assignedTo,
-        assignedToName: assignedToName ?? "",
-        priority: priority ?? "medium",
-        deadline: new Date(deadline),
-        status: "pending",
-        progress: 0,
-    });
-
-    await ActivityLog.create({
-        projectId,
-        userId: (session.user as any).id,
-        userName: session.user.email ?? session.user.name ?? "",
-        action: `Created task \"${title}\"`,
-        metadata: { taskId: task._id.toString(), assignedTo },
-    });
-
-    return NextResponse.json({ task }, { status: 201 });
 }

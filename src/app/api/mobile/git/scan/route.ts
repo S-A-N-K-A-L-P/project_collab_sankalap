@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import GitRepo from "@/models/GitRepo";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getMobileSession } from "@/lib/mobileAuth";
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    getMobileSession(req); // Validate Bearer token
 
     const { repoId } = await req.json();
     if (!repoId) return NextResponse.json({ message: "RepoId required" }, { status: 400 });
@@ -16,13 +14,11 @@ export async function POST(req: Request) {
     const repo = await GitRepo.findById(repoId);
     if (!repo) return NextResponse.json({ message: "Repo not found" }, { status: 404 });
 
-    // Update status to syncing
     repo.syncStatus = "syncing";
     repo.lastSyncAt = new Date();
     await repo.save();
 
-    // Simulate Octokit scan
-    // In real app: const stats = await octokit.rest.repos.get({ owner: repo.owner, repo: repo.repoName });
+    // Simulate Octokit scan (replace with real octokit in production)
     setTimeout(async () => {
       try {
         await dbConnect();
@@ -47,7 +43,10 @@ export async function POST(req: Request) {
     }, 2000);
 
     return NextResponse.json({ message: "Scan initiated", repo });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.message?.includes("Missing") || error.message?.includes("jwt")) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
     return NextResponse.json({ message: "Scan failed" }, { status: 500 });
   }
 }

@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getMobileSession } from "@/lib/mobileAuth";
 import dbConnect from "@/lib/mongodb";
 import Comment from "@/models/Comment";
 import CommentVote from "@/models/CommentVote";
-import User from "@/models/User";
 
 function getErrorMessage(error: unknown): string {
     return error instanceof Error ? error.message : "Unexpected server error";
@@ -13,10 +11,8 @@ function getErrorMessage(error: unknown): string {
 
 export async function POST(req: Request) {
     try {
-        const session = await getServerSession(authOptions);
-        if (!session) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+        const session = getMobileSession(req);
+        const userId = session.id;
 
         const payload = await req.json();
         const commentId = String(payload?.commentId || "").trim();
@@ -31,20 +27,12 @@ export async function POST(req: Request) {
 
         await dbConnect();
 
-        const [user, comment] = await Promise.all([
-            User.findOne({ email: session.user?.email }).select("_id"),
-            Comment.findById(commentId).select("_id voteCount"),
-        ]);
-
-        if (!user) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 });
-        }
-
+        const comment = await Comment.findById(commentId).select("_id voteCount");
         if (!comment) {
             return NextResponse.json({ error: "Comment not found" }, { status: 404 });
         }
 
-        const existingVote = await CommentVote.findOne({ userId: user._id, commentId }).select("_id");
+        const existingVote = await CommentVote.findOne({ userId, commentId }).select("_id");
 
         if (existingVote) {
             await Promise.all([
@@ -63,7 +51,7 @@ export async function POST(req: Request) {
         }
 
         await Promise.all([
-            CommentVote.create({ userId: user._id, commentId }),
+            CommentVote.create({ userId, commentId }),
             Comment.findByIdAndUpdate(commentId, { $inc: { voteCount: 1 } }),
         ]);
 
@@ -76,6 +64,10 @@ export async function POST(req: Request) {
 
         return NextResponse.json({ voteCount, hasVoted: true });
     } catch (error: unknown) {
-        return NextResponse.json({ error: getErrorMessage(error) }, { status: 500 });
+        const msg = getErrorMessage(error);
+        if (msg.includes("Missing") || msg.includes("jwt")) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        return NextResponse.json({ error: msg }, { status: 500 });
     }
 }

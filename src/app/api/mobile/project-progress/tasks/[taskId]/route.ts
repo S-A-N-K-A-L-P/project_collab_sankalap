@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getMobileSession } from "@/lib/mobileAuth";
 import dbConnect from "@/lib/mongodb";
 import { canUpdateProgress } from "@/lib/projectProgressPermissions";
 import ActivityLog from "@/models/ActivityLog";
@@ -15,54 +14,54 @@ export async function PATCH(
     request: Request,
     { params }: { params: Promise<{ taskId: string }> }
 ) {
-    const { taskId } = await params;
+    try {
+        const { taskId } = await params;
+        const session = getMobileSession(request);
 
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const role = (session.user as any).role;
-    if (!canUpdateProgress(role)) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const body = (await request.json()) as PatchTaskBody;
-    const { status, progress } = body;
-
-    if (status === undefined && progress === undefined) {
-        return NextResponse.json({ error: "No updates provided" }, { status: 400 });
-    }
-
-    await dbConnect();
-
-    const task = await Task.findById(taskId);
-    if (!task) {
-        return NextResponse.json({ error: "Task not found" }, { status: 404 });
-    }
-
-    if (role === "pixel_member" && task.assignedTo !== (session.user as any).id) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    if (status !== undefined) {
-        task.status = status;
-    }
-    if (progress !== undefined) {
-        task.progress = Math.max(0, Math.min(100, progress));
-        if (task.progress >= 100 && task.status !== "completed") {
-            task.status = "completed";
+        if (!canUpdateProgress(session.role)) {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
+
+        const body = (await request.json()) as PatchTaskBody;
+        const { status, progress } = body;
+
+        if (status === undefined && progress === undefined) {
+            return NextResponse.json({ error: "No updates provided" }, { status: 400 });
+        }
+
+        await dbConnect();
+
+        const task = await Task.findById(taskId);
+        if (!task) {
+            return NextResponse.json({ error: "Task not found" }, { status: 404 });
+        }
+
+        if (session.role === "pixel_member" && task.assignedTo !== session.id) {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
+
+        if (status !== undefined) task.status = status;
+        if (progress !== undefined) {
+            task.progress = Math.max(0, Math.min(100, progress));
+            if (task.progress >= 100 && task.status !== "completed") {
+                task.status = "completed";
+            }
+        }
+        await task.save();
+
+        await ActivityLog.create({
+            projectId: task.projectId,
+            userId: session.id,
+            userName: session.email ?? session.name ?? "",
+            action: `Updated task "${task.title}"`,
+            metadata: { taskId, status, progress },
+        });
+
+        return NextResponse.json({ task });
+    } catch (error: any) {
+        if (error.message?.includes("Missing") || error.message?.includes("jwt")) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    await task.save();
-
-    await ActivityLog.create({
-        projectId: task.projectId,
-        userId: (session.user as any).id,
-        userName: session.user.email ?? session.user.name ?? "",
-        action: `Updated task \"${task.title}\"`,
-        metadata: { taskId, status, progress },
-    });
-
-    return NextResponse.json({ task });
 }
