@@ -72,7 +72,7 @@ export const HeroSection = () => {
           transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
           className="relative w-28 h-28 mx-auto mb-8 rounded-3xl overflow-hidden shadow-2xl shadow-indigo-500/20 border-4 border-white dark:border-slate-800"
         >
-          <Image src="/syncro.jpg" alt="S.A.N.K.A.L.P Logo" fill className="object-cover" />
+          <Image src="/syncro.jpg" alt="S.A.N.K.A.L.P Logo" fill sizes="(max-width: 768px) 112px, 112px" className="object-cover" />
         </motion.div>
 
         <motion.h1 

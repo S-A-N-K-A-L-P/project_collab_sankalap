@@ -48,11 +48,13 @@ export default async function Home() {
   ]);
 
   // Fetch featured projects
-  const featuredProjects = await Proposal.find({ createdBy: { $type: "objectId" } })
+  const rawFeaturedProjects = await Proposal.find({ createdBy: { $type: "objectId" } })
     .sort({ votes: -1 })
     .limit(3)
     .populate("createdBy", "name avatar")
     .lean();
+    
+  const featuredProjects = JSON.parse(JSON.stringify(rawFeaturedProjects));
 
   return (
     <main className="min-h-screen bg-white dark:bg-slate-950">
