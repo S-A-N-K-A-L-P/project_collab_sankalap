@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Quote, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const testimonials = [
-  { name: "John Doe", role: "Contributor", text: "Pixel Platform has changed the way I think about collaboration. It's not just a tool, it's a movement." },
+  { name: "John Doe", role: "Contributor", text: "S.A.N.K.A.L.P. Platform has changed the way I think about collaboration. It's not just a tool, it's a movement." },
   { name: "Sarah Lee", role: "Project Lead", text: "The synergy here is unmatched. We built Protocol Alpha from scratch in just 3 months." },
   { name: "Dev P.", role: "Security Researcher", text: "Transparency is hard-coded into the DNA here. I feel completely safe contributing." }
 ];
