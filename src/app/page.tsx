@@ -21,6 +21,7 @@ import { EngagementCTA } from "@/components/portfolio/EngagementCTA";
 import { IdeologyFooter } from "@/components/portfolio/IdeologyFooter";
 import { IdeologyCloud } from "@/components/portfolio/IdeologyCloud";
 import { DiversitySection } from "@/components/portfolio/DiversitySection";
+import { SankalpWorkflow } from "@/components/portfolio/SankalpWorkflow";
 import { Zap } from "lucide-react";
 
 import dbConnect from "@/lib/mongodb";
@@ -59,8 +60,8 @@ export default async function Home() {
               <Zap className="w-6 h-6 fill-current" />
             </div>
             <div className="flex flex-col -space-y-1">
-              <span className="text-xl font-black text-slate-900 dark:text-white tracking-tighter uppercase italic">Syncro</span>
-              <span className="text-[10px] font-mono font-black text-blue-600 uppercase tracking-widest">OS_INITIALIZER</span>
+              <span className="text-xl font-black text-slate-900 dark:text-white tracking-tighter uppercase italic">S.A.N.K.A.L.P.</span>
+              <span className="text-[10px] font-mono font-black text-blue-600 uppercase tracking-widest">PLATFORM</span>
             </div>
           </div>
 
@@ -86,6 +87,7 @@ export default async function Home() {
       <IdeologyCloud />
       <ValuesGrid />
       <CommunityPulse />
+      <SankalpWorkflow />
       <ProjectShowcase projects={featuredProjects} />
       <VisionParallax />
       <MemberSpotlight />
