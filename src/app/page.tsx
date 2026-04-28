@@ -22,6 +22,9 @@ import { IdeologyFooter } from "@/components/portfolio/IdeologyFooter";
 import { IdeologyCloud } from "@/components/portfolio/IdeologyCloud";
 import { DiversitySection } from "@/components/portfolio/DiversitySection";
 import { SankalpWorkflow } from "@/components/portfolio/SankalpWorkflow";
+import { LeadershipProgression } from "@/components/portfolio/LeadershipProgression";
+import { Acknowledgement } from "@/components/portfolio/Acknowledgement";
+
 import { Zap } from "lucide-react";
 
 import dbConnect from "@/lib/mongodb";
@@ -88,6 +91,7 @@ export default async function Home() {
       <ValuesGrid />
       <CommunityPulse />
       <SankalpWorkflow />
+      <LeadershipProgression />
       <ProjectShowcase projects={featuredProjects} />
       <VisionParallax />
       <MemberSpotlight />
@@ -100,6 +104,7 @@ export default async function Home() {
       <DiversitySection />
       <TestimonialCarousel />
       <FutureRoadmap />
+      <Acknowledgement />
       <EngagementCTA userCount={userCount} />
       <IdeologyFooter />
     </main>
