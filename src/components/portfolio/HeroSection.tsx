@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { MousePointer2, Sparkles } from 'lucide-react';
 
 const ORBS = Array.from({ length: 20 }, (_, i) => ({
@@ -14,6 +15,21 @@ const ORBS = Array.from({ length: 20 }, (_, i) => ({
   y: ((i * 23) % 100) - 50,
   duration: 10 + ((i * 7) % 10),
 }));
+
+const SANKALP_LETTERS = "S.A.N.K.A.L.P.".split("");
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.3 }
+  }
+};
+
+const letterVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 200 } }
+};
 
 export const HeroSection = () => {
   return (
@@ -51,19 +67,39 @@ export const HeroSection = () => {
         className="relative z-10 text-center max-w-4xl"
       >
         <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-sm font-medium mb-8 border border-indigo-100 dark:border-indigo-800"
+          initial={{ scale: 0, opacity: 0, rotate: -10 }}
+          animate={{ scale: 1, opacity: 1, rotate: 0 }}
+          transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
+          className="relative w-28 h-28 mx-auto mb-8 rounded-3xl overflow-hidden shadow-2xl shadow-indigo-500/20 border-4 border-white dark:border-slate-800"
         >
-          <Sparkles size={16} />
-          <span>Innovating the Future</span>
+          <Image src="/syncro.jpg" alt="S.A.N.K.A.L.P Logo" fill sizes="(max-width: 768px) 112px, 112px" className="object-cover" />
         </motion.div>
 
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-slate-900 dark:text-white mb-6 leading-[1.1]">
-          Where <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">Ideology</span> Meets <br />
-          Next-Gen <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500">Execution</span>
-        </h1>
+        <motion.h1 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="text-6xl md:text-8xl font-black tracking-tighter text-slate-900 dark:text-white mb-2 flex justify-center flex-wrap"
+        >
+          {SANKALP_LETTERS.map((char, index) => (
+            <motion.span 
+              key={index} 
+              variants={letterVariants}
+              className={`inline-block ${char === '.' ? 'text-indigo-500' : 'text-transparent bg-clip-text bg-gradient-to-br from-slate-900 to-slate-600 dark:from-white dark:to-slate-400'}`}
+            >
+              {char}
+            </motion.span>
+          ))}
+        </motion.h1>
+
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.5, duration: 0.8 }}
+          className="text-xl md:text-3xl font-bold tracking-tight text-indigo-600 dark:text-indigo-400 mb-8"
+        >
+          Solutions for Atmanirbhar Nation
+        </motion.div>
 
         <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
           We are a clandestine collective of creators, engineers, and visionaries building the infrastructure of tomorrow. Our work is our signature.

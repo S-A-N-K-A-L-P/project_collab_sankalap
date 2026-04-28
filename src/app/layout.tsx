@@ -3,7 +3,7 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 
 export const metadata: Metadata = {
-  title: "PIXEL Platform",
+  title: "S.A.N.K.A.L.P. Platform",
   description: "Project Collaboration Platform",
 };
 

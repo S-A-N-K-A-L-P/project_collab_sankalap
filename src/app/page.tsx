@@ -21,6 +21,10 @@ import { EngagementCTA } from "@/components/portfolio/EngagementCTA";
 import { IdeologyFooter } from "@/components/portfolio/IdeologyFooter";
 import { IdeologyCloud } from "@/components/portfolio/IdeologyCloud";
 import { DiversitySection } from "@/components/portfolio/DiversitySection";
+import { SankalpWorkflow } from "@/components/portfolio/SankalpWorkflow";
+import { LeadershipProgression } from "@/components/portfolio/LeadershipProgression";
+import { Acknowledgement } from "@/components/portfolio/Acknowledgement";
+
 import { Zap } from "lucide-react";
 
 import dbConnect from "@/lib/mongodb";
@@ -44,11 +48,13 @@ export default async function Home() {
   ]);
 
   // Fetch featured projects
-  const featuredProjects = await Proposal.find({ createdBy: { $type: "objectId" } })
+  const rawFeaturedProjects = await Proposal.find({ createdBy: { $type: "objectId" } })
     .sort({ votes: -1 })
     .limit(3)
     .populate("createdBy", "name avatar")
     .lean();
+    
+  const featuredProjects = JSON.parse(JSON.stringify(rawFeaturedProjects));
 
   return (
     <main className="min-h-screen bg-white dark:bg-slate-950">
@@ -59,8 +65,8 @@ export default async function Home() {
               <Zap className="w-6 h-6 fill-current" />
             </div>
             <div className="flex flex-col -space-y-1">
-              <span className="text-xl font-black text-slate-900 dark:text-white tracking-tighter uppercase italic">Syncro</span>
-              <span className="text-[10px] font-mono font-black text-blue-600 uppercase tracking-widest">OS_INITIALIZER</span>
+              <span className="text-xl font-black text-slate-900 dark:text-white tracking-tighter uppercase italic">S.A.N.K.A.L.P.</span>
+              <span className="text-[10px] font-mono font-black text-blue-600 uppercase tracking-widest">PLATFORM</span>
             </div>
           </div>
 
@@ -86,6 +92,8 @@ export default async function Home() {
       <IdeologyCloud />
       <ValuesGrid />
       <CommunityPulse />
+      <SankalpWorkflow />
+      <LeadershipProgression />
       <ProjectShowcase projects={featuredProjects} />
       <VisionParallax />
       <MemberSpotlight />
@@ -98,6 +106,7 @@ export default async function Home() {
       <DiversitySection />
       <TestimonialCarousel />
       <FutureRoadmap />
+      <Acknowledgement />
       <EngagementCTA userCount={userCount} />
       <IdeologyFooter />
     </main>
