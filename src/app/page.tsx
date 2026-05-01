@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { HeroSection } from "@/components/portfolio/HeroSection";
 import Link from "next/link";
@@ -26,6 +26,7 @@ import { LeadershipProgression } from "@/components/portfolio/LeadershipProgress
 import { Acknowledgement } from "@/components/portfolio/Acknowledgement";
 
 import { Zap } from "lucide-react";
+import ThemeSelector from "@/components/theme/ThemeSelector";
 
 import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
@@ -53,11 +54,11 @@ export default async function Home() {
     .limit(3)
     .populate("createdBy", "name avatar")
     .lean();
-    
+
   const featuredProjects = JSON.parse(JSON.stringify(rawFeaturedProjects));
 
   return (
-    <main className="min-h-screen bg-white dark:bg-slate-950">
+    <main className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-white">
       <nav className="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -65,7 +66,7 @@ export default async function Home() {
               <Zap className="w-6 h-6 fill-current" />
             </div>
             <div className="flex flex-col -space-y-1">
-              <span className="text-xl font-black text-slate-900 dark:text-white tracking-tighter uppercase italic">S.A.N.K.A.L.P.</span>
+              <span className="text-xl font-black theme-text-primary tracking-tighter uppercase italic">S.A.N.K.A.L.P.</span>
               <span className="text-[10px] font-mono font-black text-blue-600 uppercase tracking-widest">PLATFORM</span>
             </div>
           </div>
@@ -75,7 +76,9 @@ export default async function Home() {
               <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
               <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">System Online</span>
             </div>
-            <Link href="/login" className="px-6 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-xs font-black uppercase tracking-widest shadow-xl shadow-slate-500/20 hover:scale-105 transition-all active:scale-95">
+            <ThemeSelector />
+
+            <Link href="/login" className="px-6 py-2.5 theme-accent-bg text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-xl shadow-slate-500/20 hover:scale-105 transition-all active:scale-95">
               Initialize Sync
             </Link>
           </div>

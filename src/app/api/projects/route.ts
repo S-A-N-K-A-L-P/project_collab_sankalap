@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import Project from "@/models/Project";
 import Proposal from "@/models/Proposal";
@@ -19,17 +19,17 @@ export async function POST(req: Request) {
     // 1. Verify User is Lead/Admin in the Org
     const member = await OrgMember.findOne({ userId, orgId });
     if (!member || !["lead", "admin"].includes(member.role)) {
-        return NextResponse.json({ message: "Insufficient permissions to initialize project" }, { status: 403 });
+      return NextResponse.json({ message: "Insufficient permissions to initialize project" }, { status: 403 });
     }
 
     // 2. Validate Proposal Status
     const proposal = await Proposal.findById(proposalId);
     if (!proposal || proposal.status !== "approved") {
-        // In a real system, you'd check if totalVotes exceeded threshold
-        // For simplicity, we allow conversion if status is 'approved' or 'active' (with high votes)
-        if (proposal?.totalVotes < 5) {
-            return NextResponse.json({ message: "Proposal has not reached the threshold for project conversion" }, { status: 400 });
-        }
+      // In a real system, you'd check if totalVotes exceeded threshold
+      // For simplicity, we allow conversion if status is 'approved' or 'active' (with high votes)
+      if (proposal?.totalVotes < 5) {
+        return NextResponse.json({ message: "Proposal has not reached the threshold for project conversion" }, { status: 400 });
+      }
     }
 
     // 3. Create Project
@@ -57,16 +57,16 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const orgId = searchParams.get("orgId");
     const id = searchParams.get("id");
-    
+
     await dbConnect();
-    
+
     if (id) {
       const project = await Project.findById(id)
         .populate("orgId", "name slug")
         .populate("lead", "name avatar")
         .populate("gitRepo")
         .lean();
-      
+
       if (!project) return NextResponse.json({ message: "Project not found" }, { status: 404 });
       return NextResponse.json(project);
     }
