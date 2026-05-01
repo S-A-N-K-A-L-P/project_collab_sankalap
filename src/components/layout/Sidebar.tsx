@@ -90,7 +90,7 @@ export default function Sidebar() {
         ))}
 
         {/* Admin Section */}
-        {session?.user && (session.user as any).role === "pixel_head" && (
+        {session?.user && ((session.user as any).role === "pixel_head" || (session.user as any).role === "admin") && (
           <div>
             <h3 className="px-3 text-[10px] font-bold text-muted uppercase tracking-wider mb-2">System</h3>
             <Link
