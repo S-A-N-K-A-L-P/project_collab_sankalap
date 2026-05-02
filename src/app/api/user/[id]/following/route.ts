@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
 import Activity from "@/models/Activity";
@@ -40,7 +40,7 @@ export async function POST(
       await User.findByIdAndUpdate(targetId, {
         $pull: { followers: currentUserId },
       });
-      
+
       return NextResponse.json({ status: "unfollowed" });
     } else {
       // Follow
@@ -53,10 +53,10 @@ export async function POST(
 
       // Record Activity
       await Activity.create({
-          actorId: currentUserId,
-          type: "FOLLOW",
-          targetId: targetId,
-          targetType: "USER"
+        actorId: currentUserId,
+        type: "FOLLOW",
+        targetId: targetId,
+        targetType: "USER"
       });
 
       return NextResponse.json({ status: "following" });

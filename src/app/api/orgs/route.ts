@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import Org from "@/models/Org";
 import OrgMember from "@/models/OrgMember";
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     return NextResponse.json(org, { status: 201 });
   } catch (error: any) {
     if (error.code === 11000) {
-        return NextResponse.json({ message: "Slug already exists" }, { status: 400 });
+      return NextResponse.json({ message: "Slug already exists" }, { status: 400 });
     }
     return NextResponse.json({ message: error.message }, { status: 500 });
   }

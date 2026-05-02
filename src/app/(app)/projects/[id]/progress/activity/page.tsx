@@ -11,8 +11,8 @@ type ActivityLogItem = {
 };
 
 export default function ProjectActivityPage() {
-    const params = useParams<{ projectId: string }>();
-    const projectId = params.projectId;
+    const params = useParams<{ id: string }>();
+    const projectId = params.id;
     const [logs, setLogs] = useState<ActivityLogItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

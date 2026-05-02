@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
 
@@ -19,7 +19,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
     if (!currentUser || !targetUser) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-    const mutualIds = currentUser.following.filter((fid: any) => 
+    const mutualIds = currentUser.following.filter((fid: any) =>
       targetUser.following.some((tfid: any) => tfid.toString() === fid.toString())
     );
 

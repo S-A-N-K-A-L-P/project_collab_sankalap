@@ -9,14 +9,12 @@ import {
   Bell,
   User,
   Settings,
-  ShieldCheck,
-  ListChecks,
   Lightbulb,
   Zap,
   LogOut
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
-import ThemeModeToggle from "@/components/theme/ThemeModeToggle";
+import ThemeSelector from "@/components/theme/ThemeSelector";
 
 const navigation = [
   {
@@ -52,7 +50,7 @@ export default function Sidebar() {
         <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center text-white shadow-[0_0_18px_var(--accent-glow)]">
           <Zap className="w-5 h-5 fill-current" />
         </div>
-        <span className="font-bold text-foreground tracking-tight text-lg">Pixel Platform</span>
+        <span className="font-bold text-foreground tracking-tight text-lg">SYNCRO</span>
       </div>
 
       {/* Navigation Groups */}
@@ -89,43 +87,12 @@ export default function Sidebar() {
           </div>
         ))}
 
-        {/* Admin Section */}
-        {session?.user && (session.user as any).role === "pixel_head" && (
-          <div>
-            <h3 className="px-3 text-[10px] font-bold text-muted uppercase tracking-wider mb-2">System</h3>
-            <Link
-              href="/admin"
-              className={`flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-all group relative ${pathname === "/admin"
-                ? "text-foreground bg-[color-mix(in_srgb,var(--foreground)_4%,transparent)]"
-                : "text-muted hover:text-foreground hover:bg-[color-mix(in_srgb,var(--foreground)_3%,transparent)]"
-                }`}
-            >
-              {pathname === "/admin" && (
-                <div className="absolute left-0 w-0.5 h-4 bg-accent rounded-full shadow-[0_0_12px_var(--accent-glow)]" />
-              )}
-              <ShieldCheck className={`w-4 h-4 ${pathname === "/admin" ? "text-accent" : "text-muted group-hover:text-foreground"}`} />
-              Control Room
-            </Link>
-            <Link
-              href="/admin/projects"
-              className={`mt-1 flex items-center gap-3 px-3 py-2 rounded-md text-[13px] font-medium transition-all group relative ${pathname.startsWith("/admin/projects")
-                ? "text-foreground bg-[color-mix(in_srgb,var(--foreground)_4%,transparent)]"
-                : "text-muted hover:text-foreground hover:bg-[color-mix(in_srgb,var(--foreground)_3%,transparent)]"
-                }`}
-            >
-              {pathname.startsWith("/admin/projects") && (
-                <div className="absolute left-0 w-0.5 h-4 bg-accent rounded-full shadow-[0_0_12px_var(--accent-glow)]" />
-              )}
-              <ListChecks className={`w-4 h-4 ${pathname.startsWith("/admin/projects") ? "text-accent" : "text-muted group-hover:text-foreground"}`} />
-              Project Progress
-            </Link>
-          </div>
-        )}
+
       </nav>
 
       {/* Profile Card Fixed at Bottom */}
       <div className="p-4 border-t border-border-subtle mt-auto">
-        <ThemeModeToggle />
+        <ThemeSelector />
         <Link
           href={userProfileHref}
           className="mt-3 flex items-center gap-3 p-2 hover:bg-[color-mix(in_srgb,var(--foreground)_3%,transparent)] rounded-xl transition-all group"

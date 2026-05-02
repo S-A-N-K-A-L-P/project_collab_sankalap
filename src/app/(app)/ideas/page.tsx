@@ -2,7 +2,7 @@ import dbConnect from "@/lib/mongodb";
 import Proposal from "@/models/Proposal";
 import ProposalFeed from "@/components/feed/ProposalFeed";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Lightbulb } from "lucide-react";
 

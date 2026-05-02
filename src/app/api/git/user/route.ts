@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import GitRepo from "@/models/GitRepo";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(req: Request) {
   try {
@@ -17,7 +17,7 @@ export async function GET(req: Request) {
 
     await dbConnect();
     const repos = await GitRepo.find({ userId, type: "PERSONAL" }).sort({ updatedAt: -1 });
-    
+
     console.log(`[GIT_USER_GET] Found ${repos.length} repos for user ${userId}`);
     return NextResponse.json(repos);
   } catch (error: any) {
@@ -41,8 +41,8 @@ export async function POST(req: Request) {
     console.log(`[GIT_USER_POST] Session User ID: ${userId}`);
 
     if (!userId) {
-       console.error("[GIT_USER_POST] UserId missing from session", JSON.stringify(session.user));
-       return NextResponse.json({ message: "Session invalid: Missing User ID" }, { status: 500 });
+      console.error("[GIT_USER_POST] UserId missing from session", JSON.stringify(session.user));
+      return NextResponse.json({ message: "Session invalid: Missing User ID" }, { status: 500 });
     }
 
     // Normalization

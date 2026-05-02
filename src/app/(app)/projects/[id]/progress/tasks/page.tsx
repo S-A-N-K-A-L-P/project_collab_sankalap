@@ -16,8 +16,8 @@ type TaskItem = {
 };
 
 export default function ProjectTasksPage() {
-    const params = useParams<{ projectId: string }>();
-    const projectId = params.projectId;
+    const params = useParams<{ id: string }>();
+    const projectId = params.id;
     const [tasks, setTasks] = useState<TaskItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -117,9 +117,9 @@ export default function ProjectTasksPage() {
         }
 
         setTasks((current) =>
-            current.map((item) => 
-                item._id === taskId 
-                    ? { ...item, ...updates as Partial<typeof item> } 
+            current.map((item) =>
+                item._id === taskId
+                    ? { ...item, ...updates as Partial<typeof item> }
                     : item
             )
         );
