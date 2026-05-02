@@ -51,14 +51,6 @@ export async function middleware(req: NextRequest) {
       loginUrl.searchParams.set("callbackUrl", path);
       return NextResponse.redirect(loginUrl);
     }
-
-    // Check for admin-only routes
-    const isAdminRoute = path.startsWith("/admin");
-    const userRole = token.role as string;
-
-    if (isAdminRoute && userRole !== "admin") {
-      return NextResponse.redirect(new URL("/unauthorized", req.url));
-    }
   }
 
   return NextResponse.next();

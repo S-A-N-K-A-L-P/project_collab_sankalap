@@ -12,8 +12,8 @@ type TaskItem = {
 };
 
 export default function ProjectTeamPage() {
-    const params = useParams<{ projectId: string }>();
-    const projectId = params.projectId;
+    const params = useParams<{ id: string }>();
+    const projectId = params.id;
     const [tasks, setTasks] = useState<TaskItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

@@ -24,21 +24,6 @@ export function canConvertToPriority(role: AppRole): boolean {
   return role === "admin" || role === "head";
 }
 
-export function canAssignProjectHead(role: AppRole): boolean {
-  return role === "admin";
-}
-
-export function canIssueCertificates(role: AppRole): boolean {
-  return role === "admin";
-}
-
-export function canManagePoints(role: AppRole): boolean {
-  return role === "admin";
-}
-
-export function canJoinProject(role: AppRole): boolean {
-  return role === "member" || role === "user";
-}
 
 export function canManageTasks(role: AppRole): boolean {
   return role === "admin" || role === "head";
