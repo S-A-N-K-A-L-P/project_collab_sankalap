@@ -15,6 +15,7 @@ export default function SettingsPage() {
     location: "",
     skills: "",
     role: "user",
+    github: "",
   });
 
   const fetchProfile = async () => {
@@ -28,6 +29,7 @@ export default function SettingsPage() {
           location: data.location || "",
           skills: data.skills?.join(", ") || "",
           role: data.role || "user",
+          github: data.github || "",
         });
       }
     } catch (err) {
@@ -146,6 +148,20 @@ export default function SettingsPage() {
                   value={formData.skills}
                   onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
                   placeholder="React, TypeScript, Solidity, Rust..."
+                  className="w-full pl-11 pr-4 py-3 bg-background border border-border-subtle rounded-xl text-[13px] font-medium outline-none focus:border-accent/50 transition-all text-foreground placeholder:text-muted"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest ml-1">GitHub Profile Link</label>
+              <div className="relative">
+                <Zap className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                <input
+                  type="text"
+                  value={formData.github}
+                  onChange={(e) => setFormData({ ...formData, github: e.target.value })}
+                  placeholder="https://github.com/your-username"
                   className="w-full pl-11 pr-4 py-3 bg-background border border-border-subtle rounded-xl text-[13px] font-medium outline-none focus:border-accent/50 transition-all text-foreground placeholder:text-muted"
                 />
               </div>

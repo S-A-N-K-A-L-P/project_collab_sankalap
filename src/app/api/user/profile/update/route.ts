@@ -10,19 +10,20 @@ export async function PATCH(req: Request) {
     if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { bio, location, skills, role } = body;
+    const { bio, location, skills, role, github } = body;
 
     await dbConnect();
 
     const updatedUser = await User.findOneAndUpdate(
       { email: session.user.email },
-      {
-        $set: {
-          bio,
-          location,
-          skills,
-          role: role || "user"
-        }
+      { 
+        $set: { 
+          bio, 
+          location, 
+          skills, 
+          role: role || "user",
+          github
+        } 
       },
       { new: true }
     );

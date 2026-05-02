@@ -38,6 +38,10 @@ const UserSchema = new Schema(
       type: String,
       default: "",
     },
+    github: {
+      type: String,
+      default: "",
+    },
     bio: {
       type: String,
       default: "",
