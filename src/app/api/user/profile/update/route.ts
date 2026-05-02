@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
 
@@ -16,13 +16,13 @@ export async function PATCH(req: Request) {
 
     const updatedUser = await User.findOneAndUpdate(
       { email: session.user.email },
-      { 
-        $set: { 
-          bio, 
-          location, 
-          skills, 
-          role: role || "user" 
-        } 
+      {
+        $set: {
+          bio,
+          location,
+          skills,
+          role: role || "user"
+        }
       },
       { new: true }
     );

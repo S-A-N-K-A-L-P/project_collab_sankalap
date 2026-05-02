@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import Org from "@/models/Org";
 import OrgMember from "@/models/OrgMember";
@@ -23,7 +23,7 @@ export async function POST(
 
     const existingMember = await OrgMember.findOne({ userId, orgId });
     if (existingMember) {
-        return NextResponse.json({ message: "Already a member" }, { status: 400 });
+      return NextResponse.json({ message: "Already a member" }, { status: 400 });
     }
 
     // Add to Org

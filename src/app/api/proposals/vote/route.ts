@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import Proposal from "@/models/Proposal";
 import Vote from "@/models/Vote";
@@ -43,36 +43,36 @@ export async function POST(req: Request) {
     // Sync totalVotes on Proposal
     const allVotes = await Vote.find({ proposalId });
     const totalVotes = allVotes.reduce((acc, v) => acc + v.value, 0);
-    
+
     const updatedProposal = await Proposal.findByIdAndUpdate(
-        proposalId, 
-        { totalVotes }, 
-        { new: true }
+      proposalId,
+      { totalVotes },
+      { new: true }
     );
-    
+
     // Log Activity
     if (value === 1 && (actionTaken === "created" || actionTaken === "changed")) {
-        await Activity.create({
-            actorId: userId,
-            type: "VOTE",
-            targetId: proposalId,
-            targetType: "PROPOSAL",
-            metadata: { title: updatedProposal.title, value: 1 }
-        });
+      await Activity.create({
+        actorId: userId,
+        type: "VOTE",
+        targetId: proposalId,
+        targetType: "PROPOSAL",
+        metadata: { title: updatedProposal.title, value: 1 }
+      });
     }
 
     // Status Activation Logic
     if (updatedProposal.totalVotes >= 10 && updatedProposal.status === "proposal") {
-        updatedProposal.status = "active";
-        await updatedProposal.save();
-        
-        await Activity.create({
-            actorId: userId,
-            type: "CREATE_PROPOSAL",
-            targetId: proposalId,
-            targetType: "PROPOSAL",
-            metadata: { title: updatedProposal.title, info: "Protocol ACTIVATED" }
-        });
+      updatedProposal.status = "active";
+      await updatedProposal.save();
+
+      await Activity.create({
+        actorId: userId,
+        type: "CREATE_PROPOSAL",
+        targetId: proposalId,
+        targetType: "PROPOSAL",
+        metadata: { title: updatedProposal.title, info: "Protocol ACTIVATED" }
+      });
     }
 
     return NextResponse.json(updatedProposal);
