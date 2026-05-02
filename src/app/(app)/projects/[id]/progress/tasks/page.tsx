@@ -117,9 +117,9 @@ export default function ProjectTasksPage() {
         }
 
         setTasks((current) =>
-            current.map((item) => 
-                item._id === taskId 
-                    ? { ...item, ...updates as Partial<typeof item> } 
+            current.map((item) =>
+                item._id === taskId
+                    ? { ...item, ...updates as Partial<typeof item> }
                     : item
             )
         );
