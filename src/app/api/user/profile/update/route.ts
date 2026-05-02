@@ -10,7 +10,7 @@ export async function PATCH(req: Request) {
     if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { bio, location, skills, role } = body;
+    const { bio, location, skills, role, github } = body;
 
     await dbConnect();
 
@@ -21,7 +21,8 @@ export async function PATCH(req: Request) {
           bio, 
           location, 
           skills, 
-          role: role || "user" 
+          role: role || "user",
+          github
         } 
       },
       { new: true }

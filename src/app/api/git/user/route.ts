@@ -51,14 +51,28 @@ export async function POST(req: Request) {
       repoUrl = "https://" + repoUrl;
     }
 
-    // Simple parser
-    const parts = repoUrl.replace("https://github.com/", "").replace("http://github.com/", "").split("/");
-    const owner = parts[0];
-    const repoName = parts[1];
+    // Robust parser
+    let owner = "";
+    let repoName = "";
+    
+    try {
+      const url = new URL(repoUrl);
+      const pathParts = url.pathname.split("/").filter(Boolean);
+      if (pathParts.length >= 2) {
+        owner = pathParts[0];
+        repoName = pathParts[1];
+      }
+    } catch (e) {
+      // Fallback to manual split if URL constructor fails
+      const cleanPath = repoUrl.replace(/https?:\/\/(www\.)?github\.com\//, "");
+      const parts = cleanPath.split("/");
+      owner = parts[0];
+      repoName = parts[1];
+    }
 
     if (!owner || !repoName) {
         console.error("[GIT_USER_POST] Invalid URL parsed:", repoUrl);
-        return NextResponse.json({ message: "Invalid GitHub URL format" }, { status: 400 });
+        return NextResponse.json({ message: "Invalid GitHub URL format. Expected: github.com/owner/repo" }, { status: 400 });
     }
 
     await dbConnect();
