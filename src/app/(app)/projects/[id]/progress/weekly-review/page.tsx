@@ -13,8 +13,8 @@ type WeeklyReport = {
 };
 
 export default function WeeklyReviewPage() {
-    const params = useParams<{ projectId: string }>();
-    const projectId = params.projectId;
+    const params = useParams<{ id: string }>();
+    const projectId = params.id;
     const [reports, setReports] = useState<WeeklyReport[]>([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);

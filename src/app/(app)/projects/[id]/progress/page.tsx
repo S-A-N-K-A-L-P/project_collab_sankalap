@@ -12,8 +12,8 @@ type TaskItem = {
 };
 
 export default function ProjectProgressDashboardPage() {
-    const params = useParams<{ projectId: string }>();
-    const projectId = params.projectId;
+    const params = useParams<{ id: string }>();
+    const projectId = params.id;
     const [tasks, setTasks] = useState<TaskItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -98,19 +98,16 @@ export default function ProjectProgressDashboardPage() {
             </div>
 
             <div className="rounded-2xl border border-[#1f1f23] bg-[#121214] p-5">
-                <h2 className="text-sm font-semibold text-[#e5e7eb]">Team Overview</h2>
-                {members.length === 0 ? (
-                    <p className="text-sm text-[#9ca3af] mt-2">No team activity found yet.</p>
-                ) : (
-                    <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {members.map((member) => (
-                            <div key={member.id} className="rounded-xl border border-[#1f1f23] bg-[#17171a] p-3">
-                                <p className="text-sm font-medium text-[#e5e7eb]">{member.name}</p>
-                                <p className="text-xs text-[#9ca3af] mt-1">{member.taskCount} assigned tasks</p>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                <h2 className="text-lg font-semibold text-[#e5e7eb]">Team Overview</h2>
+                <div className="mt-3 space-y-2">
+                    {members.map((member) => (
+                        <div key={member.id} className="rounded-lg border border-[#1f1f23] bg-[#17171a] p-3 flex justify-between">
+                            <span className="text-sm text-[#e5e7eb]">{member.name}</span>
+                            <span className="text-xs text-[#9ca3af]">{member.taskCount} tasks</span>
+                        </div>
+                    ))}
+                    {members.length === 0 && <p className="text-sm text-[#9ca3af]">No team members assigned yet.</p>}
+                </div>
             </div>
         </div>
     );
@@ -118,9 +115,9 @@ export default function ProjectProgressDashboardPage() {
 
 function MetricCard({ label, value }: { label: string; value: number | string }) {
     return (
-        <div className="rounded-xl border border-[#1f1f23] bg-[#121214] p-4">
-            <p className="text-[11px] uppercase tracking-wide font-bold text-[#9ca3af]">{label}</p>
-            <p className="text-lg font-bold text-[#e5e7eb] mt-1">{value}</p>
+        <div className="rounded-lg border border-[#1f1f23] bg-[#17171a] p-4 text-center">
+            <p className="text-[10px] font-bold text-[#9ca3af] uppercase tracking-widest">{label}</p>
+            <p className="text-2xl font-bold text-[#e5e7eb] mt-2">{value}</p>
         </div>
     );
 }

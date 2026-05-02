@@ -1,9 +1,5 @@
 export type UserRole = "admin" | "pixel_head" | "pixel_member" | "normal_user";
 
-export function isAdmin(role: UserRole): boolean {
-  return role === "admin";
-}
-
 export function isPixelHead(role: UserRole): boolean {
   return role === "pixel_head";
 }

@@ -19,7 +19,7 @@ export default async function ProjectProgressLayout({
     params,
 }: {
     children: React.ReactNode;
-    params: Promise<{ projectId: string }>;
+    params: Promise<{ id: string }>;
 }) {
     const session = await getServerSession(authOptions);
     const role = (session?.user as any)?.role;
@@ -28,17 +28,17 @@ export default async function ProjectProgressLayout({
         redirect("/feed");
     }
 
-    const { projectId } = await params;
+    const { id } = await params;
 
-    if (!mongoose.Types.ObjectId.isValid(projectId)) {
-        redirect("/admin/projects");
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        redirect("/feed");
     }
 
     await dbConnect();
-    const project = await Project.findById(projectId).lean();
+    const project = await Project.findById(id).lean();
 
     if (!project) {
-        redirect("/admin/projects");
+        redirect("/feed");
     }
 
     return (
@@ -52,7 +52,7 @@ export default async function ProjectProgressLayout({
                     {TABS.map((tab) => (
                         <Link
                             key={tab.label}
-                            href={`/admin/projects/${projectId}/progress${tab.href}`}
+                            href={`/projects/${id}/progress${tab.href}`}
                             className="rounded-lg border border-border-subtle px-3 py-1.5 text-xs font-medium text-muted hover:text-foreground hover:border-border-strong"
                         >
                             {tab.label}
