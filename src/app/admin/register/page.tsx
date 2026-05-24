@@ -1,6 +1,6 @@
 import AdminRegisterForm from "@/app/admin/components/AdminRegisterForm";
 
-export const metadata = { title: "Admin Register | Pixel Platform" };
+export const metadata = { title: "Admin Register | Syncro" };
 
 export default function AdminRegisterPage() {
   return (

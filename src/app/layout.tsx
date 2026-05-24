@@ -1,28 +1,11 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 
 export const metadata: Metadata = {
-  title: "S.A.N.K.A.L.P. Platform",
-  description: "Project Collaboration Platform",
+  title: "Syncro",
+  description: "SANKALP Collaboration Platform",
 };
-
-// Inline script that runs before paint to prevent theme flash.
-// Reads the saved preference from localStorage, falls back to OS
-// prefers-color-scheme, and sets data-theme on <html> immediately.
-const themeScript = `
-(function(){
-  try {
-    var stored = localStorage.getItem('pixel-platform-theme');
-    var theme = stored;
-    if (!theme || theme === 'system') {
-      theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    document.documentElement.setAttribute('data-theme', theme);
-  } catch(e) {}
-})();
-`;
 
 export default function RootLayout({
   children,
@@ -41,11 +24,6 @@ export default function RootLayout({
       }
     >
       <body className="antialiased">
-        <Script
-          id="theme-init"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: themeScript }}
-        />
         <Providers>{children}</Providers>
       </body>
     </html>

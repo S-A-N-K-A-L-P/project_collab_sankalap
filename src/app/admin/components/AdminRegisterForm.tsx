@@ -141,7 +141,7 @@ export default function AdminRegisterForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {field("name", "Full Name", "John Doe", User)}
-          {field("email", "Email", "admin@pixel.os", Mail, "email")}
+          {field("email", "Email", "admin@syncro.dev", Mail, "email")}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

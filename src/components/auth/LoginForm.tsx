@@ -82,7 +82,7 @@ export default function LoginForm() {
               required
               value={formData.email}
               onChange={handleChange}
-              placeholder="agent@pixel.os"
+              placeholder="agent@syncro.dev"
               className="w-full pl-12 pr-4 py-3 bg-background border border-border-subtle rounded-xl focus:border-accent/50 outline-none transition-all text-foreground text-[13px] placeholder:text-muted"
             />
           </div>

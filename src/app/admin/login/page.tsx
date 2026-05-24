@@ -1,6 +1,6 @@
 import AdminLoginForm from "@/app/admin/components/AdminLoginForm";
 
-export const metadata = { title: "Admin Login | Pixel Platform" };
+export const metadata = { title: "Admin Login | Syncro" };
 
 export default function AdminLoginPage() {
   return (

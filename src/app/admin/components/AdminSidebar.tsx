@@ -31,7 +31,7 @@ export default function AdminSidebar() {
           </div>
           <div className="min-w-0">
             <p className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest truncate">
-              Pixel Platform
+              Syncro
             </p>
             <p className="text-[13px] font-bold text-foreground tracking-tight">
               Admin Panel

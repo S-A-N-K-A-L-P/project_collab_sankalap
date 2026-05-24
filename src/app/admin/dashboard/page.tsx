@@ -8,7 +8,7 @@ import AdminShell from "@/app/admin/components/AdminShell";
 import AdminStatCard from "@/app/admin/components/AdminStatCard";
 import { Users, FileText, Activity, ShieldCheck } from "lucide-react";
 
-export const metadata = { title: "Dashboard | Admin | Pixel Platform" };
+export const metadata = { title: "Dashboard | Admin | Syncro" };
 
 async function getStats() {
   await dbConnect();
