@@ -4,8 +4,8 @@ import Sidebar from "@/components/layout/Sidebar";
 import RightPanel from "@/components/layout/RightPanel";
 
 export const metadata: Metadata = {
-  title: "Feed | Pixel Platform",
-  description: "Next-gen builder coordination network.",
+  title: "Feed | Syncro",
+  description: "SANKALP builder coordination network.",
 };
 
 export default function AppLayout({

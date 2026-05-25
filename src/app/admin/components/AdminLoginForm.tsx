@@ -4,21 +4,15 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, Loader2, AlertCircle, Zap } from "lucide-react";
+import { Mail, Lock, Loader2, AlertCircle, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
-export default function LoginForm() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+export default function AdminLoginForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,18 +21,18 @@ export default function LoginForm() {
 
     try {
       const res = await signIn("credentials", {
-        email: formData.email,
-        password: formData.password,
+        email,
+        password,
         redirect: false,
       });
 
       if (res?.error) {
-        setError("Invalid email or password");
+        setError("Invalid credentials");
       } else {
-        router.push("/feed");
+        router.push("/admin/dashboard");
         router.refresh();
       }
-    } catch (err) {
+    } catch {
       setError("An error occurred. Please try again.");
     } finally {
       setLoading(false);
@@ -50,14 +44,18 @@ export default function LoginForm() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className="w-full max-w-md p-10 space-y-8 bg-surface rounded-2xl border border-border-subtle shadow-md relative"
+      className="w-full max-w-md p-10 space-y-8 bg-surface rounded-2xl border border-border-subtle shadow-md"
     >
       <div className="text-center space-y-3">
         <div className="mx-auto w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-white shadow-sm mb-4">
-          <Zap className="w-5 h-5 fill-current" />
+          <ShieldCheck className="w-5 h-5" />
         </div>
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">Initialize Sync</h2>
-        <p className="text-muted text-[13px] font-medium leading-relaxed">Access the collective protocol layers</p>
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">
+          Admin Access
+        </h2>
+        <p className="text-muted text-[13px] font-medium">
+          Authenticate to access the control panel
+        </p>
       </div>
 
       {error && (
@@ -66,50 +64,44 @@ export default function LoginForm() {
           animate={{ opacity: 1, scale: 1 }}
           className="p-4 rounded-xl bg-red-500/10 text-red-500 flex items-center gap-3 border border-red-500/20"
         >
-          <AlertCircle className="w-4 h-4" />
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
           <p className="text-[11px] font-bold uppercase tracking-tight">{error}</p>
         </motion.div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <label className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest ml-1">Identity Vector (Email)</label>
+          <label className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest ml-1">
+            Email
+          </label>
           <div className="relative">
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
             <input
               type="email"
-              name="email"
               required
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="agent@syncro.dev"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@syncro.dev"
               className="w-full pl-12 pr-4 py-3 bg-background border border-border-subtle rounded-xl focus:border-accent/50 outline-none transition-all text-foreground text-[13px] placeholder:text-muted"
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest ml-1">Access Phrase (Password)</label>
+          <label className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest ml-1">
+            Password
+          </label>
           <div className="relative">
             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
             <input
               type="password"
-              name="password"
               required
-              value={formData.password}
-              onChange={handleChange}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               className="w-full pl-12 pr-4 py-3 bg-background border border-border-subtle rounded-xl focus:border-accent/50 outline-none transition-all text-foreground text-[13px] placeholder:text-muted"
             />
           </div>
-        </div>
-
-        <div className="flex items-center justify-between px-1">
-          <div className="flex items-center gap-2">
-            <input type="checkbox" id="remember" className="rounded border-border-subtle bg-background text-accent focus:ring-offset-background" />
-            <label htmlFor="remember" className="text-[11px] text-muted font-bold uppercase tracking-tight">Stay Synced</label>
-          </div>
-          <Link href="#" className="text-[11px] text-accent hover:underline font-bold uppercase tracking-tight">Reset Key?</Link>
         </div>
 
         <button
@@ -127,9 +119,12 @@ export default function LoginForm() {
 
       <div className="text-center pt-2">
         <p className="text-[11px] text-muted font-bold uppercase tracking-widest">
-          New Node?{" "}
-          <Link href="/register" className="text-accent hover:underline font-bold ml-2">
-            Build Identity
+          New admin?{" "}
+          <Link
+            href="/admin/register"
+            className="text-accent hover:underline font-bold ml-2"
+          >
+            Register
           </Link>
         </p>
       </div>
