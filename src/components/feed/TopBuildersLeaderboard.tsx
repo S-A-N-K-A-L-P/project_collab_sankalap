@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Trophy, ArrowUp, Activity, Hexagon } from "lucide-react";
+import { Trophy, ArrowUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
@@ -32,13 +32,13 @@ export default function TopBuildersLeaderboard() {
   }, []);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
-          <Trophy className="w-3.5 h-3.5 text-amber-500/50" />
-          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--text-muted)] font-mono">Pulse Leaders</h3>
+          <Trophy className="w-3.5 h-3.5 text-amber-500/80" />
+          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted font-mono">Top Contributors</h3>
         </div>
-        <button className="text-[9px] font-bold text-[var(--accent-color)] uppercase tracking-tight hover:underline">View All</button>
+        <button className="text-[9px] font-bold text-accent uppercase tracking-tight hover:underline">View All</button>
       </div>
 
       <div className="space-y-2">
@@ -48,24 +48,24 @@ export default function TopBuildersLeaderboard() {
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.05 }}
-            className="group flex items-center justify-between p-3 bg-[var(--surface-primary)] border border-[var(--border-color)] rounded-2xl hover:border-[var(--border-strong)] transition-all cursor-default"
+            className="group flex items-center justify-between p-3 bg-surface border border-border-subtle rounded-xl hover:border-border-strong transition-all cursor-default"
           >
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] font-mono font-black text-[var(--text-muted)] w-4">
+            <div className="flex items-center gap-2.5">
+              <span className="text-[10px] font-mono font-black text-muted w-4">
                 {r.rank < 10 ? `0${r.rank}` : r.rank}
               </span>
               <div className="flex flex-col">
-                <Link href={`/profile/${r._id}`} className="text-[12px] font-bold text-[var(--text-primary)] uppercase tracking-tighter hover:text-[var(--accent-color)] transition-colors">
+                <Link href={`/profile/${r._id}`} className="text-[12px] font-bold text-foreground hover:text-accent transition-colors">
                   {r.name}
                 </Link>
-                <span className="text-[8px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-widest opacity-60">
-                  S-RANK BUILDER
+                <span className="text-[8px] font-mono font-bold text-muted uppercase tracking-widest opacity-60">
+                  CONTRIBUTOR
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <div className="text-[11px] font-mono font-black text-[var(--accent-color)]">{r.points} P</div>
+                <div className="text-[11px] font-mono font-black text-accent">{r.points} P</div>
                 <div className="text-[8px] font-bold text-emerald-500 flex items-center justify-end gap-0.5">
                   <ArrowUp className="w-2 h-2" /> {r.trend}
                 </div>
@@ -76,7 +76,7 @@ export default function TopBuildersLeaderboard() {
 
         {loading && (
           <div className="space-y-2">
-            {[1, 2, 3].map(i => <div key={i} className="h-12 bg-[var(--surface-primary)] border border-[var(--border-color)] rounded-2xl animate-pulse" />)}
+            {[1, 2, 3].map(i => <div key={i} className="h-12 bg-surface border border-border-subtle rounded-xl animate-pulse" />)}
           </div>
         )}
       </div>

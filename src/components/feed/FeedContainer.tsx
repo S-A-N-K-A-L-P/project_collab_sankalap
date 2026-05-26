@@ -2,11 +2,16 @@
 
 import { useEffect, useState } from "react";
 import FeedList from "./FeedList";
+import FeedActions from "@/app/(app)/feed/FeedActions";
+import ProposalDetailPanel from "./ProposalDetailPanel";
 import { Loader2, Radio } from "lucide-react";
+import { useLayout } from "@/context/LayoutContext";
 
 export default function FeedContainer() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProposal, setSelectedProposal] = useState<any | null>(null);
+  const { setIsRightPanelCollapsed } = useLayout();
 
   useEffect(() => {
     async function fetchFeed() {
@@ -39,6 +44,12 @@ export default function FeedContainer() {
     fetchFeed();
   }, []);
 
+  // Control dynamic right panel collapsing based on expanded proposal focus
+  useEffect(() => {
+    setIsRightPanelCollapsed(selectedProposal !== null);
+    return () => setIsRightPanelCollapsed(false);
+  }, [selectedProposal, setIsRightPanelCollapsed]);
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -48,15 +59,50 @@ export default function FeedContainer() {
     );
   }
 
+  const isExpanded = selectedProposal !== null;
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2.5">
-          <Radio className="w-4 h-4 text-accent animate-pulse" />
-          <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted font-mono">Real-time Stream</h2>
+    <div className={`transition-all duration-300 w-full`}>
+      <div className={`grid grid-cols-1 ${isExpanded ? "lg:grid-cols-12 gap-6" : "gap-6 max-w-3xl mx-auto w-full"}`}>
+        
+        {/* Left Side: Composer and Feed Previews */}
+        <div className={`space-y-6 ${isExpanded ? "lg:col-span-5 xl:col-span-5" : "w-full"}`}>
+          {/* Create Box */}
+          <FeedActions />
+
+          {/* Dynamic Feed Header */}
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <Radio className="w-3.5 h-3.5 text-accent animate-pulse" />
+              <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted font-mono">Platform Stream</h2>
+            </div>
+          </div>
+
+          {/* Feed List */}
+          <FeedList 
+            items={items} 
+            selectedProposalId={selectedProposal?._id}
+            onExpandProposal={(proposal) => {
+              if (selectedProposal?._id === proposal._id) {
+                setSelectedProposal(null);
+              } else {
+                setSelectedProposal(proposal);
+              }
+            }}
+          />
         </div>
+
+        {/* Center/Right Side: Primary Focused Expanded Canvas */}
+        {isExpanded && (
+          <div className="lg:col-span-7 xl:col-span-7 relative">
+            <ProposalDetailPanel 
+              proposal={selectedProposal} 
+              onClose={() => setSelectedProposal(null)} 
+            />
+          </div>
+        )}
+
       </div>
-      <FeedList items={items} />
     </div>
   );
 }
