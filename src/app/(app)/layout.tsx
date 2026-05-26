@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { unstable_noStore as noStore } from "next/cache";
-import Sidebar from "@/components/layout/Sidebar";
-import RightPanel from "@/components/layout/RightPanel";
+import AppLayoutClient from "@/components/layout/AppLayoutClient";
 
 export const metadata: Metadata = {
   title: "Feed | Syncro",
@@ -16,19 +15,8 @@ export default function AppLayout({
   noStore();
 
   return (
-    <div className="flex min-h-screen bg-[var(--background-primary)] text-[var(--foreground)] font-sans antialiased">
-      {/* Left Sidebar - Fixed */}
-      <Sidebar />
-
-      {/* Main Content Area */}
-      <main className="flex-1 min-h-screen flex justify-center">
-        <div className="w-full max-w-4xl p-6 lg:p-8 space-y-6">
-          {children}
-        </div>
-      </main>
-
-      {/* Right Intelligence Panel - Sticky */}
-      <RightPanel />
-    </div>
+    <AppLayoutClient>
+      {children}
+    </AppLayoutClient>
   );
 }

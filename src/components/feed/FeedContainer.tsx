@@ -5,11 +5,13 @@ import FeedList from "./FeedList";
 import FeedActions from "@/app/(app)/feed/FeedActions";
 import ProposalDetailPanel from "./ProposalDetailPanel";
 import { Loader2, Radio } from "lucide-react";
+import { useLayout } from "@/context/LayoutContext";
 
 export default function FeedContainer() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProposal, setSelectedProposal] = useState<any | null>(null);
+  const { setIsRightPanelCollapsed } = useLayout();
 
   useEffect(() => {
     async function fetchFeed() {
@@ -42,6 +44,12 @@ export default function FeedContainer() {
     fetchFeed();
   }, []);
 
+  // Control dynamic right panel collapsing based on expanded proposal focus
+  useEffect(() => {
+    setIsRightPanelCollapsed(selectedProposal !== null);
+    return () => setIsRightPanelCollapsed(false);
+  }, [selectedProposal, setIsRightPanelCollapsed]);
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -54,11 +62,11 @@ export default function FeedContainer() {
   const isExpanded = selectedProposal !== null;
 
   return (
-    <div className={`transition-all duration-300 ${isExpanded ? "max-w-6xl w-full" : "max-w-3xl w-full mx-auto"}`}>
-      <div className={`grid grid-cols-1 ${isExpanded ? "lg:grid-cols-12 gap-6" : "gap-6"}`}>
+    <div className={`transition-all duration-300 w-full`}>
+      <div className={`grid grid-cols-1 ${isExpanded ? "lg:grid-cols-12 gap-6" : "gap-6 max-w-3xl mx-auto w-full"}`}>
         
         {/* Left Side: Composer and Feed Previews */}
-        <div className={`space-y-6 ${isExpanded ? "lg:col-span-7" : "w-full"}`}>
+        <div className={`space-y-6 ${isExpanded ? "lg:col-span-5 xl:col-span-5" : "w-full"}`}>
           {/* Create Box */}
           <FeedActions />
 
@@ -75,7 +83,6 @@ export default function FeedContainer() {
             items={items} 
             selectedProposalId={selectedProposal?._id}
             onExpandProposal={(proposal) => {
-              // Toggle expanded panel off if clicking already selected
               if (selectedProposal?._id === proposal._id) {
                 setSelectedProposal(null);
               } else {
@@ -85,9 +92,9 @@ export default function FeedContainer() {
           />
         </div>
 
-        {/* Right Side: Expanded Side Panel */}
+        {/* Center/Right Side: Primary Focused Expanded Canvas */}
         {isExpanded && (
-          <div className="lg:col-span-5 relative">
+          <div className="lg:col-span-7 xl:col-span-7 relative">
             <ProposalDetailPanel 
               proposal={selectedProposal} 
               onClose={() => setSelectedProposal(null)} 
