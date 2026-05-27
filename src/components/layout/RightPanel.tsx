@@ -1,58 +1,69 @@
 "use client";
 
-import { TrendingUp, Users, Trophy, Activity, Zap } from "lucide-react";
+import { TrendingUp, Users, BookOpen } from "lucide-react";
 import Link from "next/link";
-import LiveActivityStream from "../feed/LiveActivityStream";
+import LiveActivityStream    from "../feed/LiveActivityStream";
 import TopBuildersLeaderboard from "../feed/TopBuildersLeaderboard";
+import { TOP_NAV_HEIGHT }    from "./constants";
 
 export default function RightPanel() {
     return (
-        <aside className="w-80 h-screen sticky top-0 bg-background border-l border-border-subtle overflow-y-auto no-scrollbar pb-20 hidden xl:block">
-            <div className="p-5 space-y-8">
+        <aside
+            style={{ top: TOP_NAV_HEIGHT, height: `calc(100vh - ${TOP_NAV_HEIGHT}px)` }}
+            className="w-full sticky overflow-y-auto border-l border-border bg-background hidden xl:block pb-20"
+        >
+            <div className="p-5 space-y-6">
 
-                {/* Core Platform Telemetry */}
-                <div className="bg-surface border border-border-subtle rounded-xl p-5 relative overflow-hidden group hover:border-border-strong transition-all duration-150">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                            <Activity className="w-3.5 h-3.5 text-accent" />
-                            <span className="text-[10px] font-mono font-bold text-muted uppercase tracking-[0.15em]">Node Sync Status</span>
-                        </div>
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    </div>
-                    <div className="space-y-1">
-                        <h3 className="text-xl font-bold text-foreground tracking-tight leading-none">98.2% Nominal</h3>
-                        <p className="text-[11px] text-muted leading-relaxed">
-                            Packet integration verified across 124 active research nodes.
-                        </p>
-                    </div>
+                {/* Quick links */}
+                <div className="space-y-1">
+                    <h3 className="text-xs font-semibold text-muted uppercase tracking-wider px-1 mb-2">
+                        Explore
+                    </h3>
+                    {[
+                        { href: "/discover", Icon: TrendingUp, label: "Discover Projects",  sub: "Browse active initiatives",      color: "text-primary",     bg: "bg-primary/10"      },
+                        { href: "/ideas",    Icon: BookOpen,   label: "My Proposals",        sub: "View your submissions",          color: "text-emerald-600", bg: "bg-emerald-500/10"  },
+                        { href: "/profile",  Icon: Users,      label: "Community",           sub: "Connect with contributors",      color: "text-blue-600",    bg: "bg-blue-500/10"     },
+                    ].map(({ href, Icon, label, sub, color, bg }) => (
+                        <Link
+                            key={href}
+                            href={href}
+                            className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-card transition-colors group"
+                        >
+                            <div className={`w-8 h-8 rounded-lg ${bg} flex items-center justify-center shrink-0`}>
+                                <Icon className={`w-4 h-4 ${color}`} />
+                            </div>
+                            <div>
+                                <p className={`text-sm font-semibold text-foreground group-hover:${color} transition-colors`}>
+                                    {label}
+                                </p>
+                                <p className="text-xs text-muted">{sub}</p>
+                            </div>
+                        </Link>
+                    ))}
                 </div>
 
-                {/* Dynamic Activity Stream */}
+                <hr className="border-border" />
+
+                {/* Live activity */}
                 <LiveActivityStream />
 
-                {/* Dynamic Leaderboard */}
-                <div className="pt-2 border-t border-border-subtle">
-                    <TopBuildersLeaderboard />
-                </div>
+                <hr className="border-border" />
 
-                {/* System Credits / Footer */}
-                <div className="pt-6 px-1 space-y-4">
-                    <div className="flex flex-wrap gap-x-4 gap-y-2 text-[10px] font-bold text-muted uppercase tracking-widest font-mono">
-                        <Link href="#" className="hover:text-accent transition-colors">Privacy</Link>
-                        <Link href="#" className="hover:text-accent transition-colors">Protocols</Link>
-                        <Link href="#" className="hover:text-accent transition-colors">Nodes</Link>
-                        <Link href="#" className="hover:text-accent transition-colors">Legal</Link>
-                    </div>
+                {/* Leaderboard */}
+                <TopBuildersLeaderboard />
 
-                    <div className="space-y-1 pt-2">
-                        <div className="flex items-center gap-2 text-[9px] font-mono font-bold text-muted uppercase tracking-[0.2em]">
-                            <Zap className="w-3 h-3 fill-current" />
-                            SANKALP Engine v4.2
-                        </div>
-                        <p className="text-[9px] font-mono font-medium text-muted uppercase tracking-widest opacity-60">
-                            Solutions for Atmanirbhar Nation © 2026.
-                        </p>
+                {/* Footer */}
+                <div className="pt-4 space-y-2">
+                    <div className="flex flex-wrap gap-x-4 gap-y-1">
+                        {["Privacy", "Terms", "Help", "About"].map(l => (
+                            <Link key={l} href="#" className="text-xs text-muted hover:text-primary transition-colors">
+                                {l}
+                            </Link>
+                        ))}
                     </div>
+                    <p className="text-xs text-muted/60">
+                        S.A.N.K.A.L.P. Platform © {new Date().getFullYear()}
+                    </p>
                 </div>
             </div>
         </aside>

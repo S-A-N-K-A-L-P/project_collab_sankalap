@@ -17,6 +17,7 @@ type ProfileUser = {
   reputation?: number;
   followers?: Array<{ toString: () => string } | string>;
   following?: Array<{ toString: () => string } | string>;
+  [key: string]: any;
 };
 
 export default async function UserProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -67,40 +68,37 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
 
       {/* Content Tabs (Simplified for now, using sections) */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-        <div className="md:col-span-8 space-y-8">
-          <section className="space-y-4">
-            <div className="flex items-center gap-2.5 px-1">
-              <div className="w-1 h-3 bg-[#6366f1] rounded-full" />
-              <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#9ca3af] font-mono">Telemetry Broadcasts</h2>
-            </div>
+        <div className="md:col-span-8 space-y-6">
+          <section className="space-y-3">
+            <h2 className="text-sm font-semibold text-foreground px-1">
+              Proposals
+              <span className="ml-2 text-xs font-normal text-muted">({proposals.length})</span>
+            </h2>
             <FeedList items={proposals} />
           </section>
 
-          <section className="space-y-4">
-            <div className="flex items-center gap-2.5 px-1">
-              <div className="w-1 h-3 bg-emerald-500 rounded-full" />
-              <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-[#9ca3af] font-mono">System Activity</h2>
-            </div>
-            <FeedList items={activities} />
-          </section>
+          {activities.length > 0 && (
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold text-foreground px-1">Recent Activity</h2>
+              <FeedList items={activities} />
+            </section>
+          )}
         </div>
 
-        <div className="md:col-span-4 space-y-6">
-          <div className="bg-surface border border-border-subtle rounded-2xl p-5 shadow-sm">
-            <h3 className="text-[11px] font-bold uppercase tracking-widest text-foreground mb-4">About Node</h3>
-            <p className="text-[13px] text-muted leading-relaxed font-medium">
-              {user.bio || "No telemetry broadcasted yet."}
+        <div className="md:col-span-4 space-y-5">
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
+            <h3 className="text-sm font-semibold text-foreground mb-3">About</h3>
+            <p className="text-sm text-muted leading-relaxed">
+              {user.bio || "No bio added yet."}
             </p>
-            <div className="mt-6 pt-6 border-t border-border-subtle space-y-3">
-              <div className="flex justify-between text-[11px] font-mono">
-                <span className="text-muted font-bold uppercase">Identity</span>
-                <span className="text-muted uppercase">Verified</span>
+            {user.location && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <div className="flex items-center gap-2 text-sm text-muted">
+                  <span className="font-medium text-foreground">Location:</span>
+                  <span>{user.location}</span>
+                </div>
               </div>
-              <div className="flex justify-between text-[11px] font-mono">
-                <span className="text-muted font-bold uppercase">Location</span>
-                <span className="text-muted uppercase">{user.location || "Private"}</span>
-              </div>
-            </div>
+            )}
           </div>
 
           <GitProfileMetrics userId={id} />

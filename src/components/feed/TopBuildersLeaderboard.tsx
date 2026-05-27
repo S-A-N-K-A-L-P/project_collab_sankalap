@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Trophy, ArrowUp } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
@@ -17,7 +17,6 @@ export default function TopBuildersLeaderboard() {
         ...u,
         rank: i + 1,
         points: u.points || 0,
-        trend: u.trend || "SYNC"
       }));
       setRankings(ranked);
     } catch (err) {
@@ -31,55 +30,59 @@ export default function TopBuildersLeaderboard() {
     fetchRankings();
   }, []);
 
+  const medalColor = (rank: number) => {
+    if (rank === 1) return "text-amber-500";
+    if (rank === 2) return "text-slate-400";
+    if (rank === 3) return "text-amber-700";
+    return "text-muted";
+  };
+
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between px-1">
+    <div className="space-y-2">
+      <div className="flex items-center justify-between px-1 mb-3">
         <div className="flex items-center gap-2">
-          <Trophy className="w-3.5 h-3.5 text-amber-500/80" />
-          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted font-mono">Top Contributors</h3>
+          <Trophy className="w-3.5 h-3.5 text-amber-500" />
+          <h3 className="text-xs font-semibold text-muted uppercase tracking-wider">Top Contributors</h3>
         </div>
-        <button className="text-[9px] font-bold text-accent uppercase tracking-tight hover:underline">View All</button>
+        <Link href="/discover" className="text-xs text-primary hover:underline font-medium">View all</Link>
       </div>
 
-      <div className="space-y-2">
-        {rankings.map((r, i) => (
-          <motion.div
-            key={r._id}
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: i * 0.05 }}
-            className="group flex items-center justify-between p-3 bg-surface border border-border-subtle rounded-xl hover:border-border-strong transition-all cursor-default"
-          >
-            <div className="flex items-center gap-2.5">
-              <span className="text-[10px] font-mono font-black text-muted w-4">
-                {r.rank < 10 ? `0${r.rank}` : r.rank}
+      {loading ? (
+        <div className="space-y-2">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-12 bg-card rounded-lg animate-pulse" />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          {rankings.map((r, i) => (
+            <motion.div
+              key={r._id}
+              initial={{ opacity: 0, x: -4 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-card transition-colors"
+            >
+              <span className={`text-sm font-bold w-5 text-center shrink-0 ${medalColor(r.rank)}`}>
+                {r.rank <= 3 ? ["🥇","🥈","🥉"][r.rank - 1] : r.rank}
               </span>
-              <div className="flex flex-col">
-                <Link href={`/profile/${r._id}`} className="text-[12px] font-bold text-foreground hover:text-accent transition-colors">
-                  {r.name}
-                </Link>
-                <span className="text-[8px] font-mono font-bold text-muted uppercase tracking-widest opacity-60">
-                  CONTRIBUTOR
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <div className="text-[11px] font-mono font-black text-accent">{r.points} P</div>
-                <div className="text-[8px] font-bold text-emerald-500 flex items-center justify-end gap-0.5">
-                  <ArrowUp className="w-2 h-2" /> {r.trend}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        ))}
+              <Link
+                href={`/profile/${r._id}`}
+                className="flex-1 min-w-0 text-sm font-medium text-foreground hover:text-primary transition-colors truncate"
+              >
+                {r.name}
+              </Link>
+              <span className="text-xs font-semibold text-primary tabular-nums shrink-0">
+                {r.points.toLocaleString()} pts
+              </span>
+            </motion.div>
+          ))}
 
-        {loading && (
-          <div className="space-y-2">
-            {[1, 2, 3].map(i => <div key={i} className="h-12 bg-surface border border-border-subtle rounded-xl animate-pulse" />)}
-          </div>
-        )}
-      </div>
+          {rankings.length === 0 && (
+            <p className="text-xs text-muted text-center py-4">No contributors ranked yet.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

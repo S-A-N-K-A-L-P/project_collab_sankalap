@@ -61,21 +61,24 @@ export default function VoteButton({ proposalId, onVoteChange }: VoteButtonProps
     }
   };
 
+  const voted = userVotes > 0;
+
   return (
     <button
       onClick={handleVote}
       disabled={loading || !isActive}
-      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold uppercase transition-all ${userVotes > 0
-          ? 'text-foreground bg-accent/20 border border-accent/30'
-          : 'text-muted hover:bg-[color-mix(in_srgb,var(--foreground)_4%,transparent)] hover:text-foreground border border-transparent'
-        } ${!isActive ? 'opacity-50 cursor-not-allowed' : ''}`}
+      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+        voted
+          ? "bg-primary/10 text-primary border-primary/25 hover:bg-primary/15"
+          : "bg-transparent text-muted border-border hover:text-foreground hover:border-border-strong"
+      } ${!isActive ? "opacity-50 cursor-not-allowed" : ""}`}
     >
       {loading ? (
-        <Loader2 className="w-4 h-4 animate-spin" />
+        <Loader2 className="w-3.5 h-3.5 animate-spin" />
       ) : (
         <>
-          <ArrowBigUp className={`w-4 h-4 ${userVotes > 0 ? 'fill-current' : ''}`} />
-          {userVotes > 0 ? `Voted (${userVotes})` : 'Upvote'}
+          <ArrowBigUp className={`w-3.5 h-3.5 ${voted ? "fill-primary" : ""}`} />
+          {voted ? `Upvoted (${userVotes})` : "Upvote"}
         </>
       )}
     </button>

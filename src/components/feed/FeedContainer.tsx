@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import FeedList from "./FeedList";
 import FeedActions from "@/app/(app)/feed/FeedActions";
 import ProposalDetailPanel from "./ProposalDetailPanel";
-import { Loader2, Radio } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useLayout } from "@/context/LayoutContext";
 
 export default function FeedContainer() {
@@ -54,7 +54,7 @@ export default function FeedContainer() {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
         <Loader2 className="w-6 h-6 animate-spin text-accent" />
-        <p className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest">Hydrating Network Layer...</p>
+        <p className="text-sm text-muted">Loading feed…</p>
       </div>
     );
   }
@@ -64,18 +64,16 @@ export default function FeedContainer() {
   return (
     <div className={`transition-all duration-300 w-full`}>
       <div className={`grid grid-cols-1 ${isExpanded ? "lg:grid-cols-12 gap-6" : "gap-6 max-w-3xl mx-auto w-full"}`}>
-        
+
         {/* Left Side: Composer and Feed Previews */}
-        <div className={`space-y-6 ${isExpanded ? "lg:col-span-5 xl:col-span-5" : "w-full"}`}>
+        <div className={`space-y-5 ${isExpanded ? "lg:col-span-5 xl:col-span-5" : "w-full"}`}>
           {/* Create Box */}
           <FeedActions />
 
-          {/* Dynamic Feed Header */}
+          {/* Feed Header */}
           <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-2">
-              <Radio className="w-3.5 h-3.5 text-accent animate-pulse" />
-              <h2 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted font-mono">Platform Stream</h2>
-            </div>
+            <h2 className="text-sm font-semibold text-foreground">Latest Proposals</h2>
+            <span className="text-xs text-muted">{items.length} item{items.length !== 1 ? "s" : ""}</span>
           </div>
 
           {/* Feed List */}
