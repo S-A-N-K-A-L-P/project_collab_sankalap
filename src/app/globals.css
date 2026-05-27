@@ -77,12 +77,12 @@
 
   --radius:             0.75rem;      /* 12px — matches rounded-xl */
 
-  /* Material shadows — like the HTML reference */
-  --shadow-sm:          0 1px 2px 0 rgba(0,0,0,0.04);
-  --shadow:             0 1px 3px 0 rgba(0,0,0,0.08), 0 1px 2px -1px rgba(0,0,0,0.04);
-  --shadow-md:          0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.05);
-  --shadow-lg:          0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.05);
-  --shadow-xl:          0 20px 25px -5px rgba(0,0,0,0.10), 0 8px 10px -6px rgba(0,0,0,0.06);
+  /* Enterprise-depth shadows (MudBlazor / Material elevation style) */
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.09), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow:      0 2px 6px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03);
+  --shadow-md:   0 4px 12px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.03);
+  --shadow-lg:   0 8px 20px rgba(0,0,0,0.14), 0 16px 32px rgba(0,0,0,0.09), 0 0 0 1px rgba(0,0,0,0.03);
+  --shadow-xl:   0 16px 32px rgba(0,0,0,0.16), 0 32px 56px rgba(0,0,0,0.11), 0 0 0 1px rgba(0,0,0,0.03);
 
   color-scheme: light;
 }
@@ -253,14 +253,20 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ─── Scrollbar ───────────────────────────────────────────────────────────── */
 
-::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
   background: var(--border-strong);
   border-radius: 9999px;
-  border: 2px solid var(--background);
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
-::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
+::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); background-clip: padding-box; }
+
+/* Thin scrollbar for inner panels */
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: var(--border); border-radius: 9999px; }
+.scrollbar-thin::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
 
 /* ─── Pastel status pills (like HTML reference bg-X-100 text-X-800) ───────── */
 

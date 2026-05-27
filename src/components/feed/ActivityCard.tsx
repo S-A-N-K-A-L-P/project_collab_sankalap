@@ -1,17 +1,13 @@
 "use client";
 
-import { UserPlus, ArrowBigUp, Projector, MessageCircle, Zap } from "lucide-react";
-import Link from "next/link";
+import { UserPlus, ThumbsUp, LogIn, MessageCircle, Bell } from "lucide-react";
+import { formatDistanceToNowStrict } from "date-fns";
 
 interface ActivityCardProps {
   activity: {
     _id: string;
     type: string;
-    actorId: {
-      _id: string;
-      name: string;
-      avatar?: string;
-    };
+    actorId: { _id: string; name: string; avatar?: string };
     targetId: string;
     targetType: string;
     metadata?: any;
@@ -19,57 +15,52 @@ interface ActivityCardProps {
   };
 }
 
+function timeAgo(d: string) {
+  try { return formatDistanceToNowStrict(new Date(d), { addSuffix: true }); }
+  catch { return "recently"; }
+}
+
+const ICON_MAP: Record<string, { icon: React.ReactNode; color: string }> = {
+  FOLLOW:          { icon: <UserPlus   className="w-3.5 h-3.5" />, color: "text-primary"     },
+  VOTE:            { icon: <ThumbsUp   className="w-3.5 h-3.5" />, color: "text-amber-500"   },
+  JOIN:            { icon: <LogIn      className="w-3.5 h-3.5" />, color: "text-emerald-600" },
+  COMMENT:         { icon: <MessageCircle className="w-3.5 h-3.5" />, color: "text-blue-500" },
+  CREATE_PROPOSAL: { icon: <Bell       className="w-3.5 h-3.5" />, color: "text-primary"     },
+};
+
 export default function ActivityCard({ activity }: ActivityCardProps) {
-  const created = new Date(activity.createdAt);
-  const timeLabel = Number.isNaN(created.getTime())
-    ? '--:--'
-    : created.toISOString().slice(11, 16);
+  const actor  = activity.actorId?.name || "Someone";
+  const target = activity.metadata?.title;
+  const { icon, color } = ICON_MAP[activity.type] ?? ICON_MAP.CREATE_PROPOSAL;
 
-  const getIcon = (type: string) => {
-    switch (type) {
-      case 'FOLLOW': return <UserPlus className="w-3.5 h-3.5 text-accent" />;
-      case 'VOTE': return <ArrowBigUp className="w-3.5 h-3.5 text-orange-500" />;
-      case 'JOIN': return <Projector className="w-3.5 h-3.5 text-emerald-500" />;
-      case 'COMMENT': return <MessageCircle className="w-3.5 h-3.5 text-blue-500" />;
-      default: return <Zap className="w-3.5 h-3.5 text-muted" />;
-    }
-  };
-
-  const getMessage = () => {
-    const actorName = activity.actorId?.name || "System Agent";
+  const message = () => {
     switch (activity.type) {
-      case 'FOLLOW': return (
-        <><span className="font-bold text-foreground">{actorName}</span> synchronized with your node</>
-      );
-      case 'VOTE': return (
-        <><span className="font-bold text-foreground">{actorName}</span> endorsed protocol <span className="text-accent">{activity.metadata?.title}</span></>
-      );
-      case 'JOIN': return (
-        <><span className="font-bold text-foreground">{actorName}</span> requested authorization for <span className="text-accent">{activity.metadata?.title}</span></>
-      );
-      case 'CREATE_PROPOSAL': return (
-        <><span className="font-bold text-foreground">{actorName}</span> initialized new protocol <span className="text-foreground">{activity.metadata?.title}</span></>
-      );
-      default: return `${actorName} performed a system action`;
+      case "FOLLOW":
+        return <><strong>{actor}</strong> started following you</>;
+      case "VOTE":
+        return <><strong>{actor}</strong> upvoted <span className="text-primary font-medium">{target}</span></>;
+      case "JOIN":
+        return <><strong>{actor}</strong> requested to join <span className="text-primary font-medium">{target}</span></>;
+      case "CREATE_PROPOSAL":
+        return <><strong>{actor}</strong> submitted a proposal: <span className="font-medium">{target}</span></>;
+      case "COMMENT":
+        return <><strong>{actor}</strong> commented on <span className="text-primary font-medium">{target}</span></>;
+      default:
+        return <><strong>{actor}</strong> performed an action</>;
     }
   };
 
   return (
-    <div className="flex items-start gap-4 p-4 bg-surface border border-border-subtle rounded-2xl group transition-all duration-150 hover:border-border-strong">
-      <div className="mt-1 w-8 h-8 rounded-lg bg-surface-alt border border-border-subtle flex items-center justify-center shadow-sm">
-        {getIcon(activity.type)}
+    <div
+      className="flex items-start gap-3 p-4 bg-card border border-border rounded-xl transition-all duration-150 hover:border-border-strong hover:shadow-sm"
+      style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04)" }}
+    >
+      <div className={`mt-0.5 w-8 h-8 rounded-lg bg-background border border-border flex items-center justify-center shrink-0 ${color}`}>
+        {icon}
       </div>
-      <div className="flex-1">
-        <p className="text-[13px] text-muted leading-relaxed tracking-tight">
-          {getMessage()}
-        </p>
-        <div className="flex items-center gap-3 mt-1.5">
-          <span className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest">
-            {timeLabel}
-          </span>
-          <div className="w-1 h-1 rounded-full bg-border-subtle" />
-          <button className="text-[10px] font-bold text-accent uppercase tracking-tight hover:underline">Details</button>
-        </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-foreground leading-snug">{message()}</p>
+        <p className="text-xs text-muted mt-1">{timeAgo(activity.createdAt)}</p>
       </div>
     </div>
   );
