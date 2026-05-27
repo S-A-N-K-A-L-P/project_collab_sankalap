@@ -37,6 +37,13 @@ export default function ProposalCard({ proposal, onExpand, isActive }: ProposalC
   const typeColor    = TYPE_COLOR[proposal.type?.toLowerCase()]   ?? "bg-gray-100 text-gray-700";
   const statusColor  = STATUS_COLOR[proposal.status?.toLowerCase()] ?? "bg-gray-100 text-gray-700";
 
+  // Strip ## markdown section headers so the preview shows clean prose
+  const descPreview = (proposal.description || "")
+    .replace(/^##\s+.+$/gm, "")   // remove ## header lines
+    .replace(/\n{2,}/g, " ")       // collapse blank lines
+    .replace(/\n/g, " ")           // remaining newlines → space
+    .trim();
+
   return (
     <div
       onClick={onExpand}
@@ -93,7 +100,7 @@ export default function ProposalCard({ proposal, onExpand, isActive }: ProposalC
             {proposal.title}
           </h3>
           <p className="text-xs text-muted leading-relaxed line-clamp-2">
-            {proposal.description}
+            {descPreview}
           </p>
         </div>
 

@@ -28,12 +28,11 @@ export default function FeedContainer() {
         const res = await fetch("/api/feed");
         if (!res.ok) { setItems([]); return; }
         const data = await res.json();
+        // Feed shows proposals only — activities go to the Notifications page
         const proposals = Array.isArray(data?.proposals) ? data.proposals : [];
-        const activity  = Array.isArray(data?.activity)  ? data.activity  : [];
-        const combined  = [
-          ...proposals.map((p: any) => ({ ...p, feedType: "proposal" })),
-          ...activity .map((a: any) => ({ ...a, feedType: "activity"  })),
-        ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        const combined  = proposals
+          .map((p: any) => ({ ...p, feedType: "proposal" }))
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         setItems(combined);
       } catch { setItems([]); }
       finally  { setLoading(false); }
