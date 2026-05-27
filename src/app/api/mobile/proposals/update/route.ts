@@ -18,22 +18,21 @@ export async function PATCH(req: Request) {
     const proposal = await Proposal.findById(proposalId);
     if (!proposal) return NextResponse.json({ error: "Proposal not found" }, { status: 404 });
 
-    const isPixelHead = user.role === "pixel_head";
-    const isProjectLead = user.projectLead?.toString() === user._id.toString();
+    const isAdmin = user.role === "master_admin" || user.role === "sankalp_associate";
 
-    if (!isPixelHead && !isProjectLead) {
+    if (!isAdmin) {
       return NextResponse.json({ error: "Permission denied" }, { status: 403 });
     }
 
-    if (stage && (isPixelHead || isProjectLead)) {
+    if (stage) {
       proposal.stage = stage;
     }
 
-    if (status && isPixelHead) {
+    if (status) {
       proposal.status = status;
     }
 
-    if (projectLead && isPixelHead) {
+    if (projectLead) {
       proposal.projectLead = projectLead;
     }
 

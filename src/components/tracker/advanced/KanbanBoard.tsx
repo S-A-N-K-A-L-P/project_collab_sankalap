@@ -1,130 +1,242 @@
 "use client";
 
-import { motion, Reorder } from "framer-motion";
-import { 
-  MoreVertical, Plus, CheckCircle2, Circle, 
-  AlertCircle, Clock, Zap, Shield, Settings,
-  Workflow, ArrowRight, History
+import { motion } from "framer-motion";
+import {
+  CheckCircle2, Circle, ArrowRight, History,
+  Zap, Settings, Workflow, Clock, ChevronDown
 } from "lucide-react";
 import { useState } from "react";
 
-// 1. Kanban Board
-export function KanbanBoard({ columns }: { columns: any[] }) {
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+export interface KanbanTask {
+  _id: string;
+  title: string;
+  description?: string;
+  priority: "low" | "medium" | "high";
+  status: "pending" | "in-progress" | "completed" | "delayed";
+  progress: number;
+  deadline: string;
+  assignedTo: string;
+  assignedToName?: string;
+}
+
+export interface KanbanColumnDef {
+  id: string;
+  title: string;
+  status: string;
+  accent: string;
+  tasks: KanbanTask[];
+}
+
+// ─── Priority config ──────────────────────────────────────────────────────────
+
+const PRIORITY = {
+  high:   { label: "High",   dot: "bg-red-400",    text: "text-red-400"    },
+  medium: { label: "Medium", dot: "bg-amber-400",  text: "text-amber-400"  },
+  low:    { label: "Low",    dot: "bg-slate-400",  text: "text-slate-400"  },
+} as const;
+
+const STATUS_LABELS: Record<string, string> = {
+  pending:      "Backlog",
+  "in-progress":"In Progress",
+  completed:    "Completed",
+  delayed:      "Delayed",
+};
+
+// ─── Board ───────────────────────────────────────────────────────────────────
+
+export function KanbanBoard({
+  columns,
+  onTaskUpdate,
+}: {
+  columns: KanbanColumnDef[];
+  onTaskUpdate?: (taskId: string, updates: { status?: string; progress?: number }) => void;
+}) {
+  if (columns.length === 0 || columns.every((c) => c.tasks.length === 0)) {
+    return (
+      <div className="flex items-center justify-center h-40 rounded-xl border border-dashed border-border-subtle">
+        <p className="text-[13px] text-muted">No tasks have been assigned to this project yet.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex gap-6 overflow-x-auto no-scrollbar pb-8 min-h-[600px]">
-      {columns.map((col, i) => (
-        <KanbanColumn key={col.id} column={col} index={i} />
+    <div className="flex gap-4 overflow-x-auto pb-4">
+      {columns.map((col) => (
+        <KanbanColumn key={col.id} column={col} onTaskUpdate={onTaskUpdate} />
       ))}
-      <button className="h-fit px-8 py-4 rounded-3xl border-2 border-dashed border-[#1f1f23] text-[#1f1f23] hover:text-[#9ca3af] hover:border-[#2a2a2f] transition-all font-mono font-bold text-[11px] uppercase tracking-[0.2em] whitespace-nowrap">
-        + Add Protocol Column
-      </button>
     </div>
   );
 }
 
-// 2. Kanban Column
-export function KanbanColumn({ column, index }: { column: any, index: number }) {
-  return (
-    <div className="w-[320px] shrink-0 space-y-4">
-      <div className="flex items-center justify-between px-2">
-        <div className="flex items-center gap-3">
-          <div className="w-1.5 h-1.5 rounded-full bg-[#6366f1] shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
-          <h3 className="text-[12px] font-black text-[#e5e7eb] uppercase tracking-tighter italic">
-            {column.title}
-          </h3>
-          <span className="px-2 py-0.5 rounded-md bg-[#17171a] border border-[#1f1f23] text-[9px] font-mono font-bold text-[#1f1f23]">
-            {column.tasks?.length || 0}
-          </span>
-        </div>
-        <div className="flex items-center gap-1">
-           <button className="p-1.5 rounded-lg hover:bg-[#121214] text-[#1f1f23] transition-colors"><Plus className="w-4 h-4" /></button>
-           <button className="p-1.5 rounded-lg hover:bg-[#121214] text-[#1f1f23] transition-colors"><MoreVertical className="w-4 h-4" /></button>
-        </div>
-      </div>
+// ─── Column ──────────────────────────────────────────────────────────────────
 
-      <div className="space-y-3 min-h-[100px]">
-        {column.tasks.map((task: any, i: number) => (
-          <KanbanCard key={task.id} task={task} index={i} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// 3. Kanban Card
-export function KanbanCard({ task, index }: { task: any, index: number }) {
+function KanbanColumn({
+  column,
+  onTaskUpdate,
+}: {
+  column: KanbanColumnDef;
+  onTaskUpdate?: (taskId: string, updates: { status?: string; progress?: number }) => void;
+}) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.03 }}
-      className="p-4 bg-[#121214] border border-[#1f1f23] rounded-2xl hover:border-[#2a2a2f] transition-all shadow-sm group cursor-grab active:cursor-grabbing"
-    >
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex flex-wrap gap-1.5 ">
-           {task.tags?.map((t: string) => (
-             <span key={t} className="px-2 py-0.5 rounded-md bg-[#17171a] border border-[#1f1f23] text-[8px] font-mono font-bold text-[#1f1f23] uppercase tracking-wider">
-               {t}
-             </span>
-           ))}
-        </div>
-        <span className={`text-[8px] font-black uppercase tracking-widest ${
-          task.priority === 'CRITICAL' ? 'text-red-500' : 'text-[#1f1f23]'
-        }`}>
-          {task.priority || 'NORMAL'}
+    <div className="w-[260px] shrink-0 space-y-2">
+      {/* Column header */}
+      <div className="flex items-center gap-2 px-1 pb-2">
+        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: column.accent }} />
+        <span className="text-[12px] font-semibold text-foreground">{column.title}</span>
+        <span className="text-[11px] text-muted bg-surface border border-border-subtle rounded-full px-1.5 py-0 leading-5">
+          {column.tasks.length}
         </span>
       </div>
 
-      <h4 className="text-[14px] font-bold text-[#e5e7eb] tracking-tight leading-snug group-hover:text-[#6366f1] transition-colors">
+      {/* Cards */}
+      <div className="space-y-2 min-h-[60px]">
+        {column.tasks.map((task, i) => (
+          <KanbanCard key={task._id} task={task} index={i} onTaskUpdate={onTaskUpdate} />
+        ))}
+        {column.tasks.length === 0 && (
+          <div className="h-16 rounded-lg border border-dashed border-border-subtle flex items-center justify-center">
+            <span className="text-[11px] text-muted">Empty</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Card ────────────────────────────────────────────────────────────────────
+
+function KanbanCard({
+  task,
+  index,
+  onTaskUpdate,
+}: {
+  task: KanbanTask;
+  index: number;
+  onTaskUpdate?: (taskId: string, updates: { status?: string; progress?: number }) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const pri = PRIORITY[task.priority] ?? PRIORITY.medium;
+
+  const deadline    = new Date(task.deadline);
+  const isOverdue   = deadline < new Date() && task.status !== "completed";
+  const daysLeft    = Math.ceil((deadline.getTime() - Date.now()) / 86_400_000);
+  const deadlineStr = isOverdue
+    ? `${Math.abs(daysLeft)}d overdue`
+    : daysLeft === 0 ? "Due today"
+    : `${daysLeft}d`;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04 }}
+      className="bg-surface border border-border-subtle rounded-lg p-3 hover:border-accent/30 transition-all group cursor-default"
+    >
+      {/* Priority + status row */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-1.5">
+          <span className={`w-1.5 h-1.5 rounded-full ${pri.dot}`} />
+          <span className={`text-[10px] font-medium ${pri.text}`}>{pri.label}</span>
+        </div>
+
+        {/* Status dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setOpen((p) => !p)}
+            className="flex items-center gap-0.5 text-[10px] text-muted hover:text-foreground transition-colors"
+          >
+            {STATUS_LABELS[task.status] ?? task.status}
+            <ChevronDown className="w-2.5 h-2.5" />
+          </button>
+          {open && (
+            <div className="absolute right-0 top-5 z-20 bg-surface border border-border-subtle rounded-lg shadow-lg py-1 w-32">
+              {Object.entries(STATUS_LABELS).map(([val, label]) => (
+                <button
+                  key={val}
+                  onClick={() => { setOpen(false); onTaskUpdate?.(task._id, { status: val }); }}
+                  className={`w-full text-left px-3 py-1.5 text-[11px] transition-colors ${
+                    task.status === val
+                      ? "text-accent font-medium"
+                      : "text-muted hover:text-foreground hover:bg-accent/5"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Title */}
+      <p className={`text-[12px] font-semibold leading-snug mb-2 ${
+        task.status === "completed" ? "text-muted line-through" : "text-foreground"
+      }`}>
         {task.title}
-      </h4>
-      
-      <div className="flex items-center justify-between mt-4">
-        <div className="flex -space-x-1.5">
-           {[1, 2].map((i) => (
-             <div key={i} className="w-6 h-6 rounded-full border-2 border-[#121214] bg-[#17171a] overflow-hidden">
-                <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=node${i+index}`} className="w-full h-full object-cover" />
-             </div>
-           ))}
+      </p>
+
+      {/* Progress bar */}
+      {task.progress > 0 && (
+        <div className="mb-2">
+          <div className="h-1 rounded-full bg-border-subtle overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${
+                task.progress >= 100 ? "bg-emerald-500" :
+                task.progress >= 50  ? "bg-accent"      : "bg-amber-500"
+              }`}
+              style={{ width: `${task.progress}%` }}
+            />
+          </div>
         </div>
-        <div className="flex items-center gap-3 opacity-40 group-hover:opacity-80 transition-opacity">
-           <div className="flex items-center gap-1 text-[9px] font-mono font-bold text-[#e5e7eb]">
-              <Zap className="w-3 h-3" /> {task.xp || 10}
-           </div>
-           <div className="flex items-center gap-1 text-[9px] font-mono font-bold text-[#e5e7eb]">
-              <Clock className="w-3 h-3" /> {task.deadline || "3d"}
-           </div>
+      )}
+
+      {/* Footer */}
+      <div className="flex items-center justify-between text-[10px] text-muted">
+        <div className="flex items-center gap-1">
+          <div className="w-4 h-4 rounded-full bg-accent/20 flex items-center justify-center text-accent text-[8px] font-bold">
+            {task.assignedToName?.[0]?.toUpperCase() ?? "?"}
+          </div>
+          <span className="truncate max-w-[80px]">{task.assignedToName ?? "Unassigned"}</span>
         </div>
+        <span className={`flex items-center gap-0.5 ${isOverdue ? "text-red-400" : daysLeft <= 2 ? "text-amber-400" : ""}`}>
+          <Clock className="w-2.5 h-2.5" />
+          {deadlineStr}
+        </span>
       </div>
     </motion.div>
   );
 }
 
-// 4. Workflow Stages (Lifecycle visualization)
+// ─── Legacy exports (used by project_tracker demo page) ──────────────────────
+
 export function WorkflowStages({ stages }: { stages: any[] }) {
   return (
-    <div className="p-8 bg-[#121214] border border-[#1f1f23] rounded-3xl space-y-8">
-      <div className="flex items-center gap-3">
-         <Workflow className="w-5 h-5 text-[#6366f1]" />
-         <h4 className="text-xl font-bold text-[#e5e7eb] uppercase italic tracking-tighter">Governance Workflow</h4>
+    <div className="p-6 bg-surface border border-border-subtle rounded-xl space-y-6">
+      <div className="flex items-center gap-2">
+        <Workflow className="w-4 h-4 text-accent" />
+        <h4 className="text-[14px] font-semibold text-foreground">Project Stages</h4>
       </div>
-
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-3">
         {stages.map((stage, i) => (
-          <div key={stage.label} className="relative flex-1 flex flex-col items-center gap-3">
-             <div className={`w-10 h-10 rounded-xl border-2 flex items-center justify-center transition-all ${
-               stage.status === 'completed' ? 'bg-[#6366f1]/10 border-[#6366f1] text-[#6366f1]' : 
-               stage.status === 'active' ? 'bg-amber-500/10 border-amber-500 text-amber-500 animate-pulse' : 
-               'bg-[#17171a] border-[#1f1f23] text-[#1f1f23]'
-             }`}>
-                {stage.status === 'completed' ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
-             </div>
-             <span className="text-[10px] font-mono font-bold text-[#e5e7eb] uppercase tracking-widest">{stage.label}</span>
-             {i < stages.length - 1 && (
-               <div className="absolute top-5 left-[calc(50%+25px)] w-[calc(100%-50px)] h-0.5 bg-[#1f1f23]">
-                  <ArrowRight className="absolute -right-1.5 -top-1.5 w-3.5 h-3.5 text-[#1f1f23]" />
-               </div>
-             )}
+          <div key={stage.label} className="relative flex-1 flex flex-col items-center gap-2">
+            <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${
+              stage.status === "completed" ? "bg-accent/10 border-accent text-accent"            :
+              stage.status === "active"   ? "bg-amber-500/10 border-amber-400 text-amber-400 animate-pulse" :
+              "bg-surface border-border-subtle text-muted"
+            }`}>
+              {stage.status === "completed"
+                ? <CheckCircle2 className="w-4 h-4" />
+                : <Circle className="w-4 h-4" />
+              }
+            </div>
+            <span className="text-[10px] font-medium text-muted text-center">{stage.label}</span>
+            {i < stages.length - 1 && (
+              <div className="absolute top-4 left-[calc(50%+18px)] w-[calc(100%-36px)] h-px bg-border-subtle">
+                <ArrowRight className="absolute -right-2 -top-1.5 w-3 h-3 text-muted" />
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -132,59 +244,51 @@ export function WorkflowStages({ stages }: { stages: any[] }) {
   );
 }
 
-// 5. Automation Rules (No-code triggers)
 export function AutomationRules({ rules }: { rules: any[] }) {
   return (
-    <div className="p-6 bg-[#121214] border border-[#1f1f23] rounded-3xl space-y-6">
-       <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-             <Zap className="w-4 h-4 text-amber-500" />
-             <h5 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#e5e7eb] font-mono">Automation Signals</h5>
-          </div>
-          <button className="text-[10px] font-bold text-[#6366f1] underline uppercase tracking-widest">New Protocol</button>
-       </div>
-
-       <div className="space-y-3">
-          {rules.map((rule, i) => (
-            <div key={i} className="p-4 bg-[#17171a] border border-[#1f1f23] rounded-xl flex items-center justify-between group hover:border-[#2a2a2f] transition-all">
-               <div className="flex flex-col">
-                  <span className="text-[12px] font-bold text-[#e5e7eb] tracking-tight">{rule.trigger}</span>
-                  <span className="text-[9px] font-mono font-bold text-[#1f1f23] uppercase mt-1">IF {rule.event} THEN {rule.action}</span>
-               </div>
-               <div className="w-8 h-8 rounded-lg bg-[#b0b0b0]/5 border border-[#1f1f23] flex items-center justify-center">
-                  <Settings className="w-3.5 h-3.5 text-[#1f1f23] group-hover:text-[#6366f1]" />
-               </div>
+    <div className="p-5 bg-surface border border-border-subtle rounded-xl space-y-4">
+      <div className="flex items-center gap-2">
+        <Zap className="w-4 h-4 text-accent" />
+        <h5 className="text-[13px] font-semibold text-foreground">Automation Rules</h5>
+      </div>
+      <div className="space-y-2">
+        {rules.map((rule, i) => (
+          <div key={i} className="p-3 bg-background border border-border-subtle rounded-lg flex items-center justify-between hover:border-accent/20 transition-all">
+            <div>
+              <p className="text-[12px] font-medium text-foreground">{rule.trigger}</p>
+              <p className="text-[10px] text-muted mt-0.5">If {rule.event} → {rule.action}</p>
             </div>
-          ))}
-       </div>
+            <Settings className="w-3.5 h-3.5 text-muted" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
-// 6. Task History (Audit trail)
 export function TaskHistory({ logs }: { logs: any[] }) {
   return (
-    <div className="p-6 bg-[#121214] border border-[#1f1f23] rounded-3xl space-y-6">
-       <div className="flex items-center gap-3">
-          <History className="w-4 h-4 text-[#6366f1]" />
-          <h5 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#e5e7eb] font-mono">Operation Logs</h5>
-       </div>
-       <div className="space-y-4">
-          {logs.map((log, i) => (
-            <div key={i} className="flex gap-4 group">
-               <div className="mt-1 flex flex-col items-center">
-                  <div className="w-2 h-2 rounded-full bg-[#1f1f23] group-hover:bg-[#6366f1] transition-all" />
-                  <div className="w-[1px] h-8 bg-[#1f1f23]" />
-               </div>
-               <div className="flex-1">
-                  <p className="text-[12px] text-[#9ca3af] leading-tight mb-1">
-                    <span className="font-bold text-[#e5e7eb]">{log.user}</span> {log.action}
-                  </p>
-                  <span className="text-[9px] font-mono font-bold text-[#1f1f23] uppercase">{log.time}</span>
-               </div>
+    <div className="p-5 bg-surface border border-border-subtle rounded-xl space-y-4">
+      <div className="flex items-center gap-2">
+        <History className="w-4 h-4 text-accent" />
+        <h5 className="text-[13px] font-semibold text-foreground">Task History</h5>
+      </div>
+      <div className="space-y-3">
+        {logs.map((log, i) => (
+          <div key={i} className="flex gap-3">
+            <div className="flex flex-col items-center">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent/50 mt-1" />
+              {i < logs.length - 1 && <span className="w-px flex-1 bg-border-subtle mt-1" />}
             </div>
-          ))}
-       </div>
+            <div className="pb-3">
+              <p className="text-[12px] text-foreground leading-tight">
+                <span className="font-medium">{log.user}</span> {log.action}
+              </p>
+              <span className="text-[10px] text-muted">{log.time}</span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

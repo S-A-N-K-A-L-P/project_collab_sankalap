@@ -5,7 +5,7 @@ import dbConnect from "@/lib/mongodb";
 import Task from "@/models/Task";
 
 function isAdmin(s: any) {
-  return s && ["admin", "pixel_head"].includes(s.user?.role);
+  return s && ["sankalp_associate", "master_admin"].includes(s.user?.role);
 }
 
 export async function GET(

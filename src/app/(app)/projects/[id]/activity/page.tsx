@@ -2,85 +2,82 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { Loader2, Activity } from "lucide-react";
 
-type ActivityLogItem = {
-    _id: string;
-    userName?: string;
-    action: string;
-    createdAt: string;
-};
+interface ActivityLogItem {
+  _id: string;
+  userName?: string;
+  action: string;
+  createdAt: string;
+}
 
 export default function ProjectActivityPage() {
-    const { id: projectId } = useParams();
-    const [logs, setLogs] = useState<ActivityLogItem[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+  const { id: projectId } = useParams();
+  const [logs, setLogs]   = useState<ActivityLogItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState<string | null>(null);
 
-    const formatDateTime = (value: string) => {
-        const date = new Date(value);
-        return Number.isNaN(date.getTime()) 
-            ? "INITIALIZING..." 
-            : date.toLocaleString('en-US', { hour12: true, month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).toUpperCase();
-    };
+  useEffect(() => {
+    if (!projectId) return;
+    let active = true;
+    setLoading(true);
+    setError(null);
 
-    useEffect(() => {
-        if (!projectId) return;
+    fetch(`/api/project-progress/activity?projectId=${projectId}`)
+      .then(async (r) => {
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.error || "Failed to load activity");
+        if (active) setLogs(data.logs ?? []);
+      })
+      .catch((err: Error) => { if (active) setError(err.message); })
+      .finally(() => { if (active) setLoading(false); });
 
-        let active = true;
-        setLoading(true);
-        setError(null);
+    return () => { active = false; };
+  }, [projectId]);
 
-        fetch(`/api/project-progress/activity?projectId=${projectId}`)
-            .then(async (response) => {
-                const data = await response.json();
-                if (!response.ok) {
-                    throw new Error(data.error || "Failed to fetch activity");
-                }
-                if (active) setLogs(data.logs || []);
-            })
-            .catch((err: Error) => {
-                if (active) setError(err.message);
-            })
-            .finally(() => {
-                if (active) setLoading(false);
-            });
+  if (loading) return (
+    <div className="flex items-center gap-2 text-muted text-[13px] py-8">
+      <Loader2 className="w-4 h-4 animate-spin text-accent" /> Loading activity log…
+    </div>
+  );
 
-        return () => {
-            active = false;
-        };
-    }, [projectId]);
+  if (error) return (
+    <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/5 text-[13px] text-red-400">{error}</div>
+  );
 
-    if (loading) {
-        return <div className="p-6 text-sm text-muted animate-pulse font-mono">RETRIEVING PULSE SIGNAL...</div>;
-    }
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Activity className="w-4 h-4 text-accent" />
+        <h2 className="text-[16px] font-semibold text-foreground">Activity Log</h2>
+        <span className="text-[12px] text-muted ml-1">({logs.length} entries)</span>
+      </div>
 
-    if (error) {
-        return <div className="p-4 text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded-xl font-mono">SIGNAL_LOST: {error}</div>;
-    }
-
-    return (
-        <div className="space-y-6">
-            <h2 className="text-xl font-bold tracking-tight text-foreground uppercase italic px-1">Deployment Pulse</h2>
-            <div className="space-y-3">
-                {logs.map((log) => (
-                    <div key={log._id} className="group relative pl-6 border-l border-border-subtle hover:border-accent transition-colors">
-                        <div className="absolute left-[-5px] top-1.5 w-2 h-2 rounded-full bg-surface border border-border-subtle group-hover:bg-accent group-hover:border-accent group-hover:shadow-[0_0_8px_rgba(99,102,241,0.5)] transition-all"></div>
-                        <div className="rounded-2xl border border-border-subtle bg-surface-alt p-4 group-hover:border-border-strong transition-all">
-                            <p className="text-sm font-bold text-foreground leading-tight tracking-tight">{log.action}</p>
-                            <div className="flex items-center gap-2 mt-2">
-                                <span className="text-[10px] font-mono font-black text-accent uppercase tracking-widest">{log.userName || "SYSTEM"}</span>
-                                <span className="text-[10px] font-mono text-muted">@ {formatDateTime(log.createdAt)}</span>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-                
-                {logs.length === 0 && (
-                    <div className="py-20 text-center">
-                        <p className="text-sm text-muted italic">Pulse is flat. No recent transmissions detected.</p>
-                    </div>
-                )}
-            </div>
+      {logs.length === 0 ? (
+        <div className="flex items-center justify-center h-40 bg-surface border border-border-subtle rounded-xl">
+          <p className="text-[13px] text-muted">No activity has been recorded for this project yet.</p>
         </div>
-    );
+      ) : (
+        <div className="bg-surface border border-border-subtle rounded-xl divide-y divide-border-subtle overflow-hidden">
+          {logs.map((log) => (
+            <div key={log._id} className="flex items-start gap-4 px-5 py-4 hover:bg-accent/[0.02] transition-colors">
+              <div className="mt-2 w-1.5 h-1.5 rounded-full bg-accent/50 flex-shrink-0" />
+              <div className="flex-1 min-w-0 space-y-0.5">
+                <p className="text-[13px] text-foreground leading-snug">{log.action}</p>
+                <div className="flex items-center gap-2 text-[11px] text-muted">
+                  {log.userName && <span className="font-medium text-accent">{log.userName}</span>}
+                  <span>
+                    {new Date(log.createdAt).toLocaleString("en-GB", {
+                      day: "numeric", month: "short", year: "numeric",
+                      hour: "2-digit", minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }

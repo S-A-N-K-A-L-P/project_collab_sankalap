@@ -7,7 +7,7 @@ import Project from "@/models/Project";
 import Org from "@/models/Org";
 
 function isAdmin(s: any) {
-  return s && ["admin", "pixel_head"].includes(s.user?.role);
+  return s && ["sankalp_associate", "master_admin"].includes(s.user?.role);
 }
 
 export async function POST(

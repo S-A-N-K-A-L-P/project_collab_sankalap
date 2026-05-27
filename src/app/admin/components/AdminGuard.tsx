@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Loader2, ShieldAlert } from "lucide-react";
+import { isAdminRole } from "@/lib/roles";
 
 export default function AdminGuard({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
@@ -14,7 +15,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
       router.push("/admin/login");
     } else if (
       status === "authenticated" &&
-      !["admin", "pixel_head"].includes((session?.user as any)?.role)
+      !isAdminRole((session?.user as any)?.role)
     ) {
       router.push("/unauthorized");
     }
@@ -33,10 +34,7 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
     );
   }
 
-  if (
-    status === "authenticated" &&
-    ["admin", "pixel_head"].includes((session?.user as any)?.role)
-  ) {
+  if (status === "authenticated" && isAdminRole((session?.user as any)?.role)) {
     return <>{children}</>;
   }
 

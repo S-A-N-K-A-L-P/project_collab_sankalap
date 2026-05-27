@@ -1,15 +1,6 @@
-export type ProjectProgressRole =
-    | "admin"
-    | "pixel_head"
-    | "project_lead"
-    | "pixel_member"
-    | "normal_user"
-    | "user";
-
-export function canManageTasks(role?: string): boolean {
-    return role === "admin" || role === "pixel_head" || role === "project_lead";
-}
-
-export function canUpdateProgress(role?: string): boolean {
-    return role === "pixel_member" || canManageTasks(role);
-}
+/**
+ * Re-exports from the central roles library for project-progress routes.
+ * Import from here so existing route files don't need path changes.
+ */
+export type { AppRole as ProjectProgressRole } from "@/lib/roles";
+export { canManageTasks, canUpdateProgress } from "@/lib/roles";

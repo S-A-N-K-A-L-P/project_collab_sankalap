@@ -33,7 +33,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Task not found" }, { status: 404 });
         }
 
-        if (session.role === "pixel_member" && task.assignedTo !== session.id) {
+        if (session.role === "sankalp_member" && task.assignedTo !== session.id) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 

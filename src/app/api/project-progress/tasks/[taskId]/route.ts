@@ -41,7 +41,7 @@ export async function PATCH(
         return NextResponse.json({ error: "Task not found" }, { status: 404 });
     }
 
-    if (role === "pixel_member" && task.assignedTo !== (session.user as any).id) {
+    if (role === "sankalp_member" && task.assignedTo !== (session.user as any).id) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

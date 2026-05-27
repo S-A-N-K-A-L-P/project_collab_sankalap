@@ -21,23 +21,23 @@ export async function PATCH(req: Request) {
     if (!proposal) return NextResponse.json({ error: "Proposal not found" }, { status: 404 });
 
     // Check permissions
-    const isPixelHead = user.role === "pixel_head";
-    const isProjectLead = user.projectLead?.toString() === user._id.toString();
+    const isAdmin = user.role === "master_admin" || user.role === "sankalp_associate";
 
-    if (!isPixelHead && !isProjectLead) {
+    if (!isAdmin) {
       return NextResponse.json({ error: "Permission denied" }, { status: 403 });
     }
 
-    // Role-based updates
-    if (stage && (isPixelHead || isProjectLead)) {
+    // Both associate and master_admin can update stage
+    if (stage) {
       proposal.stage = stage;
     }
 
-    if (status && isPixelHead) {
+    // Both can set status and assign project lead
+    if (status) {
       proposal.status = status;
     }
 
-    if (projectLead && isPixelHead) {
+    if (projectLead) {
       proposal.projectLead = projectLead;
     }
 

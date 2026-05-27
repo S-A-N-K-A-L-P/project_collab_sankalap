@@ -8,7 +8,7 @@ import Proposal from "@/models/Proposal";
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || !["admin", "pixel_head"].includes((session.user as any).role)) {
+    if (!session || !["sankalp_associate", "master_admin"].includes((session.user as any).role)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -19,7 +19,7 @@ export async function GET() {
         User.countDocuments(),
         Proposal.countDocuments(),
         Proposal.countDocuments({ status: "active" }),
-        User.countDocuments({ role: { $in: ["admin", "pixel_head"] } }),
+        User.countDocuments({ role: { $in: ["sankalp_associate", "master_admin"] } }),
         User.find()
           .select("name email avatar role universityName createdAt")
           .sort({ createdAt: -1 })

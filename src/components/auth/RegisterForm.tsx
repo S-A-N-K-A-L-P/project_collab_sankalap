@@ -15,7 +15,7 @@ export default function RegisterForm() {
     techStackPreference: "",
     password: "",
     confirmPassword: "",
-    role: "normal_user",
+    role: "user",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -191,8 +191,8 @@ export default function RegisterForm() {
               onChange={handleChange}
               className="w-full pl-12 pr-4 py-3 bg-background border border-border-subtle rounded-xl focus:border-accent/50 outline-none transition-all text-foreground text-[13px] font-black uppercase appearance-none cursor-pointer"
             >
-              <option value="normal_user">USER / NODE</option>
-              <option value="pixel_member">PIXEL MEMBER / CORE</option>
+              <option value="user">USER</option>
+              <option value="sankalp_member">SANKALP MEMBER</option>
             </select>
           </div>
         </div>

@@ -24,7 +24,7 @@ export default async function ProjectProgressLayout({
     const session = await getServerSession(authOptions);
     const role = (session?.user as any)?.role;
 
-    if (!session || (role !== "pixel_head" && role !== "project_lead" && role !== "pixel_member")) {
+    if (!session || !["master_admin", "sankalp_associate", "sankalp_member"].includes(role)) {
         redirect("/feed");
     }
 

@@ -5,7 +5,7 @@ import dbConnect from "@/lib/mongodb";
 import Proposal from "@/models/Proposal";
 
 function isAdmin(session: any) {
-  return session && ["admin", "pixel_head"].includes(session.user?.role);
+  return session && ["sankalp_associate", "master_admin"].includes(session.user?.role);
 }
 
 export async function GET(req: Request) {

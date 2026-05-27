@@ -56,7 +56,7 @@ const UserSchema = new Schema(
     },
     role: {
       type: String,
-      enum: ["admin", "user", "pixel_head", "project_lead", "pixel_member", "normal_user"],
+      enum: ["user", "sankalp_member", "sankalp_associate", "master_admin"],
       default: "user",
     },
     reputation: {

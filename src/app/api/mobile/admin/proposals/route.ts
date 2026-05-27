@@ -9,7 +9,7 @@ import Activity from "@/models/Activity";
 export async function GET(req: Request) {
   try {
     const session = getMobileSession(req);
-    if (!["admin", "pixel_head"].includes(session.role)) {
+    if (!["sankalp_associate", "master_admin"].includes(session.role)) {
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
@@ -60,7 +60,7 @@ export async function GET(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const session = getMobileSession(req);
-    if (!["admin", "pixel_head"].includes(session.role)) {
+    if (!["sankalp_associate", "master_admin"].includes(session.role)) {
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 

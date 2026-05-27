@@ -1,3 +1,6 @@
+"use client";
+
+import { Box } from "@mui/material";
 import AdminGuard from "./AdminGuard";
 import AdminSidebar from "./AdminSidebar";
 import AdminHeader from "./AdminHeader";
@@ -5,13 +8,26 @@ import AdminHeader from "./AdminHeader";
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <AdminGuard>
-      <div className="flex min-h-screen bg-[var(--background-primary)]">
+      <Box sx={{
+        display: "flex",
+        minHeight: "100vh",
+        bgcolor: "background.default",
+        color: "text.primary",
+      }}>
         <AdminSidebar />
-        <div className="flex-1 ml-60 flex flex-col min-h-screen">
+        <Box sx={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
           <AdminHeader />
-          <main className="flex-1 p-8">{children}</main>
-        </div>
-      </div>
+          <Box component="main" sx={{
+            flex: 1,
+            p: { xs: 3, lg: 4 },
+            maxWidth: 1400,
+            width: "100%",
+            mx: "auto",
+          }}>
+            {children}
+          </Box>
+        </Box>
+      </Box>
     </AdminGuard>
   );
 }

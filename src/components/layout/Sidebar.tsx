@@ -2,11 +2,13 @@
 
 import { Box, Avatar, Tooltip, Divider } from "@mui/material";
 import {
-  SettingsRounded          as SettingsIcon,
-  LogoutRounded            as LogoutIcon,
+  SettingsRounded           as SettingsIcon,
+  LogoutRounded             as LogoutIcon,
   AdminPanelSettingsRounded as AdminIcon,
-  DarkModeRounded          as DarkIcon,
-  LightModeRounded         as LightIcon,
+  DarkModeRounded           as DarkIcon,
+  LightModeRounded          as LightIcon,
+  EmojiEventsRounded        as TrophyIcon,
+  StorefrontRounded         as ShopIcon,
 } from "@mui/icons-material";
 import NextLink   from "next/link";
 import { signOut, useSession } from "next-auth/react";
@@ -108,6 +110,16 @@ export default function Sidebar() {
       </Tooltip>
 
       <Divider sx={{ width: 36, borderColor: D.border, my: 0.5 }} />
+
+      {/* My Completed */}
+      <RailBtn title="My Completed Projects" href="/my-completed">
+        <TrophyIcon sx={{ fontSize: 20, color: "#fbbf24" }} />
+      </RailBtn>
+
+      {/* Marketplace */}
+      <RailBtn title="Marketplace" href="/marketplace">
+        <ShopIcon sx={{ fontSize: 20, color: "#34d399" }} />
+      </RailBtn>
 
       {/* Settings */}
       <RailBtn title="Settings" href="/settings">

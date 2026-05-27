@@ -6,19 +6,19 @@ import { CheckCircle2, Circle, Clock, AlertCircle } from "lucide-react";
 export function ProjectTimeline({ activities }: { activities: any[] }) {
   return (
     <div className="space-y-6">
-      <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1f1f23] font-mono mb-6 px-1">Tactical Timeline</h3>
-      <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:h-full before:w-0.5 before:bg-[#1f1f23]">
+      <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted font-mono mb-6 px-1">Activity Timeline</h3>
+      <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:h-full before:w-0.5 before:bg-border-strong">
         {activities.map((act, i) => (
           <div key={i} className="relative flex items-start gap-8 group">
-            <div className="relative z-10 mt-1 w-10 h-10 rounded-xl bg-[#121214] border border-[#1f1f23] flex items-center justify-center group-hover:border-[#6366f1]/30 transition-all shrink-0">
-               <Clock className="w-4 h-4 text-[#9ca3af]" />
+            <div className="relative z-10 mt-1 w-10 h-10 rounded-xl bg-surface-alt border border-border-subtle flex items-center justify-center group-hover:border-accent/30 transition-all shrink-0">
+               <Clock className="w-4 h-4 text-muted" />
             </div>
-            <div className="flex-1 pb-4 border-b border-[#1f1f23]/50">
+            <div className="flex-1 pb-4 border-b border-border-subtle/50">
               <div className="flex items-center justify-between mb-1">
-                <p className="text-[13px] font-bold text-[#e5e7eb] tracking-tight">{act.title}</p>
-                <span className="text-[10px] font-mono font-bold text-[#1f1f23] uppercase">{act.time}</span>
+                <p className="text-[13px] font-bold text-foreground tracking-tight">{act.title}</p>
+                <span className="text-[10px] font-mono font-bold text-muted uppercase">{act.time}</span>
               </div>
-              <p className="text-[12px] text-[#9ca3af] leading-relaxed italic">{act.description}</p>
+              <p className="text-[12px] text-muted leading-relaxed italic">{act.description}</p>
             </div>
           </div>
         ))}
@@ -29,20 +29,20 @@ export function ProjectTimeline({ activities }: { activities: any[] }) {
 
 export function ProjectHealthIndicator() {
   return (
-    <div className="p-6 bg-[#121214] border border-[#1f1f23] rounded-3xl space-y-6">
+    <div className="p-6 bg-surface border border-border-subtle rounded-2xl space-y-6 shadow-none">
        <div className="flex items-center justify-between">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1f1f23] font-mono">System Health</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted font-mono">Project Health</span>
           <div className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
        </div>
        
        <div className="grid grid-cols-3 gap-2">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((i) => (
-            <div key={i} className={`h-8 rounded-lg border border-[#1f1f23] ${i < 7 ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-[#17171a]'}`} />
+            <div key={i} className={`h-8 rounded-lg border border-border-subtle ${i < 7 ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-surface-alt'}`} />
           ))}
        </div>
-       <p className="text-[11px] text-[#9ca3af] font-medium leading-relaxed">
-          Protocol integrity and deployment signals are within nominal parameters. 
-          No critical failures detected in current build layer.
+       <p className="text-[11px] text-muted font-medium leading-relaxed">
+          All project modules and task deliveries are currently on schedule. 
+          No critical bottlenecks detected in the current sprint.
        </p>
     </div>
   );
@@ -50,13 +50,13 @@ export function ProjectHealthIndicator() {
 
 export function ProjectOrgBadge({ org }: { org: any }) {
   return (
-    <div className="flex items-center gap-4 p-4 bg-[#121214] border border-[#1f1f23] rounded-2xl group hover:border-[#6366f1]/20 transition-all">
-       <div className="w-12 h-12 rounded-xl bg-[#17171a] border border-[#1f1f23] flex items-center justify-center font-black text-[#e5e7eb] text-xl italic group-hover:text-[#6366f1]">
+    <div className="flex items-center gap-4 p-4 bg-surface border border-border-subtle rounded-xl group hover:border-border-strong hover:bg-surface-alt/50 transition-all shadow-none">
+       <div className="w-12 h-12 rounded-xl bg-surface-alt border border-border-subtle flex items-center justify-center font-black text-foreground text-xl italic group-hover:text-accent">
           {org?.name?.[0] || "O"}
        </div>
        <div className="flex flex-col">
-          <span className="text-[9px] font-mono font-bold text-[#1f1f23] uppercase tracking-widest">Authority Node</span>
-          <span className="text-[14px] font-bold text-[#e5e7eb] tracking-tighter uppercase italic">{org?.name || "Initializing..."}</span>
+          <span className="text-[9px] font-mono font-bold text-muted uppercase tracking-widest">Organization</span>
+          <span className="text-[14px] font-bold text-foreground tracking-tighter uppercase italic">{org?.name || "Initializing..."}</span>
        </div>
     </div>
   );
@@ -64,13 +64,13 @@ export function ProjectOrgBadge({ org }: { org: any }) {
 
 export function ProjectLeadCard({ lead }: { lead: any }) {
   return (
-    <div className="flex items-center gap-4 p-4 bg-[#121214] border border-[#1f1f23] rounded-2xl group hover:border-[#2a2a2f] transition-all">
-       <div className="w-12 h-12 rounded-full border-2 border-[#1f1f23] overflow-hidden grayscale group-hover:grayscale-0 transition-all">
+    <div className="flex items-center gap-4 p-4 bg-surface border border-border-subtle rounded-xl group hover:border-border-strong hover:bg-surface-alt/50 transition-all shadow-none">
+       <div className="w-12 h-12 rounded-full border-2 border-border-subtle overflow-hidden grayscale group-hover:grayscale-0 transition-all">
           <img src={lead?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=tushar"} alt="Lead" className="w-full h-full object-cover" />
        </div>
        <div className="flex flex-col">
-          <span className="text-[9px] font-mono font-bold text-[#1f1f23] uppercase tracking-widest">Lead Architect</span>
-          <span className="text-[14px] font-bold text-[#e5e7eb] tracking-tight uppercase hover:text-[#6366f1] transition-colors cursor-pointer">{lead?.name || "Tushar G."}</span>
+          <span className="text-[9px] font-mono font-bold text-muted uppercase tracking-widest">Lead Architect</span>
+          <span className="text-[14px] font-bold text-foreground tracking-tight uppercase hover:text-accent transition-colors cursor-pointer">{lead?.name || "Tushar G."}</span>
        </div>
     </div>
   );

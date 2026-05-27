@@ -88,9 +88,9 @@ export default async function Home() {
         <HeroSection />
       </div>
       <ImpactCounters stats={[
-        { label: "Active Builders", value: userCount, suffix: "+", color: "text-blue-500" },
+        { label: "Active Contributors", value: userCount, suffix: "+", color: "text-blue-500" },
         { label: "Live Proposals", value: proposalCount, suffix: "", color: "text-emerald-500" },
-        { label: "Network Signals", value: activityCount, suffix: "+", color: "text-amber-500" },
+        { label: "Platform Contributions", value: activityCount, suffix: "+", color: "text-amber-500" },
       ]} />
       <IdeologyCloud />
       <ValuesGrid />

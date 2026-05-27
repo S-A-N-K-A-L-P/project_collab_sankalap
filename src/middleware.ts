@@ -3,7 +3,7 @@ import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const ADMIN_ROLES = ["admin", "pixel_head"];
+const ADMIN_ROLES = ["sankalp_associate", "master_admin"];
 
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;

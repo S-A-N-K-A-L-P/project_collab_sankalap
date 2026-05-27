@@ -2,12 +2,13 @@
 
 import { AppBar, Toolbar, Box, Stack, Avatar, Typography, Tooltip, alpha } from "@mui/material";
 import {
-  HomeRounded        as HomeIcon,
-  LightbulbRounded   as LightbulbIcon,
-  ChecklistRounded   as TasksIcon,
-  ExploreRounded     as DiscoverIcon,
+  HomeRounded          as HomeIcon,
+  LightbulbRounded     as LightbulbIcon,
+  ChecklistRounded     as TasksIcon,
+  EmojiEventsRounded   as ShowcaseIcon,
+  ExploreRounded       as DiscoverIcon,
   NotificationsRounded as BellIcon,
-  BoltRounded        as BoltIcon,
+  BoltRounded          as BoltIcon,
 } from "@mui/icons-material";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
@@ -18,6 +19,7 @@ const NAV = [
   { href: "/feed",          label: "Feed",          Icon: HomeIcon      },
   { href: "/ideas",         label: "Proposals",     Icon: LightbulbIcon },
   { href: "/tasks",         label: "Tasks",         Icon: TasksIcon     },
+  { href: "/showcase",      label: "Showcase",      Icon: ShowcaseIcon  },
   { href: "/discover",      label: "Discover",      Icon: DiscoverIcon  },
   { href: "/notifications", label: "Notifications", Icon: BellIcon      },
 ];

@@ -6,7 +6,7 @@ import Proposal from "@/models/Proposal";
 import Vote from "@/models/Vote";
 
 function isAdmin(s: any) {
-  return s && ["admin", "pixel_head"].includes(s.user?.role);
+  return s && ["sankalp_associate", "master_admin"].includes(s.user?.role);
 }
 
 export async function GET(

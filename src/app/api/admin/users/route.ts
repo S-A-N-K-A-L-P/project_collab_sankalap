@@ -4,10 +4,10 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
 
-const VALID_ROLES = ["normal_user", "pixel_member", "project_lead", "pixel_head", "admin"];
+const VALID_ROLES = ["user", "sankalp_member", "sankalp_associate", "master_admin"];
 
 function isAdmin(session: any) {
-  return session && ["admin", "pixel_head"].includes(session.user?.role);
+  return session && ["sankalp_associate", "master_admin"].includes(session.user?.role);
 }
 
 export async function GET(req: Request) {

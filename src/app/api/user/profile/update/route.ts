@@ -10,21 +10,15 @@ export async function PATCH(req: Request) {
     if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
-    const { bio, location, skills, role, github } = body;
+    const { bio, location, skills, github } = body;
+    // Note: role is intentionally excluded — users cannot self-assign roles.
+    // Role changes are admin-only via PATCH /api/admin/users.
 
     await dbConnect();
 
     const updatedUser = await User.findOneAndUpdate(
       { email: session.user.email },
-      { 
-        $set: { 
-          bio, 
-          location, 
-          skills, 
-          role: role || "user",
-          github
-        } 
-      },
+      { $set: { bio, location, skills, github } },
       { new: true }
     );
 

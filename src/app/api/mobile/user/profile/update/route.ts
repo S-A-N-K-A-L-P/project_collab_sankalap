@@ -8,20 +8,15 @@ export async function PATCH(req: Request) {
     const session = getMobileSession(req);
 
     const body = await req.json();
-    const { bio, location, skills, role } = body;
+    const { bio, location, skills, github } = body;
+    // Note: role is intentionally excluded — users cannot self-assign roles.
+    // Role changes are admin-only via PATCH /api/mobile/admin/users.
 
     await dbConnect();
 
     const updatedUser = await User.findByIdAndUpdate(
       session.id,
-      {
-        $set: {
-          bio,
-          location,
-          skills,
-          role: role || "user",
-        },
-      },
+      { $set: { bio, location, skills, github } },
       { new: true }
     ).select("-password");
 

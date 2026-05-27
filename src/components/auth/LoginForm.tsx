@@ -56,8 +56,8 @@ export default function LoginForm() {
         <div className="mx-auto w-10 h-10 bg-accent rounded-xl flex items-center justify-center text-white shadow-sm mb-4">
           <Zap className="w-5 h-5 fill-current" />
         </div>
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">Initialize Sync</h2>
-        <p className="text-muted text-[13px] font-medium leading-relaxed">Access the collective protocol layers</p>
+        <h2 className="text-2xl font-bold tracking-tight text-foreground">Sign In</h2>
+        <p className="text-muted text-[13px] font-medium leading-relaxed">Sign in to access your projects and dashboard</p>
       </div>
 
       {error && (
@@ -73,7 +73,7 @@ export default function LoginForm() {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <label className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest ml-1">Identity Vector (Email)</label>
+          <label className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest ml-1">Email Address</label>
           <div className="relative">
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
             <input
@@ -82,14 +82,14 @@ export default function LoginForm() {
               required
               value={formData.email}
               onChange={handleChange}
-              placeholder="agent@syncro.dev"
+              placeholder="user@sankalp.ai"
               className="w-full pl-12 pr-4 py-3 bg-background border border-border-subtle rounded-xl focus:border-accent/50 outline-none transition-all text-foreground text-[13px] placeholder:text-muted"
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest ml-1">Access Phrase (Password)</label>
+          <label className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest ml-1">Password</label>
           <div className="relative">
             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
             <input
@@ -107,9 +107,9 @@ export default function LoginForm() {
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
             <input type="checkbox" id="remember" className="rounded border-border-subtle bg-background text-accent focus:ring-offset-background" />
-            <label htmlFor="remember" className="text-[11px] text-muted font-bold uppercase tracking-tight">Stay Synced</label>
+            <label htmlFor="remember" className="text-[11px] text-muted font-bold uppercase tracking-tight">Keep me signed in</label>
           </div>
-          <Link href="#" className="text-[11px] text-accent hover:underline font-bold uppercase tracking-tight">Reset Key?</Link>
+          <Link href="#" className="text-[11px] text-accent hover:underline font-bold uppercase tracking-tight">Forgot Password?</Link>
         </div>
 
         <button
@@ -120,16 +120,16 @@ export default function LoginForm() {
           {loading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            "Authenticate"
+            "Log In"
           )}
         </button>
       </form>
 
       <div className="text-center pt-2">
         <p className="text-[11px] text-muted font-bold uppercase tracking-widest">
-          New Node?{" "}
+          New to S.A.N.K.A.L.P?{" "}
           <Link href="/register" className="text-accent hover:underline font-bold ml-2">
-            Build Identity
+            Create an account
           </Link>
         </p>
       </div>

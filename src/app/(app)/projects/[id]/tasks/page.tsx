@@ -1,169 +1,197 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { Loader2, Clock, CheckCircle2, AlertTriangle, Circle } from "lucide-react";
 
-type TaskItem = {
-    _id: string;
-    title: string;
-    description: string;
-    assignedTo: string;
-    assignedToName?: string;
-    priority: "low" | "medium" | "high";
-    status: "pending" | "in-progress" | "completed" | "delayed";
-    progress: number;
-    deadline: string;
+type Status   = "pending" | "in-progress" | "completed" | "delayed";
+type Priority = "low" | "medium" | "high";
+
+interface TaskItem {
+  _id: string;
+  title: string;
+  description: string;
+  assignedTo: string;
+  assignedToName?: string;
+  priority: Priority;
+  status: Status;
+  progress: number;
+  deadline: string;
+}
+
+const PRIORITY_STYLE: Record<Priority, string> = {
+  high:   "text-red-400 bg-red-500/10 border-red-500/20",
+  medium: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+  low:    "text-slate-400 bg-slate-500/10 border-slate-500/20",
 };
 
+const STATUS_STYLE: Record<Status, string> = {
+  pending:      "text-slate-400 bg-slate-500/10 border-slate-500/20",
+  "in-progress":"text-blue-400 bg-blue-500/10 border-blue-500/20",
+  completed:    "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+  delayed:      "text-red-400 bg-red-500/10 border-red-500/20",
+};
+
+const STATUS_LABEL: Record<Status, string> = {
+  pending: "Backlog", "in-progress": "In Progress", completed: "Completed", delayed: "Delayed",
+};
+
+function ProgressBar({ value }: { value: number }) {
+  const pct = Math.max(0, Math.min(100, value));
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex-1 h-1 rounded-full bg-border-subtle overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all ${
+            pct >= 100 ? "bg-emerald-500" : pct >= 50 ? "bg-accent" : "bg-amber-500"
+          }`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className="text-[10px] font-mono text-muted w-7 text-right">{pct}%</span>
+    </div>
+  );
+}
+
 export default function ProjectTasksPage() {
-    const { id: projectId } = useParams();
-    const [tasks, setTasks] = useState<TaskItem[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [saving, setSaving] = useState(false);
+  const { id: projectId } = useParams();
+  const [tasks, setTasks]         = useState<TaskItem[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState<string | null>(null);
 
-    const fetchTasks = async (pid: string) => {
-        const response = await fetch(`/api/project-progress/tasks/project/${pid}`);
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.error || "Failed to fetch tasks");
-        }
-        setTasks(data.tasks || []);
-    };
+  const fetchTasks = async (pid: string) => {
+    const r    = await fetch(`/api/project-progress/tasks/project/${pid}`);
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || "Failed to load tasks");
+    setTasks(data.tasks ?? []);
+  };
 
-    useEffect(() => {
-        if (!projectId) return;
+  useEffect(() => {
+    if (!projectId) return;
+    let active = true;
+    setLoading(true);
+    setError(null);
+    fetchTasks(projectId as string)
+      .catch((e: Error) => { if (active) setError(e.message); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [projectId]);
 
-        let active = true;
-        setLoading(true);
-        setError(null);
+  const updateTask = async (taskId: string, updates: { status?: string; progress?: number }) => {
+    const r = await fetch(`/api/project-progress/tasks/${taskId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    });
+    if (r.ok) setTasks((prev) => prev.map((t) => t._id === taskId ? { ...t, ...updates } as TaskItem : t));
+  };
 
-        fetchTasks(projectId as string)
-            .catch((err: Error) => {
-                if (active) setError(err.message);
-            })
-            .finally(() => {
-                if (active) setLoading(false);
-            });
+  const completed = tasks.filter(t => t.status === "completed").length;
 
-        return () => {
-            active = false;
-        };
-    }, [projectId]);
+  if (loading) return (
+    <div className="flex items-center gap-2 text-muted text-[13px] py-8">
+      <Loader2 className="w-4 h-4 animate-spin text-accent" /> Loading tasks…
+    </div>
+  );
 
-    const statusCount = useMemo(
-        () => ({
-            total: tasks.length,
-            completed: tasks.filter((item) => item.status === "completed").length,
-        }),
-        [tasks]
-    );
-
-    const updateTask = async (taskId: string, updates: any) => {
-        try {
-            const response = await fetch(`/api/project-progress/tasks/${taskId}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(updates),
-            });
-
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || "Failed to update task");
-            }
-
-            setTasks((current) =>
-                current.map((item) =>
-                    item._id === taskId ? { ...item, ...updates } : item
-                )
-            );
-        } catch (err: any) {
-            setError(err.message);
-        }
-    };
-
-    if (loading) {
-        return <div className="p-6 text-sm text-muted">Awaiting tactical transmission...</div>;
-    }
-
-    return (
-        <div className="space-y-6">
-            <div className="rounded-2xl border border-border-subtle bg-surface p-6 flex items-center justify-between">
-                <div className="space-y-1">
-                    <h2 className="text-xl font-bold text-foreground italic uppercase">Tactical Ops Node</h2>
-                    <p className="text-xs text-muted font-mono uppercase tracking-widest">
-                        {statusCount.completed} / {statusCount.total} Targets Neutralized
-                    </p>
-                </div>
-            </div>
-
-            {error && (
-                <div className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-sm text-red-300 font-mono">
-                    [ERR_SIGNAL]: {error}
-                </div>
-            )}
-
-            <div className="grid grid-cols-1 gap-4">
-                {tasks.map((task) => (
-                    <div key={task._id} className="rounded-2xl border border-border-subtle bg-surface-alt p-5 hover:border-border-strong transition-all">
-                        <div className="flex flex-wrap justify-between items-start gap-4">
-                            <div className="flex-1 min-w-[240px] space-y-2">
-                                <div className="flex items-center gap-3">
-                                    <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded border ${
-                                        task.priority === 'high' ? 'border-red-500/30 text-red-400 bg-red-500/5' : 'border-accent/30 text-accent bg-accent/5'
-                                    }`}>
-                                        {task.priority} PRIORITY
-                                    </span>
-                                    <h3 className="text-[15px] font-bold text-foreground">{task.title}</h3>
-                                </div>
-                                <p className="text-sm text-muted leading-relaxed">{task.description}</p>
-                                <div className="flex items-center gap-4 pt-2">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-5 h-5 rounded-full bg-surface border border-border-subtle flex items-center justify-center text-[8px] font-bold text-muted">
-                                            {task.assignedToName?.charAt(0) || "U"}
-                                        </div>
-                                        <span className="text-xs font-medium text-muted">{task.assignedToName || "Unassigned"}</span>
-                                    </div>
-                                    <span className="text-[11px] font-mono text-muted uppercase">Deadline: {new Date(task.deadline).toLocaleDateString()}</span>
-                                </div>
-                            </div>
-                            
-                            <div className="flex flex-col gap-3 min-w-[120px]">
-                                <select
-                                    value={task.status}
-                                    onChange={(e) => updateTask(task._id, { status: e.target.value })}
-                                    className="bg-surface border border-border-subtle rounded-lg px-3 py-1.5 text-xs text-foreground font-bold uppercase transition-all focus:border-accent outline-none"
-                                >
-                                    <option value="pending">PENDING</option>
-                                    <option value="in-progress">ACTIVE</option>
-                                    <option value="completed">VERIFIED</option>
-                                    <option value="delayed">DELAYED</option>
-                                </select>
-                                <div className="space-y-1">
-                                    <div className="flex justify-between text-[10px] font-mono text-muted uppercase">
-                                        <span>Progress</span>
-                                        <span>{task.progress}%</span>
-                                    </div>
-                                    <input
-                                        type="range"
-                                        min="0"
-                                        max="100"
-                                        value={task.progress}
-                                        onChange={(e) => updateTask(task._id, { progress: Number(e.target.value) })}
-                                        className="w-full h-1 bg-surface rounded-full appearance-none cursor-pointer accent-accent"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-
-                {tasks.length === 0 && (
-                    <div className="py-12 text-center border-2 border-dashed border-border-subtle rounded-3xl">
-                        <p className="text-sm text-muted italic">Tactical queue is empty. Awaiting new orders.</p>
-                    </div>
-                )}
-            </div>
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-[16px] font-semibold text-foreground">Task Board</h2>
+          <p className="text-[12px] text-muted mt-0.5">{completed} of {tasks.length} completed</p>
         </div>
-    );
+      </div>
+
+      {error && (
+        <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/5 text-[13px] text-red-400">{error}</div>
+      )}
+
+      {tasks.length === 0 ? (
+        <div className="flex items-center justify-center h-40 bg-surface border border-dashed border-border-subtle rounded-xl">
+          <p className="text-[13px] text-muted">No tasks have been assigned to this project yet.</p>
+        </div>
+      ) : (
+        <div className="bg-surface border border-border-subtle rounded-xl overflow-hidden divide-y divide-border-subtle">
+          {tasks.map((task) => {
+            const deadline = new Date(task.deadline);
+            const isOverdue = deadline < new Date() && task.status !== "completed";
+            const daysLeft  = Math.ceil((deadline.getTime() - Date.now()) / 86_400_000);
+
+            return (
+              <div key={task._id} className="flex items-start gap-4 px-5 py-4 hover:bg-accent/[0.02] transition-colors group">
+                {/* Dot */}
+                <div className="mt-2 w-1.5 h-1.5 rounded-full bg-border-subtle flex-shrink-0" />
+
+                {/* Content */}
+                <div className="flex-1 min-w-0 space-y-2">
+                  <div className="flex items-start gap-3 justify-between">
+                    <div className="min-w-0">
+                      <p className={`text-[13px] font-semibold leading-snug ${
+                        task.status === "completed" ? "text-muted line-through" : "text-foreground"
+                      }`}>
+                        {task.title}
+                      </p>
+                      {task.description && (
+                        <p className="text-[12px] text-muted mt-0.5 line-clamp-1">{task.description}</p>
+                      )}
+                    </div>
+                    <div className={`flex-shrink-0 flex items-center gap-1 text-[11px] ${
+                      isOverdue ? "text-red-400" : daysLeft <= 2 ? "text-amber-400" : "text-muted"
+                    }`}>
+                      <Clock className="w-3 h-3" />
+                      {isOverdue
+                        ? `${Math.abs(daysLeft)}d overdue`
+                        : daysLeft === 0 ? "Due today"
+                        : deadline.toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+                      }
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md border capitalize ${PRIORITY_STYLE[task.priority]}`}>
+                      {task.priority}
+                    </span>
+                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-md border ${STATUS_STYLE[task.status]}`}>
+                      {STATUS_LABEL[task.status]}
+                    </span>
+                    {task.assignedToName && (
+                      <div className="flex items-center gap-1.5 text-[11px] text-muted">
+                        <div className="w-4 h-4 rounded-full bg-accent/20 text-accent text-[8px] font-bold flex items-center justify-center">
+                          {task.assignedToName[0]?.toUpperCase()}
+                        </div>
+                        {task.assignedToName}
+                      </div>
+                    )}
+                  </div>
+
+                  <ProgressBar value={task.progress} />
+                </div>
+
+                {/* Controls — shown on hover */}
+                <div className="flex-shrink-0 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <select
+                    value={task.status}
+                    onChange={(e) => updateTask(task._id, { status: e.target.value })}
+                    className="py-1 px-2 bg-background border border-border-subtle rounded-lg text-[11px] text-muted outline-none focus:border-accent/40 cursor-pointer"
+                  >
+                    <option value="pending">Backlog</option>
+                    <option value="in-progress">In Progress</option>
+                    <option value="completed">Completed</option>
+                    <option value="delayed">Delayed</option>
+                  </select>
+                  <input
+                    type="range" min={0} max={100} value={task.progress}
+                    onChange={(e) => updateTask(task._id, { progress: Number(e.target.value) })}
+                    className="w-28 h-1 appearance-none cursor-pointer accent-accent"
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }

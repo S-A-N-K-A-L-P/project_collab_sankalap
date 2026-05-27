@@ -3,7 +3,7 @@ import { getMobileSession } from "@/lib/mobileAuth";
 import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
 
-const VALID_ROLES = ["normal_user", "pixel_member", "project_lead", "pixel_head", "admin"];
+const VALID_ROLES = ["user", "sankalp_member", "sankalp_associate", "master_admin"];
 
 // GET /api/mobile/admin/users?q=&role=
 // Search all users — public (no auth required for search)
@@ -43,7 +43,7 @@ export async function GET(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const session = getMobileSession(req);
-    if (!["admin", "pixel_head"].includes(session.role)) {
+    if (!["sankalp_associate", "master_admin"].includes(session.role)) {
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
