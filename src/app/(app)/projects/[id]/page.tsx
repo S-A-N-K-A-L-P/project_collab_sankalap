@@ -10,32 +10,46 @@ import {
   Link as MuiLink, Button,
 } from "@mui/material";
 
-import {
-  ArrowBackRounded as BackIcon,
-  AccessTimeRounded as ClockIcon,
-  CheckCircleRounded as DoneIcon,
-  ErrorOutlineRounded as ErrorIcon,
-  RadioButtonChecked as InProgressIcon,
-  RadioButtonUnchecked as CircleIcon,
-  GitHub as GitHubIcon,
-  PeopleRounded as PeopleIcon,
-  TodayRounded as CalendarIcon,
-  TrendingUpRounded as TrendingIcon,
-  DashboardRounded as OverviewIcon,
-  ChecklistRounded as TasksIcon,
-  GroupRounded as TeamIcon,
-  TimelineRounded as ActivityIcon,
-  RuleRounded as ReviewIcon,
-  ChevronRightRounded as ChevronIcon,
-} from "@mui/icons-material";
+import ArrowBackRounded    from "@mui/icons-material/ArrowBackRounded";
+import AccessTimeRounded   from "@mui/icons-material/AccessTimeRounded";
+import CheckCircleRounded  from "@mui/icons-material/CheckCircleRounded";
+import ErrorOutlineRounded from "@mui/icons-material/ErrorOutlineRounded";
+import RadioButtonChecked  from "@mui/icons-material/RadioButtonChecked";
+import RadioButtonUnchecked from "@mui/icons-material/RadioButtonUnchecked";
+import GitHub              from "@mui/icons-material/GitHub";
+import PeopleRounded       from "@mui/icons-material/PeopleRounded";
+import TodayRounded        from "@mui/icons-material/TodayRounded";
+import TrendingUpRounded   from "@mui/icons-material/TrendingUpRounded";
+import DashboardRounded    from "@mui/icons-material/DashboardRounded";
+import ChecklistRounded    from "@mui/icons-material/ChecklistRounded";
+import GroupRounded        from "@mui/icons-material/GroupRounded";
+import TimelineRounded     from "@mui/icons-material/TimelineRounded";
+import RuleRounded         from "@mui/icons-material/RuleRounded";
+import ChevronRightRounded from "@mui/icons-material/ChevronRightRounded";
+import RocketLaunchRounded from "@mui/icons-material/RocketLaunchRounded";
+import LaunchRounded       from "@mui/icons-material/LaunchRounded";
+const BackIcon      = ArrowBackRounded;
+const ClockIcon     = AccessTimeRounded;
+const DoneIcon      = CheckCircleRounded;
+const ErrorIcon     = ErrorOutlineRounded;
+const InProgressIcon = RadioButtonChecked;
+const CircleIcon    = RadioButtonUnchecked;
+const GitHubIcon    = GitHub;
+const PeopleIcon    = PeopleRounded;
+const CalendarIcon  = TodayRounded;
+const TrendingIcon  = TrendingUpRounded;
+const OverviewIcon  = DashboardRounded;
+const TasksIcon     = ChecklistRounded;
+const TeamIcon      = GroupRounded;
+const ActivityIcon  = TimelineRounded;
+const ReviewIcon    = RuleRounded;
+const ChevronIcon   = ChevronRightRounded;
+const ShipIcon      = RocketLaunchRounded;
+const ExternalIcon  = LaunchRounded;
 
 import { KanbanBoard, KanbanColumnDef, KanbanTask } from "@/components/tracker/advanced/KanbanBoard";
 import MarkCompleteWizard from "@/components/project/MarkCompleteWizard";
 import { useSession } from "next-auth/react";
-import {
-  RocketLaunchRounded as ShipIcon,
-  LaunchRounded       as ExternalIcon,
-} from "@mui/icons-material";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

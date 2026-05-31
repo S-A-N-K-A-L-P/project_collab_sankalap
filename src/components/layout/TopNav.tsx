@@ -1,15 +1,20 @@
 "use client";
 
 import { AppBar, Toolbar, Box, Stack, Avatar, Typography, Tooltip, alpha } from "@mui/material";
-import {
-  HomeRounded          as HomeIcon,
-  LightbulbRounded     as LightbulbIcon,
-  ChecklistRounded     as TasksIcon,
-  EmojiEventsRounded   as ShowcaseIcon,
-  ExploreRounded       as DiscoverIcon,
-  NotificationsRounded as BellIcon,
-  BoltRounded          as BoltIcon,
-} from "@mui/icons-material";
+import HomeRounded          from "@mui/icons-material/HomeRounded";
+import LightbulbRounded     from "@mui/icons-material/LightbulbRounded";
+import ChecklistRounded     from "@mui/icons-material/ChecklistRounded";
+import EmojiEventsRounded   from "@mui/icons-material/EmojiEventsRounded";
+import ExploreRounded       from "@mui/icons-material/ExploreRounded";
+import NotificationsRounded from "@mui/icons-material/NotificationsRounded";
+import BoltRounded          from "@mui/icons-material/BoltRounded";
+const HomeIcon      = HomeRounded;
+const LightbulbIcon = LightbulbRounded;
+const TasksIcon     = ChecklistRounded;
+const ShowcaseIcon  = EmojiEventsRounded;
+const DiscoverIcon  = ExploreRounded;
+const BellIcon      = NotificationsRounded;
+const BoltIcon      = BoltRounded;
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession }  from "next-auth/react";

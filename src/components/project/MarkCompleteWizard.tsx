@@ -6,12 +6,15 @@ import {
   Button, Stepper, Step, StepLabel, Switch, FormControlLabel, MenuItem,
   Select, Alert, CircularProgress, IconButton, Divider, FormControl, InputLabel,
 } from "@mui/material";
-import {
-  CloseRounded, CheckCircleRounded as DoneIcon,
-  RocketLaunchRounded as ShipIcon,
-  DescriptionRounded   as DocIcon,
-  StorefrontRounded    as ShopIcon,
-} from "@mui/icons-material";
+import CloseRounded        from "@mui/icons-material/CloseRounded";
+import CheckCircleRounded  from "@mui/icons-material/CheckCircleRounded";
+import RocketLaunchRounded from "@mui/icons-material/RocketLaunchRounded";
+import DescriptionRounded  from "@mui/icons-material/DescriptionRounded";
+import StorefrontRounded   from "@mui/icons-material/StorefrontRounded";
+const DoneIcon = CheckCircleRounded;
+const ShipIcon = RocketLaunchRounded;
+const DocIcon  = DescriptionRounded;
+const ShopIcon = StorefrontRounded;
 import { isUploadEnabled } from "@/lib/cloudinary";
 
 interface DocEntry {

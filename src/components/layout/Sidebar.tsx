@@ -1,15 +1,20 @@
 "use client";
 
 import { Box, Avatar, Tooltip, Divider } from "@mui/material";
-import {
-  SettingsRounded           as SettingsIcon,
-  LogoutRounded             as LogoutIcon,
-  AdminPanelSettingsRounded as AdminIcon,
-  DarkModeRounded           as DarkIcon,
-  LightModeRounded          as LightIcon,
-  EmojiEventsRounded        as TrophyIcon,
-  StorefrontRounded         as ShopIcon,
-} from "@mui/icons-material";
+import SettingsRounded           from "@mui/icons-material/SettingsRounded";
+import LogoutRounded             from "@mui/icons-material/LogoutRounded";
+import AdminPanelSettingsRounded from "@mui/icons-material/AdminPanelSettingsRounded";
+import DarkModeRounded           from "@mui/icons-material/DarkModeRounded";
+import LightModeRounded          from "@mui/icons-material/LightModeRounded";
+import EmojiEventsRounded        from "@mui/icons-material/EmojiEventsRounded";
+import StorefrontRounded         from "@mui/icons-material/StorefrontRounded";
+const SettingsIcon = SettingsRounded;
+const LogoutIcon   = LogoutRounded;
+const AdminIcon    = AdminPanelSettingsRounded;
+const DarkIcon     = DarkModeRounded;
+const LightIcon    = LightModeRounded;
+const TrophyIcon   = EmojiEventsRounded;
+const ShopIcon     = StorefrontRounded;
 import NextLink   from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useTheme }  from "next-themes";

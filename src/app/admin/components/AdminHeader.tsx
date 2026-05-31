@@ -2,10 +2,10 @@
 
 import { usePathname } from "next/navigation";
 import { AppBar, Toolbar, Box, IconButton, Typography, Badge, alpha } from "@mui/material";
-import {
-  NotificationsRounded as BellIcon,
-  HelpOutlineRounded as HelpIcon,
-} from "@mui/icons-material";
+import NotificationsRounded from "@mui/icons-material/NotificationsRounded";
+import HelpOutlineRounded    from "@mui/icons-material/HelpOutlineRounded";
+const BellIcon = NotificationsRounded;
+const HelpIcon = HelpOutlineRounded;
 
 const pageTitles: Record<string, string> = {
   "/admin/dashboard": "Dashboard",

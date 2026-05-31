@@ -10,20 +10,30 @@ import {
   TextField, InputAdornment, Tooltip, alpha,
 } from "@mui/material";
 
-import {
-  Inbox as InboxIcon,
-  AccessTime as ClockIcon,
-  ChevronRight as ChevronRightIcon,
-  TuneRounded as FilterIcon,
-  CheckCircleRounded as CheckIcon,
-  ErrorOutlineRounded as ErrorIcon,
-  RadioButtonChecked as InProgressIcon,
-  RadioButtonUnchecked as CircleIcon,
-  PriorityHighRounded as HighIcon,
-  RemoveRounded as MedIcon,
-  ArrowDownwardRounded as LowIcon,
-  FolderOpenRounded as FolderIcon,
-} from "@mui/icons-material";
+import Inbox                from "@mui/icons-material/Inbox";
+import AccessTime            from "@mui/icons-material/AccessTime";
+import ChevronRight          from "@mui/icons-material/ChevronRight";
+import TuneRounded           from "@mui/icons-material/TuneRounded";
+import CheckCircleRounded    from "@mui/icons-material/CheckCircleRounded";
+import ErrorOutlineRounded   from "@mui/icons-material/ErrorOutlineRounded";
+import RadioButtonChecked    from "@mui/icons-material/RadioButtonChecked";
+import RadioButtonUnchecked  from "@mui/icons-material/RadioButtonUnchecked";
+import PriorityHighRounded   from "@mui/icons-material/PriorityHighRounded";
+import RemoveRounded         from "@mui/icons-material/RemoveRounded";
+import ArrowDownwardRounded  from "@mui/icons-material/ArrowDownwardRounded";
+import FolderOpenRounded     from "@mui/icons-material/FolderOpenRounded";
+const InboxIcon        = Inbox;
+const ClockIcon        = AccessTime;
+const ChevronRightIcon = ChevronRight;
+const FilterIcon       = TuneRounded;
+const CheckIcon        = CheckCircleRounded;
+const ErrorIcon        = ErrorOutlineRounded;
+const InProgressIcon   = RadioButtonChecked;
+const CircleIcon       = RadioButtonUnchecked;
+const HighIcon         = PriorityHighRounded;
+const MedIcon          = RemoveRounded;
+const LowIcon          = ArrowDownwardRounded;
+const FolderIcon       = FolderOpenRounded;
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

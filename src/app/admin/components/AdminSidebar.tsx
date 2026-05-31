@@ -9,17 +9,24 @@ import {
   Typography, Avatar, Divider, Button, alpha,
 } from "@mui/material";
 
-import {
-  DashboardRounded as DashboardIcon,
-  PeopleAltRounded as UsersIcon,
-  DescriptionRounded as DocIcon,
-  FolderRounded as FolderIcon,
-  ShieldRounded as ShieldIcon,
-  LogoutRounded as LogoutIcon,
-  ChevronRightRounded as ChevronIcon,
-  ArrowBackRounded as BackIcon,
-  EmailRounded as InquiryIcon,
-} from "@mui/icons-material";
+import DashboardRounded    from "@mui/icons-material/DashboardRounded";
+import PeopleAltRounded    from "@mui/icons-material/PeopleAltRounded";
+import DescriptionRounded  from "@mui/icons-material/DescriptionRounded";
+import FolderRounded       from "@mui/icons-material/FolderRounded";
+import ShieldRounded       from "@mui/icons-material/ShieldRounded";
+import LogoutRounded       from "@mui/icons-material/LogoutRounded";
+import ChevronRightRounded from "@mui/icons-material/ChevronRightRounded";
+import ArrowBackRounded    from "@mui/icons-material/ArrowBackRounded";
+import EmailRounded        from "@mui/icons-material/EmailRounded";
+const DashboardIcon = DashboardRounded;
+const UsersIcon     = PeopleAltRounded;
+const DocIcon       = DescriptionRounded;
+const FolderIcon    = FolderRounded;
+const ShieldIcon    = ShieldRounded;
+const LogoutIcon    = LogoutRounded;
+const ChevronIcon   = ChevronRightRounded;
+const BackIcon      = ArrowBackRounded;
+const InquiryIcon   = EmailRounded;
 
 const WIDTH = 250;
 

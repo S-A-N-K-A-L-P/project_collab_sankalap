@@ -6,16 +6,22 @@ import {
   LinearProgress, IconButton, alpha, Link as MuiLink,
 } from "@mui/material";
 
-import {
-  PeopleAltRounded as UsersIcon,
-  DescriptionRounded as DocIcon,
-  FolderRounded as FolderIcon,
-  AssignmentTurnedInRounded as TaskIcon,
-  AdminPanelSettingsRounded as AdminIcon,
-  TrendingUpRounded as TrendIcon,
-  ArrowForwardRounded as ArrowIcon,
-  ThumbUpRounded as UpvoteIcon,
-} from "@mui/icons-material";
+import PeopleAltRounded          from "@mui/icons-material/PeopleAltRounded";
+import DescriptionRounded        from "@mui/icons-material/DescriptionRounded";
+import FolderRounded             from "@mui/icons-material/FolderRounded";
+import AssignmentTurnedInRounded from "@mui/icons-material/AssignmentTurnedInRounded";
+import AdminPanelSettingsRounded from "@mui/icons-material/AdminPanelSettingsRounded";
+import TrendingUpRounded         from "@mui/icons-material/TrendingUpRounded";
+import ArrowForwardRounded       from "@mui/icons-material/ArrowForwardRounded";
+import ThumbUpRounded            from "@mui/icons-material/ThumbUpRounded";
+const UsersIcon  = PeopleAltRounded;
+const DocIcon    = DescriptionRounded;
+const FolderIcon = FolderRounded;
+const TaskIcon   = AssignmentTurnedInRounded;
+const AdminIcon  = AdminPanelSettingsRounded;
+const TrendIcon  = TrendingUpRounded;
+const ArrowIcon  = ArrowForwardRounded;
+const UpvoteIcon = ThumbUpRounded;
 
 interface Stats {
   totalUsers: number;
