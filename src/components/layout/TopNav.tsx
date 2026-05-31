@@ -7,14 +7,14 @@ import ChecklistRounded     from "@mui/icons-material/ChecklistRounded";
 import EmojiEventsRounded   from "@mui/icons-material/EmojiEventsRounded";
 import ExploreRounded       from "@mui/icons-material/ExploreRounded";
 import NotificationsRounded from "@mui/icons-material/NotificationsRounded";
-import BoltRounded          from "@mui/icons-material/BoltRounded";
+import FlashOn from "@mui/icons-material/FlashOn";
 const HomeIcon      = HomeRounded;
 const LightbulbIcon = LightbulbRounded;
 const TasksIcon     = ChecklistRounded;
 const ShowcaseIcon  = EmojiEventsRounded;
 const DiscoverIcon  = ExploreRounded;
 const BellIcon      = NotificationsRounded;
-const BoltIcon      = BoltRounded;
+const BoltIcon      = FlashOn;   // BoltRounded has no individual file in @mui/icons-material@6
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession }  from "next-auth/react";

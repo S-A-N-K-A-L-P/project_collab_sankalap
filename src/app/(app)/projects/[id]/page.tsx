@@ -12,7 +12,7 @@ import {
 
 import ArrowBackRounded    from "@mui/icons-material/ArrowBackRounded";
 import AccessTimeRounded   from "@mui/icons-material/AccessTimeRounded";
-import CheckCircleRounded  from "@mui/icons-material/CheckCircleRounded";
+import TaskAlt             from "@mui/icons-material/TaskAlt";            // CheckCircleRounded missing
 import ErrorOutlineRounded from "@mui/icons-material/ErrorOutlineRounded";
 import RadioButtonChecked  from "@mui/icons-material/RadioButtonChecked";
 import RadioButtonUnchecked from "@mui/icons-material/RadioButtonUnchecked";
@@ -30,7 +30,7 @@ import RocketLaunchRounded from "@mui/icons-material/RocketLaunchRounded";
 import LaunchRounded       from "@mui/icons-material/LaunchRounded";
 const BackIcon      = ArrowBackRounded;
 const ClockIcon     = AccessTimeRounded;
-const DoneIcon      = CheckCircleRounded;
+const DoneIcon      = TaskAlt;
 const ErrorIcon     = ErrorOutlineRounded;
 const InProgressIcon = RadioButtonChecked;
 const CircleIcon    = RadioButtonUnchecked;

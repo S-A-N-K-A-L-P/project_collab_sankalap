@@ -6,12 +6,12 @@ import {
   Button, Stepper, Step, StepLabel, Switch, FormControlLabel, MenuItem,
   Select, Alert, CircularProgress, IconButton, Divider, FormControl, InputLabel,
 } from "@mui/material";
-import CloseRounded        from "@mui/icons-material/CloseRounded";
-import CheckCircleRounded  from "@mui/icons-material/CheckCircleRounded";
+import CloseRounded       from "@mui/icons-material/CloseRounded";
+import TaskAlt            from "@mui/icons-material/TaskAlt";          // CheckCircleRounded missing
 import RocketLaunchRounded from "@mui/icons-material/RocketLaunchRounded";
-import DescriptionRounded  from "@mui/icons-material/DescriptionRounded";
-import StorefrontRounded   from "@mui/icons-material/StorefrontRounded";
-const DoneIcon = CheckCircleRounded;
+import DescriptionRounded from "@mui/icons-material/DescriptionRounded";
+import StorefrontRounded  from "@mui/icons-material/StorefrontRounded";
+const DoneIcon = TaskAlt;
 const ShipIcon = RocketLaunchRounded;
 const DocIcon  = DescriptionRounded;
 const ShopIcon = StorefrontRounded;

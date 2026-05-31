@@ -9,18 +9,18 @@ import {
 import PeopleAltRounded          from "@mui/icons-material/PeopleAltRounded";
 import DescriptionRounded        from "@mui/icons-material/DescriptionRounded";
 import FolderRounded             from "@mui/icons-material/FolderRounded";
-import AssignmentTurnedInRounded from "@mui/icons-material/AssignmentTurnedInRounded";
+import AssignmentTurnedIn        from "@mui/icons-material/AssignmentTurnedIn";    // Rounded missing
 import AdminPanelSettingsRounded from "@mui/icons-material/AdminPanelSettingsRounded";
 import TrendingUpRounded         from "@mui/icons-material/TrendingUpRounded";
-import ArrowForwardRounded       from "@mui/icons-material/ArrowForwardRounded";
+import ArrowForward              from "@mui/icons-material/ArrowForward";           // Rounded missing
 import ThumbUpRounded            from "@mui/icons-material/ThumbUpRounded";
 const UsersIcon  = PeopleAltRounded;
 const DocIcon    = DescriptionRounded;
 const FolderIcon = FolderRounded;
-const TaskIcon   = AssignmentTurnedInRounded;
+const TaskIcon   = AssignmentTurnedIn;
 const AdminIcon  = AdminPanelSettingsRounded;
 const TrendIcon  = TrendingUpRounded;
-const ArrowIcon  = ArrowForwardRounded;
+const ArrowIcon  = ArrowForward;
 const UpvoteIcon = ThumbUpRounded;
 
 interface Stats {

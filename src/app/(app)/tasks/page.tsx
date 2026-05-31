@@ -10,29 +10,29 @@ import {
   TextField, InputAdornment, Tooltip, alpha,
 } from "@mui/material";
 
-import Inbox                from "@mui/icons-material/Inbox";
-import AccessTime            from "@mui/icons-material/AccessTime";
-import ChevronRight          from "@mui/icons-material/ChevronRight";
-import TuneRounded           from "@mui/icons-material/TuneRounded";
-import CheckCircleRounded    from "@mui/icons-material/CheckCircleRounded";
-import ErrorOutlineRounded   from "@mui/icons-material/ErrorOutlineRounded";
-import RadioButtonChecked    from "@mui/icons-material/RadioButtonChecked";
-import RadioButtonUnchecked  from "@mui/icons-material/RadioButtonUnchecked";
-import PriorityHighRounded   from "@mui/icons-material/PriorityHighRounded";
-import RemoveRounded         from "@mui/icons-material/RemoveRounded";
-import ArrowDownwardRounded  from "@mui/icons-material/ArrowDownwardRounded";
-import FolderOpenRounded     from "@mui/icons-material/FolderOpenRounded";
+import Inbox               from "@mui/icons-material/Inbox";
+import AccessTime           from "@mui/icons-material/AccessTime";
+import ChevronRight         from "@mui/icons-material/ChevronRight";
+import TuneRounded          from "@mui/icons-material/TuneRounded";
+import TaskAlt              from "@mui/icons-material/TaskAlt";         // CheckCircleRounded missing
+import ErrorOutlineRounded  from "@mui/icons-material/ErrorOutlineRounded";
+import RadioButtonChecked   from "@mui/icons-material/RadioButtonChecked";
+import RadioButtonUnchecked from "@mui/icons-material/RadioButtonUnchecked";
+import PriorityHighRounded  from "@mui/icons-material/PriorityHighRounded";
+import RemoveRounded        from "@mui/icons-material/RemoveRounded";
+import ArrowDownward        from "@mui/icons-material/ArrowDownward";   // ArrowDownwardRounded missing
+import FolderOpenRounded    from "@mui/icons-material/FolderOpenRounded";
 const InboxIcon        = Inbox;
 const ClockIcon        = AccessTime;
 const ChevronRightIcon = ChevronRight;
 const FilterIcon       = TuneRounded;
-const CheckIcon        = CheckCircleRounded;
+const CheckIcon        = TaskAlt;
 const ErrorIcon        = ErrorOutlineRounded;
 const InProgressIcon   = RadioButtonChecked;
 const CircleIcon       = RadioButtonUnchecked;
 const HighIcon         = PriorityHighRounded;
 const MedIcon          = RemoveRounded;
-const LowIcon          = ArrowDownwardRounded;
+const LowIcon          = ArrowDownward;
 const FolderIcon       = FolderOpenRounded;
 
 // ─── Types ───────────────────────────────────────────────────────────────────
