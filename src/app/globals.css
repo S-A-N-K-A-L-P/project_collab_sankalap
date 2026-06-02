@@ -379,6 +379,14 @@ h1, h2, h3, h4, h5, h6 {
 .pf-orb { position:absolute; border-radius:50%; opacity:0.5; will-change:transform; }
 .pf-spotlight { position:absolute; inset:0; }
 
+/* Project card: spotlight-follow-cursor */
+.pf-card-spotlight::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 0%), color-mix(in srgb, var(--accent) 28%, transparent), transparent 60%);
+  opacity: 0; transition: opacity 200ms;
+}
+.pf-card-spotlight:hover::before { opacity: 1; }
+
 @media (prefers-reduced-motion: reduce) {
   .pf-aurora, .pf-mesh, .pf-wave-1, .pf-wave-2, .pf-tilt-grid, .pf-terminal-scan,
   .pf-gradient, .pf-conic, .pf-synthgrid, .pf-orb { animation: none !important; }

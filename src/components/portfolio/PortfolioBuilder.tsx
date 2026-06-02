@@ -7,6 +7,9 @@ import {
 } from "lucide-react";
 import PortfolioRenderer, { type PortfolioData } from "./PortfolioRenderer";
 import { THEMES, ALL_BACKGROUNDS, ALL_THREE_SCENES, THEME_CATEGORIES } from "./themes/registry";
+import {
+  SECTION_ANIM_KINDS, SECTION_ANIMS, CARD_STYLES, CARD_ANIMS, CARD_ANIM_KINDS, AVAILABLE_TOKENS,
+} from "./animations";
 
 const SECTION_LABELS: Record<string, string> = {
   hero: "Hero", about: "About", skills: "Skills", projects: "Projects",
@@ -23,6 +26,7 @@ export default function PortfolioBuilder() {
   const [user, setUser] = useState<any>(null);
   const [available, setAvailable] = useState<any[]>([]);
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
+  const [mode, setMode] = useState<"designer" | "publish">("designer");
 
   // handle
   const [handle, setHandle] = useState("");
@@ -121,13 +125,79 @@ export default function PortfolioBuilder() {
     set({ featuredProjectIds: ids.includes(id) ? ids.filter(x => x !== id) : [...ids, id] });
   };
 
+  // ── Mode bar (Designer | Publish) ──
+  const modeBar = (
+    <div className="flex items-center justify-between flex-wrap gap-2">
+      <div className="flex items-center gap-1 bg-background border border-border rounded-lg p-1">
+        {(["designer", "publish"] as const).map(m => (
+          <button key={m} onClick={() => setMode(m)}
+            className={`px-3.5 py-1.5 rounded-md text-sm font-semibold capitalize transition-colors ${mode === m ? "bg-primary text-white" : "text-muted hover:text-foreground"}`}>
+            {m === "designer" ? "🎨 Designer" : "🚀 Publish"}
+          </button>
+        ))}
+      </div>
+      <span className="text-xs text-muted flex items-center gap-1.5">
+        {saving ? <><Loader2 className="w-3 h-3 animate-spin" /> Saving…</> : savedAt ? <><Check className="w-3 h-3 text-emerald-500" /> Saved</> : null}
+      </span>
+    </div>
+  );
+
+  // ── PUBLISH mode ──
+  if (mode === "publish") {
+    const live = cfg.isPublished !== false;
+    return (
+      <div className="space-y-5">
+        {modeBar}
+        <div className="max-w-xl mx-auto space-y-5">
+          <Card title="Status">
+            <label className="flex items-center gap-2.5 cursor-pointer">
+              <input type="checkbox" checked={live} onChange={e => set({ isPublished: e.target.checked })} className="w-4 h-4 rounded border-border text-primary" />
+              <span className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                {live ? <><Eye className="w-4 h-4 text-emerald-600" /> Live &amp; public</> : <><EyeOff className="w-4 h-4 text-muted" /> Private (only you)</>}
+              </span>
+            </label>
+          </Card>
+
+          <Card title="Your public link">
+            {publicUrl ? (
+              <>
+                <div className="flex items-center gap-2 px-3 py-2 bg-background border border-border rounded-lg text-sm">
+                  <Sparkles className="w-4 h-4 text-primary shrink-0" />
+                  <span className="truncate text-foreground">{typeof window !== "undefined" ? window.location.origin : ""}{publicUrl}</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 mt-3">
+                  <button onClick={() => navigator.clipboard.writeText(window.location.origin + publicUrl)} className="flex items-center gap-1.5 px-3 py-2 border border-border rounded-lg text-sm hover:bg-background"><Copy className="w-3.5 h-3.5" /> Copy</button>
+                  <a href={publicUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 px-3 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg text-sm font-semibold"><ExternalLink className="w-3.5 h-3.5" /> View live</a>
+                  <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.origin + publicUrl)}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 px-3 py-2 border border-border rounded-lg text-sm text-primary hover:bg-background">Share on LinkedIn</a>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-muted">Claim a handle in Designer mode to get your public link.</p>
+            )}
+          </Card>
+
+          <Card title="Overview">
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <Stat label="Theme" value={activeTheme.name} />
+              <Stat label="Views" value={String(cfg.views ?? 0)} />
+              <Stat label="3D" value={cfg.heavy3d ? "On" : "Off"} />
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // ── DESIGNER mode (two-pane) ──
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[minmax(320px,420px)_1fr] gap-5">
+    <div className="space-y-4">
+      {modeBar}
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(320px,420px)_1fr] gap-5">
       {/* ════ LEFT: controls ════ */}
-      <div className="space-y-5 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto lg:pr-2 scrollbar-thin">
-        {/* save status */}
+      <div className="space-y-5 lg:max-h-[calc(100vh-200px)] lg:overflow-y-auto lg:pr-2 scrollbar-thin">
+        {/* heading */}
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-bold text-foreground">Portfolio Builder</h2>
+          <h2 className="text-base font-bold text-foreground">Format &amp; Sections</h2>
           <span className="text-xs text-muted flex items-center gap-1.5">
             {saving ? <><Loader2 className="w-3 h-3 animate-spin" /> Saving…</>
               : savedAt ? <><Check className="w-3 h-3 text-emerald-500" /> Saved</> : null}
@@ -155,27 +225,6 @@ export default function PortfolioBuilder() {
               className="text-xs font-semibold text-primary disabled:opacity-40 hover:underline"
             >Save handle</button>
           </div>
-        </Card>
-
-        {/* Visibility */}
-        <Card title="Visibility">
-          <label className="flex items-center gap-2.5 cursor-pointer">
-            <input type="checkbox" checked={cfg.isPublished !== false} onChange={e => set({ isPublished: e.target.checked })}
-              className="w-4 h-4 rounded border-border text-primary" />
-            <span className="text-sm text-foreground flex items-center gap-1.5">
-              {cfg.isPublished !== false ? <><Eye className="w-4 h-4 text-emerald-600" /> Live (public)</> : <><EyeOff className="w-4 h-4 text-muted" /> Private</>}
-            </span>
-          </label>
-          {publicUrl && cfg.isPublished !== false && (
-            <div className="flex items-center gap-2 mt-3">
-              <button onClick={() => navigator.clipboard.writeText(window.location.origin + publicUrl)}
-                className="text-xs flex items-center gap-1 px-2 py-1 border border-border rounded-lg hover:bg-background"><Copy className="w-3 h-3" /> Copy link</button>
-              <a href={publicUrl} target="_blank" rel="noreferrer"
-                className="text-xs flex items-center gap-1 px-2 py-1 border border-border rounded-lg hover:bg-background"><ExternalLink className="w-3 h-3" /> Open</a>
-              <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent((typeof window!=="undefined"?window.location.origin:"")+publicUrl)}`} target="_blank" rel="noreferrer"
-                className="text-xs flex items-center gap-1 px-2 py-1 border border-border rounded-lg hover:bg-background text-primary">Share</a>
-            </div>
-          )}
         </Card>
 
         {/* Theme — categorized, scrollable */}
@@ -235,22 +284,72 @@ export default function PortfolioBuilder() {
             className="text-xs font-medium text-muted hover:text-foreground mt-1">Reset to theme defaults</button>
         </Card>
 
+        {/* Animation */}
+        <Card title="Animation">
+          <Field label="Section entrance">
+            <select value={cfg.sectionAnim || "rise"} onChange={e => set({ sectionAnim: e.target.value })} className={inp}>
+              {SECTION_ANIM_KINDS.map(k => <option key={k} value={k}>{SECTION_ANIMS[k].label}</option>)}
+            </select>
+          </Field>
+        </Card>
+
+        {/* Project cards */}
+        <Card title="Project Cards">
+          <Field label="Card design">
+            <div className="grid grid-cols-2 gap-1.5">
+              {CARD_STYLES.map(c => (
+                <button key={c.id} onClick={() => set({ projectCardStyle: c.id })}
+                  className={`text-xs px-2 py-2 rounded-lg border text-left transition-colors ${ (cfg.projectCardStyle || "glass") === c.id ? "border-primary bg-primary/5 text-foreground" : "border-border text-muted hover:bg-background"}`}>
+                  {c.label}{c.is3d && <span className="text-[9px] text-primary ml-1">3D</span>}
+                </button>
+              ))}
+            </div>
+          </Field>
+          <Field label="Card entrance">
+            <select value={cfg.projectCardAnim || "rise"} onChange={e => set({ projectCardAnim: e.target.value })} className={inp}>
+              {CARD_ANIM_KINDS.map(k => <option key={k} value={k}>{CARD_ANIMS[k].label}</option>)}
+            </select>
+          </Field>
+        </Card>
+
+        {/* DB data + tokens */}
+        <Card title="Data &amp; Tokens">
+          <p className="text-xs text-muted leading-relaxed mb-2">
+            Your <strong className="text-foreground">name, avatar, location, skills &amp; GitHub</strong> are pulled live from your profile (edit them in Settings). Use these tokens in any text field — they fill in from the database:
+          </p>
+          <div className="space-y-1 max-h-40 overflow-y-auto scrollbar-thin">
+            {AVAILABLE_TOKENS.map(t => (
+              <button key={t.token} onClick={() => navigator.clipboard.writeText(t.token)}
+                className="w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg hover:bg-background text-left group">
+                <code className="text-[11px] text-primary font-mono">{t.token}</code>
+                <span className="text-[10px] text-muted truncate group-hover:text-foreground">{t.desc}</span>
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-muted mt-1">Click a token to copy it.</p>
+        </Card>
+
         {/* 3D heavy render toggle */}
         <Card title="Rendering">
-          <label className={`flex items-start gap-2.5 ${activeTheme.supports3d ? "cursor-pointer" : "opacity-50 cursor-not-allowed"}`}>
-            <input type="checkbox" disabled={!activeTheme.supports3d}
-              checked={!!cfg.heavy3d && activeTheme.supports3d}
-              onChange={e => set({ heavy3d: e.target.checked })}
-              className="mt-0.5 w-4 h-4 rounded border-border text-primary" />
-            <div>
-              <span className="text-sm font-medium text-foreground flex items-center gap-1.5"><Box className="w-4 h-4" /> 3D heavy render (three.js)</span>
-              <p className="text-xs text-muted mt-0.5">
-                {activeTheme.supports3d
-                  ? "Loads a real-time three.js background. Heavier on low-end devices; the three.js code loads only when this is on."
-                  : "This theme has no 3D variant. Pick a theme marked 3D to enable."}
-              </p>
-            </div>
-          </label>
+          {(() => {
+            const can3d = activeTheme.supports3d || (!!cfg.threeOverride && cfg.threeOverride !== "none");
+            return (
+              <label className={`flex items-start gap-2.5 ${can3d ? "cursor-pointer" : "opacity-50 cursor-not-allowed"}`}>
+                <input type="checkbox" disabled={!can3d}
+                  checked={!!cfg.heavy3d && can3d}
+                  onChange={e => set({ heavy3d: e.target.checked })}
+                  className="mt-0.5 w-4 h-4 rounded border-border text-primary" />
+                <div>
+                  <span className="text-sm font-medium text-foreground flex items-center gap-1.5"><Box className="w-4 h-4" /> 3D heavy render (three.js)</span>
+                  <p className="text-xs text-muted mt-0.5">
+                    {can3d
+                      ? "Loads a real-time three.js background. Heavier on low-end devices; the three.js code loads only when this is on."
+                      : "Pick a 3D-capable theme or choose a 3D scene in Customize to enable."}
+                  </p>
+                </div>
+              </label>
+            );
+          })()}
         </Card>
 
         {/* Content */}
@@ -333,10 +432,26 @@ export default function PortfolioBuilder() {
           style={{ height: "calc(100vh - 200px)", minHeight: 500 }}>
           <div className="h-full overflow-y-auto scrollbar-thin mx-auto transition-all"
             style={{ width: device === "mobile" ? 390 : "100%", maxWidth: "100%" }}>
-            {previewData && <PortfolioRenderer key={cfg.themeId + cfg.heavy3d} data={previewData} />}
+            {previewData && (
+              <PortfolioRenderer
+                key={`${cfg.themeId}|${cfg.bgOverride}|${cfg.threeOverride}|${cfg.heavy3d}`}
+                data={previewData}
+                contained
+              />
+            )}
           </div>
         </div>
       </div>
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-background border border-border rounded-lg p-3">
+      <p className="text-sm font-bold text-foreground truncate">{value}</p>
+      <p className="text-[10px] text-muted uppercase tracking-wider mt-0.5">{label}</p>
     </div>
   );
 }

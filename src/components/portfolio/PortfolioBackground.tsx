@@ -27,17 +27,20 @@ const Heavy3D = dynamic(() => import("./backgrounds/three/ThreeBackground"), {
 export default function PortfolioBackground({
   theme,
   heavy3d,
+  contained = false,
 }: {
   theme: PortfolioTheme;
   heavy3d: boolean;
+  /** true inside the builder preview (absolute, fills parent); false = public page (fixed viewport) */
+  contained?: boolean;
 }) {
   const useThree = heavy3d && theme.supports3d && theme.three !== "none";
 
   return (
     <div
       aria-hidden
-      className="fixed inset-0 -z-10 pointer-events-none"
-      style={{ background: theme.palette.bg }}
+      className={`${contained ? "absolute" : "fixed"} inset-0 pointer-events-none`}
+      style={{ background: theme.palette.bg, zIndex: 0 }}
     >
       {/* Lightweight layer always renders (also the fallback under 3D while it loads) */}
       <LightBackground kind={theme.background} theme={theme} />

@@ -45,6 +45,9 @@ const PortfolioSchema = new Schema(
     bgOverride:  { type: String,  default: "" },   // override 2D effect
     threeOverride: { type: String, default: "" },  // override 3D scene
     card:        { type: String,  default: "" },   // override card style
+    sectionAnim: { type: String,  default: "rise" },        // per-section entrance animation
+    projectCardStyle: { type: String, default: "glass" },    // project card design
+    projectCardAnim:  { type: String, default: "rise" },     // project card entrance animation
 
     headline:    { type: String, default: "" },
     tagline:     { type: String, default: "" },
