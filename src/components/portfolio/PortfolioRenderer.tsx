@@ -11,7 +11,7 @@ import {
   MapPin, ExternalLink, Briefcase,
 } from "lucide-react";
 import PortfolioBackground from "./PortfolioBackground";
-import { getTheme } from "./themes/registry";
+import { getTheme, type LightBackgroundKind, type ThreeSceneKind, type CardStyle } from "./themes/registry";
 
 export interface PortfolioData {
   handle?: string;
@@ -23,6 +23,10 @@ export interface PortfolioData {
   tagline?: string;
   aboutLong?: string;
   sections?: { key: string; enabled: boolean; order: number }[];
+  accent2?: string;
+  bgOverride?: string;
+  threeOverride?: string;
+  card?: string;
   experience?: { role: string; org: string; start: string; end: string; summary: string }[];
   links?: { label: string; url: string; icon: string }[];
   seo?: { title?: string; description?: string };
@@ -42,8 +46,23 @@ const fade = {
 };
 
 export default function PortfolioRenderer({ data }: { data: PortfolioData }) {
-  const theme = getTheme(data.themeId);
-  const accent = data.accent || theme.palette.accent;
+  const base = getTheme(data.themeId);
+
+  // Build an EFFECTIVE theme by layering the user's customization overrides
+  // on top of the chosen preset.
+  const theme = {
+    ...base,
+    background: (data.bgOverride || base.background) as LightBackgroundKind,
+    three: (data.threeOverride || base.three) as ThreeSceneKind,
+    supports3d: base.supports3d || !!(data.threeOverride && data.threeOverride !== "none"),
+    card: ((data.card || base.card) as CardStyle),
+    palette: {
+      ...base.palette,
+      accent: data.accent || base.palette.accent,
+      accent2: data.accent2 || base.palette.accent2,
+    },
+  };
+  const accent = theme.palette.accent;
   const p = theme.palette;
   const user = data.user || {};
   const skills = user.skills || [];

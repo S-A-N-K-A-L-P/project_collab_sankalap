@@ -41,6 +41,10 @@ const PortfolioSchema = new Schema(
     heavy3d:     { type: Boolean, default: false },  // user's "3D heavy render (three.js)" toggle
     themeId:     { type: String,  default: "aurora" },
     accent:      { type: String,  default: "" },
+    accent2:     { type: String,  default: "" },   // customization override
+    bgOverride:  { type: String,  default: "" },   // override 2D effect
+    threeOverride: { type: String, default: "" },  // override 3D scene
+    card:        { type: String,  default: "" },   // override card style
 
     headline:    { type: String, default: "" },
     tagline:     { type: String, default: "" },

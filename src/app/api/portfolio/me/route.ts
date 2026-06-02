@@ -52,7 +52,8 @@ export async function GET() {
 }
 
 const ALLOWED = new Set([
-  "isPublished", "heavy3d", "themeId", "accent", "headline", "tagline",
+  "isPublished", "heavy3d", "themeId", "accent", "accent2", "bgOverride",
+  "threeOverride", "card", "headline", "tagline",
   "aboutLong", "sections", "featuredProjectIds", "experience", "links", "seo",
 ]);
 

@@ -360,6 +360,26 @@ h1, h2, h3, h4, h5, h6 {
 .pf-terminal-scan { position:absolute; inset:0; animation: pf-scan 8s linear infinite; opacity:0.6; }
 @keyframes pf-scan { 0%{background-position:0 0} 100%{background-position:0 24px} }
 
+/* Gradient pan */
+.pf-gradient { position:absolute; inset:0; animation: pf-mesh-pan 18s ease infinite; }
+
+/* Rotating conic */
+.pf-conic { position:absolute; inset:-60%; animation: pf-spin 30s linear infinite; }
+@keyframes pf-spin { to { transform: rotate(360deg); } }
+
+/* Synthwave perspective grid */
+.pf-synthgrid {
+  position:absolute; left:-50%; right:-50%; bottom:-10%; top:30%;
+  background-size:42px 42px; transform: rotateX(62deg); transform-origin:center bottom;
+  animation: pf-grid-scroll 2.6s linear infinite;
+}
+@keyframes pf-grid-scroll { from{background-position:0 0} to{background-position:0 42px} }
+
+/* Orbs */
+.pf-orb { position:absolute; border-radius:50%; opacity:0.5; will-change:transform; }
+.pf-spotlight { position:absolute; inset:0; }
+
 @media (prefers-reduced-motion: reduce) {
-  .pf-aurora, .pf-mesh, .pf-wave-1, .pf-wave-2, .pf-tilt-grid, .pf-terminal-scan { animation: none !important; }
+  .pf-aurora, .pf-mesh, .pf-wave-1, .pf-wave-2, .pf-tilt-grid, .pf-terminal-scan,
+  .pf-gradient, .pf-conic, .pf-synthgrid, .pf-orb { animation: none !important; }
 }

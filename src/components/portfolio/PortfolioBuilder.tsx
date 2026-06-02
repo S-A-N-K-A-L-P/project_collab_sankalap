@@ -6,7 +6,7 @@ import {
   Monitor, Smartphone, Box, Sparkles,
 } from "lucide-react";
 import PortfolioRenderer, { type PortfolioData } from "./PortfolioRenderer";
-import { THEMES } from "./themes/registry";
+import { THEMES, ALL_BACKGROUNDS, ALL_THREE_SCENES, THEME_CATEGORIES } from "./themes/registry";
 
 const SECTION_LABELS: Record<string, string> = {
   hero: "Hero", about: "About", skills: "Skills", projects: "Projects",
@@ -178,18 +178,61 @@ export default function PortfolioBuilder() {
           )}
         </Card>
 
-        {/* Theme */}
-        <Card title="Theme">
-          <div className="grid grid-cols-2 gap-2">
-            {THEMES.map(t => (
-              <button key={t.id} onClick={() => set({ themeId: t.id })}
-                className={`text-left rounded-lg p-2.5 border transition-all ${cfg.themeId === t.id ? "border-primary ring-2 ring-primary/30" : "border-border hover:border-border-strong"}`}>
-                <div className="h-10 rounded-md mb-1.5 overflow-hidden" style={{ background: `linear-gradient(135deg, ${t.palette.accent}, ${t.palette.accent2})` }} />
-                <p className="text-xs font-semibold text-foreground">{t.name}</p>
-                {t.supports3d && <span className="text-[9px] text-primary flex items-center gap-0.5 mt-0.5"><Box className="w-2.5 h-2.5" /> 3D</span>}
-              </button>
-            ))}
+        {/* Theme — categorized, scrollable */}
+        <Card title={`Theme (${THEMES.length})`}>
+          <div className="max-h-[360px] overflow-y-auto scrollbar-thin pr-1 space-y-3">
+            {THEME_CATEGORIES.map(catName => {
+              const items = THEMES.filter(t => t.category === catName);
+              if (!items.length) return null;
+              return (
+                <div key={catName}>
+                  <p className="text-[10px] font-semibold text-muted uppercase tracking-wider mb-1.5">{catName}</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {items.map(t => (
+                      <button key={t.id} onClick={() => set({ themeId: t.id })}
+                        className={`text-left rounded-lg p-2 border transition-all ${cfg.themeId === t.id ? "border-primary ring-2 ring-primary/30" : "border-border hover:border-border-strong"}`}>
+                        <div className="h-9 rounded-md mb-1.5" style={{ background: `linear-gradient(135deg, ${t.palette.accent}, ${t.palette.accent2})` }} />
+                        <p className="text-[11px] font-semibold text-foreground truncate">{t.name}</p>
+                        {t.supports3d && <span className="text-[9px] text-primary flex items-center gap-0.5"><Box className="w-2.5 h-2.5" /> 3D</span>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
+        </Card>
+
+        {/* Customize — overrides on top of the chosen theme */}
+        <Card title="Customize">
+          <Field label="Background effect">
+            <select value={cfg.bgOverride || activeTheme.background} onChange={e => set({ bgOverride: e.target.value })} className={inp}>
+              {ALL_BACKGROUNDS.map(b => <option key={b} value={b}>{b}</option>)}
+            </select>
+          </Field>
+          <Field label="3D scene (used when 3D render is on)">
+            <select value={cfg.threeOverride || activeTheme.three} onChange={e => set({ threeOverride: e.target.value })} className={inp}>
+              <option value="none">none</option>
+              {ALL_THREE_SCENES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </Field>
+          <div className="grid grid-cols-2 gap-2">
+            <Field label="Accent">
+              <input type="color" value={cfg.accent || activeTheme.palette.accent} onChange={e => set({ accent: e.target.value })} className="w-full h-9 rounded-lg border border-border bg-background cursor-pointer" />
+            </Field>
+            <Field label="Accent 2">
+              <input type="color" value={cfg.accent2 || activeTheme.palette.accent2} onChange={e => set({ accent2: e.target.value })} className="w-full h-9 rounded-lg border border-border bg-background cursor-pointer" />
+            </Field>
+          </div>
+          <Field label="Card style">
+            <select value={cfg.card || activeTheme.card} onChange={e => set({ card: e.target.value })} className={inp}>
+              <option value="glass">glass</option>
+              <option value="solid">solid</option>
+              <option value="outline">outline</option>
+            </select>
+          </Field>
+          <button onClick={() => set({ bgOverride: "", threeOverride: "", accent: "", accent2: "", card: "" })}
+            className="text-xs font-medium text-muted hover:text-foreground mt-1">Reset to theme defaults</button>
         </Card>
 
         {/* 3D heavy render toggle */}
@@ -220,9 +263,6 @@ export default function PortfolioBuilder() {
           </Field>
           <Field label="About">
             <textarea value={cfg.aboutLong || ""} onChange={e => set({ aboutLong: e.target.value })} rows={4} placeholder="Tell your story…" className={`${inp} resize-none`} />
-          </Field>
-          <Field label="Accent color (optional)">
-            <input type="text" value={cfg.accent || ""} onChange={e => set({ accent: e.target.value })} placeholder={activeTheme.palette.accent} className={inp} />
           </Field>
         </Card>
 
