@@ -20,15 +20,21 @@ interface Props {
   text: string;
   muted: string;
   index?: number;
+  href?: string;
 }
 
 const T = { duration: 0.55, ease: [0.22, 1, 0.36, 1] as any };
 
-export default function ProjectCard({ project, style, anim, accent, accent2, surface, text, muted, index = 0 }: Props) {
+export default function ProjectCard({ project, style, anim, accent, accent2, surface, text, muted, index = 0, href }: Props) {
   const variants = (CARD_ANIMS[anim] || CARD_ANIMS.rise).variants;
   const ref = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
   const [flipped, setFlipped] = useState(false);
+
+  // Whole-card navigation to the project. Inner Live/Code links stopPropagation.
+  const go = () => { if (href) window.open(href, href.startsWith("http") ? "_blank" : "_self"); };
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
+  const clickable = !!href;
 
   const onTilt = (e: React.MouseEvent) => {
     if (style !== "tilt3d") return;
@@ -63,8 +69,8 @@ export default function ProjectCard({ project, style, anim, accent, accent2, sur
         </div>
       )}
       <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
-        {project.liveUrl && <a href={project.liveUrl} target="_blank" rel="noreferrer" style={{ color: accent, fontSize: 13, display: "inline-flex", alignItems: "center", gap: 4 }}><ExternalLink size={13} /> Live</a>}
-        {project.githubRepo && <a href={project.githubRepo} target="_blank" rel="noreferrer" style={{ color: muted, fontSize: 13, display: "inline-flex", alignItems: "center", gap: 4 }}><Github size={13} /> Code</a>}
+        {project.liveUrl && <a onClick={stop} href={project.liveUrl} target="_blank" rel="noreferrer" style={{ color: accent, fontSize: 13, display: "inline-flex", alignItems: "center", gap: 4 }}><ExternalLink size={13} /> Live</a>}
+        {project.githubRepo && <a onClick={stop} href={project.githubRepo} target="_blank" rel="noreferrer" style={{ color: muted, fontSize: 13, display: "inline-flex", alignItems: "center", gap: 4 }}><Github size={13} /> Code</a>}
       </div>
     </div>
   );
@@ -114,7 +120,8 @@ export default function ProjectCard({ project, style, anim, accent, accent2, sur
   if (style === "flip") {
     return (
       <motion.div variants={variants} transition={{ ...T, delay: index * 0.05 }}
-        style={{ perspective: 1000 }} onMouseEnter={() => setFlipped(true)} onMouseLeave={() => setFlipped(false)}>
+        onClick={go} style={{ perspective: 1000, cursor: clickable ? "pointer" : "default" }}
+        onMouseEnter={() => setFlipped(true)} onMouseLeave={() => setFlipped(false)}>
         <motion.div animate={{ rotateY: flipped ? 180 : 0 }} transition={{ duration: 0.6 }}
           style={{ transformStyle: "preserve-3d", position: "relative", borderRadius: radius }}>
           {/* front */}
@@ -130,8 +137,8 @@ export default function ProjectCard({ project, style, anim, accent, accent2, sur
             <h3 style={{ fontSize: 16, fontWeight: 800 }}>{project.title}</h3>
             {project.description && <p style={{ fontSize: 13, marginTop: 8, lineHeight: 1.5, opacity: 0.95 }}>{project.description.slice(0, 140)}</p>}
             <div style={{ display: "flex", gap: 12, marginTop: 14 }}>
-              {project.liveUrl && <a href={project.liveUrl} target="_blank" rel="noreferrer" style={{ color: "#fff", fontSize: 13, display: "inline-flex", gap: 4, alignItems: "center" }}><ExternalLink size={13} /> Live</a>}
-              {project.githubRepo && <a href={project.githubRepo} target="_blank" rel="noreferrer" style={{ color: "#fff", fontSize: 13, display: "inline-flex", gap: 4, alignItems: "center" }}><Github size={13} /> Code</a>}
+              {project.liveUrl && <a onClick={stop} href={project.liveUrl} target="_blank" rel="noreferrer" style={{ color: "#fff", fontSize: 13, display: "inline-flex", gap: 4, alignItems: "center" }}><ExternalLink size={13} /> Live</a>}
+              {project.githubRepo && <a onClick={stop} href={project.githubRepo} target="_blank" rel="noreferrer" style={{ color: "#fff", fontSize: 13, display: "inline-flex", gap: 4, alignItems: "center" }}><Github size={13} /> Code</a>}
             </div>
           </div>
         </motion.div>
@@ -143,8 +150,8 @@ export default function ProjectCard({ project, style, anim, accent, accent2, sur
   if (style === "tilt3d") {
     return (
       <motion.div variants={variants} transition={{ ...T, delay: index * 0.05 }} style={{ perspective: 900 }}>
-        <div ref={ref} onMouseMove={onTilt} onMouseLeave={resetTilt}
-          style={{ ...wrapStyle, transform: `rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`, transition: "transform 120ms ease", transformStyle: "preserve-3d" }}>
+        <div ref={ref} onMouseMove={onTilt} onMouseLeave={resetTilt} onClick={go}
+          style={{ ...wrapStyle, transform: `rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`, transition: "transform 120ms ease", transformStyle: "preserve-3d", cursor: clickable ? "pointer" : "default" }}>
           {content}
         </div>
       </motion.div>
@@ -153,8 +160,8 @@ export default function ProjectCard({ project, style, anim, accent, accent2, sur
 
   return (
     <motion.div ref={ref} variants={variants} transition={{ ...T, delay: index * 0.05 }}
-      whileHover={{ y: -4 }} className={className}
-      style={{ ...wrapStyle, ["--accent" as any]: accent }}
+      whileHover={{ y: -4 }} className={className} onClick={go}
+      style={{ ...wrapStyle, ["--accent" as any]: accent, cursor: clickable ? "pointer" : "default" }}
       onMouseMove={style === "spotlight" ? (e) => {
         const el = ref.current; if (!el) return; const r = el.getBoundingClientRect();
         el.style.setProperty("--mx", `${e.clientX - r.left}px`);

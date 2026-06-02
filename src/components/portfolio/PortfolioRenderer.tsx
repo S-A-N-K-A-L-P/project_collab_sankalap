@@ -1,12 +1,13 @@
 "use client";
 
 import { motion, type Variants } from "framer-motion";
-import { Github, Linkedin, Twitter, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, GraduationCap, Quote as QuoteIcon } from "lucide-react";
+import { Github, Linkedin, Twitter, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, GraduationCap, Quote as QuoteIcon, ChevronDown } from "lucide-react";
 import PortfolioBackground from "./PortfolioBackground";
 import ProjectCard from "./ProjectCard";
 import { getTheme, type LightBackgroundKind, type ThreeSceneKind, type CardStyle } from "./themes/registry";
 import { SECTION_ANIMS, type SectionAnimKind, type CardStyleKind, type CardAnimKind, resolveTokens } from "./animations";
 import { normalizeSections, type PortfolioSection } from "./sections";
+import { logoFor } from "./techLogos";
 
 export interface PortfolioData {
   handle?: string;
@@ -69,7 +70,7 @@ export default function PortfolioRenderer({ data, contained = false }: { data: P
         const headline = tk(c.headline || data.headline) || user.bio || "Builder on S.A.N.K.A.L.P.";
         const tagline = tk(c.tagline || data.tagline);
         return (
-          <section key={sec.id} style={{ minHeight: "70vh", display: "flex", flexDirection: "column", justifyContent: "center", paddingTop: 72, paddingBottom: 36 }}>
+          <section key={sec.id} style={{ position: "relative", minHeight: "70vh", display: "flex", flexDirection: "column", justifyContent: "center", paddingTop: 72, paddingBottom: 36 }}>
             <motion.div initial="hidden" animate="show" variants={variants} transition={{ duration: 0.6 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
                 <div style={{ width: 84, height: 84, borderRadius: 20, overflow: "hidden", border: `2px solid ${accent}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, fontWeight: 800, color: accent, background: p.surface, flexShrink: 0 }}>
@@ -82,6 +83,14 @@ export default function PortfolioRenderer({ data, contained = false }: { data: P
                   {user.location && <p style={{ display: "inline-flex", alignItems: "center", gap: 6, color: p.muted, fontSize: 14, marginTop: 10 }}><MapPin size={14} /> {user.location}</p>}
                 </div>
               </div>
+            </motion.div>
+            {/* animated scroll cue */}
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
+              style={{ position: "absolute", left: "50%", bottom: 24, transform: "translateX(-50%)", color: p.muted }}>
+              <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.6, repeat: Infinity }}>
+                <ChevronDown size={22} style={{ color: accent }} />
+              </motion.div>
             </motion.div>
           </section>
         );
@@ -96,7 +105,15 @@ export default function PortfolioRenderer({ data, contained = false }: { data: P
         if (!items.length) return null;
         return <Wrap key={sec.id} title={sec.title} accent={accent} variants={variants}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-            {items.map((s, i) => <span key={i} style={{ ...surfaceCard, padding: "7px 14px", borderRadius: 999, fontSize: 14, fontWeight: 500, color: p.text }}>{s}</span>)}
+            {items.map((s, i) => {
+              const logo = logoFor(s);
+              return (
+                <span key={i} style={{ ...surfaceCard, display: "inline-flex", alignItems: "center", gap: 8, padding: logo ? "6px 14px 6px 8px" : "7px 14px", borderRadius: 999, fontSize: 14, fontWeight: 500, color: p.text }}>
+                  {logo && <img src={logo} alt="" style={{ width: 20, height: 20, objectFit: "contain", background: "rgba(255,255,255,0.85)", borderRadius: 5, padding: 2 }} />}
+                  {s}
+                </span>
+              );
+            })}
           </div>
         </Wrap>;
       }
@@ -105,7 +122,7 @@ export default function PortfolioRenderer({ data, contained = false }: { data: P
         return <Wrap key={sec.id} title={sec.title} accent={accent} variants={variants}>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: "-60px" }} variants={{ show: { transition: { staggerChildren: 0.08 } } }}
             style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 18 }}>
-            {projects.map((pr, i) => <ProjectCard key={pr._id} project={pr} style={cardStyle} anim={cardAnim} index={i} accent={accent} accent2={p.accent2} surface={p.surface} text={p.text} muted={p.muted} />)}
+            {projects.map((pr, i) => <ProjectCard key={pr._id} project={pr} style={cardStyle} anim={cardAnim} index={i} accent={accent} accent2={p.accent2} surface={p.surface} text={p.text} muted={p.muted} href={pr.liveUrl || `/showcase/${pr._id}`} />)}
           </motion.div>
         </Wrap>;
       }

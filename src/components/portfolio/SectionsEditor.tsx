@@ -7,6 +7,7 @@ import {
 import {
   SECTION_TYPES, newSection, type PortfolioSection, type SectionType,
 } from "./sections";
+import { TECH_LOGOS, logoFor } from "./techLogos";
 
 const inp = "w-full px-2.5 py-1.5 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30";
 
@@ -132,7 +133,7 @@ function SectionFields({ s, available, updateContent }: { s: PortfolioSection; a
       return <L label="Text (supports {{tokens}})"><textarea value={c.body || ""} onChange={(e) => set({ body: e.target.value })} rows={4} placeholder="Write here…" className={`${inp} resize-none`} /></L>;
 
     case "skills":
-      return <ChipsEditor items={c.items || []} onChange={(items) => set({ items })} placeholder="Add a skill + Enter" hint="Leave empty to use skills from your profile." />;
+      return <SkillsEditor items={c.items || []} onChange={(items) => set({ items })} />;
 
     case "quote":
       return (<>
@@ -195,22 +196,52 @@ function L({ label, children }: { label: string; children: React.ReactNode }) {
   return <div><label className="block text-[11px] font-medium text-muted mb-1">{label}</label>{children}</div>;
 }
 
-/* chips (skills) */
-function ChipsEditor({ items, onChange, placeholder, hint }: { items: string[]; onChange: (v: string[]) => void; placeholder?: string; hint?: string }) {
+/* Skills editor: chips (with logos) + tech-logo picker grid */
+function SkillsEditor({ items, onChange }: { items: string[]; onChange: (v: string[]) => void }) {
   const [val, setVal] = useState("");
-  const addChip = () => { const v = val.trim(); if (v && !items.includes(v)) onChange([...items, v]); setVal(""); };
+  const add = (name: string) => { const v = name.trim(); if (v && !items.some(i => i.toLowerCase() === v.toLowerCase())) onChange([...items, v]); };
+  const remove = (i: number) => onChange(items.filter((_, j) => j !== i));
+  const has = (name: string) => items.some(i => i.toLowerCase() === name.toLowerCase());
+
   return (
-    <div>
-      <div className="flex flex-wrap gap-1.5 mb-2">
-        {items.map((it, i) => (
-          <span key={i} className="inline-flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-            {it}<button onClick={() => onChange(items.filter((_, j) => j !== i))}><X className="w-3 h-3" /></button>
-          </span>
-        ))}
+    <div className="space-y-2">
+      {/* current chips */}
+      <div className="flex flex-wrap gap-1.5">
+        {items.map((it, i) => {
+          const logo = logoFor(it);
+          return (
+            <span key={i} className="inline-flex items-center gap-1.5 text-xs bg-primary/10 text-primary pl-1.5 pr-2 py-1 rounded-full">
+              {logo && <img src={logo} alt="" className="w-4 h-4 object-contain rounded-sm bg-white/70 p-0.5" />}
+              {it}
+              <button onClick={() => remove(i)}><X className="w-3 h-3" /></button>
+            </span>
+          );
+        })}
+        {items.length === 0 && <span className="text-[10px] text-muted">Empty = use skills from your profile.</span>}
       </div>
-      <input value={val} onChange={(e) => setVal(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addChip(); } }}
-        placeholder={placeholder} className={inp} />
-      {hint && <p className="text-[10px] text-muted mt-1">{hint}</p>}
+
+      {/* manual add */}
+      <input value={val} onChange={(e) => setVal(e.target.value)}
+        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(val); setVal(""); } }}
+        placeholder="Type a skill + Enter" className={inp} />
+
+      {/* tech logo picker */}
+      <div>
+        <p className="text-[10px] font-medium text-muted mb-1">Or click a tech logo to add:</p>
+        <div className="grid grid-cols-5 gap-1.5 max-h-44 overflow-y-auto scrollbar-thin">
+          {TECH_LOGOS.map((t) => {
+            const on = has(t.name);
+            return (
+              <button key={t.name} title={t.name}
+                onClick={() => on ? onChange(items.filter(i => i.toLowerCase() !== t.name.toLowerCase())) : add(t.name)}
+                className={`flex flex-col items-center gap-1 p-1.5 rounded-lg border transition-all ${on ? "border-primary bg-primary/10" : "border-border hover:border-border-strong hover:bg-background"}`}>
+                <img src={t.file} alt={t.name} className="w-7 h-7 object-contain" />
+                <span className="text-[8px] text-muted truncate w-full text-center leading-none">{t.name}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

@@ -8,7 +8,7 @@
 import type { Variants } from "framer-motion";
 
 /* ── Section entrance animations ──────────────────────────────────────── */
-export type SectionAnimKind = "rise" | "fade" | "slideLeft" | "zoom" | "blur";
+export type SectionAnimKind = "rise" | "fade" | "slideLeft" | "zoom" | "blur" | "rotateIn" | "flipUp" | "bounce";
 
 export const SECTION_ANIMS: Record<SectionAnimKind, { label: string; variants: Variants }> = {
   rise:      { label: "Rise up",    variants: { hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0 } } },
@@ -16,6 +16,9 @@ export const SECTION_ANIMS: Record<SectionAnimKind, { label: string; variants: V
   slideLeft: { label: "Slide in",   variants: { hidden: { opacity: 0, x: -40 }, show: { opacity: 1, x: 0 } } },
   zoom:      { label: "Zoom in",    variants: { hidden: { opacity: 0, scale: 0.9 }, show: { opacity: 1, scale: 1 } } },
   blur:      { label: "Blur in",    variants: { hidden: { opacity: 0, filter: "blur(10px)" }, show: { opacity: 1, filter: "blur(0px)" } } },
+  rotateIn:  { label: "Rotate in",  variants: { hidden: { opacity: 0, rotate: -4, y: 24 }, show: { opacity: 1, rotate: 0, y: 0 } } },
+  flipUp:    { label: "Flip up",    variants: { hidden: { opacity: 0, rotateX: 40, y: 20 }, show: { opacity: 1, rotateX: 0, y: 0 } } },
+  bounce:    { label: "Bounce in",  variants: { hidden: { opacity: 0, y: 40 }, show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 14 } } } },
 };
 export const SECTION_ANIM_KINDS = Object.keys(SECTION_ANIMS) as SectionAnimKind[];
 
