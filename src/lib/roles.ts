@@ -40,9 +40,13 @@ export const MASTER_ROLES: AppRole[] = ["master_admin"];
 
 // ── Guard helpers ─────────────────────────────────────────────
 
+/** Legacy admin role names from older schema versions (pre-rename). */
+const LEGACY_ADMIN_ROLES = ["admin", "pixel_admin"];
+
 /** Returns true if role has access to the admin panel */
 export function isAdminRole(role?: string): boolean {
-  return ADMIN_ROLES.includes(role as AppRole);
+  if (!role) return false;
+  return ADMIN_ROLES.includes(role as AppRole) || LEGACY_ADMIN_ROLES.includes(role);
 }
 
 /** Returns true only for master_admin — platform config gates */
