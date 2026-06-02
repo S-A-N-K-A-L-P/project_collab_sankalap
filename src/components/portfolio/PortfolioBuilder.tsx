@@ -2,20 +2,15 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Loader2, Check, Copy, ExternalLink, Plus, Trash2, Eye, EyeOff,
+  Loader2, Check, Copy, ExternalLink, Eye, EyeOff,
   Monitor, Smartphone, Box, Sparkles,
 } from "lucide-react";
 import PortfolioRenderer, { type PortfolioData } from "./PortfolioRenderer";
+import SectionsEditor from "./SectionsEditor";
 import { THEMES, ALL_BACKGROUNDS, ALL_THREE_SCENES, THEME_CATEGORIES } from "./themes/registry";
 import {
   SECTION_ANIM_KINDS, SECTION_ANIMS, CARD_STYLES, CARD_ANIMS, CARD_ANIM_KINDS, AVAILABLE_TOKENS,
 } from "./animations";
-
-const SECTION_LABELS: Record<string, string> = {
-  hero: "Hero", about: "About", skills: "Skills", projects: "Projects",
-  experience: "Experience", contact: "Contact",
-};
-const LINK_ICONS = ["github", "linkedin", "twitter", "mail", "globe", "link"];
 
 export default function PortfolioBuilder() {
   const [loading, setLoading] = useState(true);
@@ -87,9 +82,12 @@ export default function PortfolioBuilder() {
   }
 
   // ── derived preview data ──
+  // Resolve which projects to show from the "projects" section's selected ids
+  // (or fall back to the user's completed projects).
   const previewProjects = useMemo(() => {
     if (!cfg) return [];
-    const ids: string[] = cfg.featuredProjectIds || [];
+    const projSection = (cfg.sections || []).find((s: any) => s.type === "projects");
+    const ids: string[] = projSection?.content?.ids || [];
     if (ids.length) {
       const byId = new Map(available.map((p: any) => [p._id, p]));
       return ids.map((id) => byId.get(id)).filter(Boolean);
@@ -107,23 +105,6 @@ export default function PortfolioBuilder() {
 
   const activeTheme = THEMES.find(t => t.id === cfg.themeId) || THEMES[0];
   const publicUrl = user?.handle ? `/portfolio/${user.handle}` : null;
-
-  const toggleSection = (key: string) => {
-    const sections = [...(cfg.sections || [])];
-    const i = sections.findIndex((s: any) => s.key === key);
-    if (i >= 0) sections[i] = { ...sections[i], enabled: !sections[i].enabled };
-    else sections.push({ key, enabled: false, order: sections.length });
-    set({ sections });
-  };
-  const sectionEnabled = (key: string) => {
-    const s = (cfg.sections || []).find((x: any) => x.key === key);
-    return s ? s.enabled : true;
-  };
-
-  const toggleFeatured = (id: string) => {
-    const ids: string[] = cfg.featuredProjectIds || [];
-    set({ featuredProjectIds: ids.includes(id) ? ids.filter(x => x !== id) : [...ids, id] });
-  };
 
   // ── Mode bar (Designer | Publish) ──
   const modeBar = (
@@ -352,70 +333,13 @@ export default function PortfolioBuilder() {
           })()}
         </Card>
 
-        {/* Content */}
-        <Card title="Content">
-          <Field label="Tagline">
-            <input value={cfg.tagline || ""} onChange={e => set({ tagline: e.target.value })} placeholder="e.g. Full-stack · AI" className={inp} />
-          </Field>
-          <Field label="Headline">
-            <input value={cfg.headline || ""} onChange={e => set({ headline: e.target.value })} placeholder="One line about you" className={inp} />
-          </Field>
-          <Field label="About">
-            <textarea value={cfg.aboutLong || ""} onChange={e => set({ aboutLong: e.target.value })} rows={4} placeholder="Tell your story…" className={`${inp} resize-none`} />
-          </Field>
-        </Card>
-
-        {/* Sections */}
-        <Card title="Sections">
-          <div className="flex flex-wrap gap-1.5">
-            {Object.keys(SECTION_LABELS).map(key => (
-              <button key={key} onClick={() => toggleSection(key)}
-                className={`text-xs px-2.5 py-1.5 rounded-lg border transition-colors ${sectionEnabled(key) ? "bg-primary text-white border-primary" : "bg-background text-muted border-border"}`}>
-                {SECTION_LABELS[key]}
-              </button>
-            ))}
-          </div>
-        </Card>
-
-        {/* Featured projects */}
-        {available.length > 0 && (
-          <Card title="Featured Projects">
-            <p className="text-xs text-muted mb-2">Pick which to feature (none = your completed projects).</p>
-            <div className="space-y-1.5 max-h-48 overflow-y-auto scrollbar-thin">
-              {available.map((p: any) => {
-                const on = (cfg.featuredProjectIds || []).includes(p._id);
-                return (
-                  <button key={p._id} onClick={() => toggleFeatured(p._id)}
-                    className={`w-full flex items-center gap-2 text-left px-2.5 py-2 rounded-lg border transition-colors ${on ? "border-primary bg-primary/5" : "border-border hover:bg-background"}`}>
-                    <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${on ? "bg-primary border-primary" : "border-border"}`}>
-                      {on && <Check className="w-3 h-3 text-white" />}
-                    </span>
-                    <span className="text-sm text-foreground truncate">{p.title}</span>
-                    <span className="ml-auto text-[10px] text-muted capitalize">{p.status}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </Card>
-        )}
-
-        {/* Links */}
-        <Card title="Links">
-          <div className="space-y-2">
-            {(cfg.links || []).map((l: any, i: number) => (
-              <div key={i} className="flex items-center gap-1.5">
-                <select value={l.icon} onChange={e => { const links = [...cfg.links]; links[i] = { ...l, icon: e.target.value }; set({ links }); }}
-                  className="px-1.5 py-1.5 bg-background border border-border rounded-lg text-xs">
-                  {LINK_ICONS.map(ic => <option key={ic} value={ic}>{ic}</option>)}
-                </select>
-                <input value={l.url} onChange={e => { const links = [...cfg.links]; links[i] = { ...l, url: e.target.value }; set({ links }); }}
-                  placeholder="https://…" className="flex-1 px-2 py-1.5 bg-background border border-border rounded-lg text-xs" />
-                <button onClick={() => set({ links: cfg.links.filter((_: any, j: number) => j !== i) })} className="p-1.5 text-muted hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>
-              </div>
-            ))}
-            <button onClick={() => set({ links: [...(cfg.links || []), { label: "", url: "", icon: "link" }] })}
-              className="text-xs font-medium text-primary flex items-center gap-1"><Plus className="w-3 h-3" /> Add link</button>
-          </div>
+        {/* Sections — add / edit content / reorder / delete */}
+        <Card title="Sections &amp; Content">
+          <SectionsEditor
+            sections={cfg.sections || []}
+            available={available}
+            onChange={(next) => set({ sections: next })}
+          />
         </Card>
       </div>
 

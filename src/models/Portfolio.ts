@@ -7,9 +7,12 @@ import { Schema, model, models } from "mongoose";
  */
 const SectionSchema = new Schema(
   {
-    key:     { type: String, required: true }, // hero|about|skills|projects|contributions|achievements|experience|techstack|contact
+    id:      { type: String, required: true },
+    type:    { type: String, required: true }, // hero|about|skills|projects|experience|education|custom|gallery|stats|quote|contact
+    title:   { type: String, default: "" },
     enabled: { type: Boolean, default: true },
     order:   { type: Number, default: 0 },
+    content: { type: Schema.Types.Mixed, default: {} }, // type-specific editable content
   },
   { _id: false }
 );

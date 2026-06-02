@@ -5,20 +5,20 @@ import dbConnect from "@/lib/mongodb";
 import Portfolio from "@/models/Portfolio";
 import Project from "@/models/Project";
 import User from "@/models/User";
-
-const DEFAULT_SECTIONS = [
-  { key: "hero", enabled: true, order: 0 },
-  { key: "about", enabled: true, order: 1 },
-  { key: "skills", enabled: true, order: 2 },
-  { key: "projects", enabled: true, order: 3 },
-  { key: "experience", enabled: true, order: 4 },
-  { key: "contact", enabled: true, order: 5 },
-];
+import { defaultSections, normalizeSections } from "@/components/portfolio/sections";
 
 async function getOrCreate(userId: string) {
   let pf = await Portfolio.findOne({ userId });
   if (!pf) {
-    pf = await Portfolio.create({ userId, sections: DEFAULT_SECTIONS });
+    pf = await Portfolio.create({ userId, sections: defaultSections() });
+    return pf;
+  }
+  // Migrate legacy/empty sections into the new content-bearing shape.
+  const normalized = normalizeSections(pf.toObject());
+  const isLegacy = !pf.sections?.length || !(pf.sections[0] as any)?.type;
+  if (isLegacy) {
+    pf.sections = normalized as any;
+    await pf.save();
   }
   return pf;
 }
