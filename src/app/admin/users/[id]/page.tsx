@@ -253,11 +253,11 @@ export default function AdminUserDetailPage() {
         </div>
 
         {/* Skills */}
-        {user.skills.length > 0 && (
+        {(user.skills?.length ?? 0) > 0 && (
           <div className="bg-surface border border-border-subtle rounded-2xl p-5 space-y-3">
             <p className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest">Skills</p>
             <div className="flex flex-wrap gap-2">
-              {user.skills.map((s) => (
+              {(user.skills ?? []).map((s) => (
                 <span key={s} className="text-[10px] font-mono px-2 py-1 rounded-lg bg-accent/10 text-accent border border-accent/20">
                   {s}
                 </span>
