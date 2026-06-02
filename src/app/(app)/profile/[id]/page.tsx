@@ -6,6 +6,7 @@ import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileStatsBar from "@/components/profile/ProfileStatsBar";
 import FeedList from "@/components/feed/FeedList";
 import GitProfileMetrics from "@/components/profile/GitProfileMetrics";
+import ProfileTabs from "@/components/portfolio/ProfileTabs";
 import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -66,7 +67,8 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
       {/* Stats Quick-Bar */}
       <ProfileStatsBar stats={stats} />
 
-      {/* Content Tabs (Simplified for now, using sections) */}
+      {/* Overview / Portfolio tabs */}
+      <ProfileTabs isOwnProfile={isOwnProfile} handle={(user as any).handle}>
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
         <div className="md:col-span-8 space-y-6">
           <section className="space-y-3">
@@ -104,6 +106,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
           <GitProfileMetrics userId={id} />
         </div>
       </div>
+      </ProfileTabs>
     </div>
   );
 }

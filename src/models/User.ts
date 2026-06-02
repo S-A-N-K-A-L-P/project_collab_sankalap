@@ -30,6 +30,14 @@ const UserSchema = new Schema(
       required: [true, "Password is required"],
       select: false,
     },
+    handle: {
+      type: String,
+      unique: true,
+      sparse: true,      // allow many nulls without unique collision
+      lowercase: true,
+      trim: true,
+      // 3–30 chars, [a-z0-9-]; validated at the API layer + reserved list
+    },
     avatar: {
       type: String,
       default: "",

@@ -328,3 +328,38 @@ h1, h2, h3, h4, h5, h6 {
 }
 .animate-accordion-down { animation: accordion-down 0.2s ease-out; }
 .animate-accordion-up   { animation: accordion-up 0.2s ease-out; }
+
+/* ═══ Portfolio lightweight backgrounds (CSS only — no three.js) ═══════════ */
+
+.pf-aurora {
+  position: absolute; width: 55vw; height: 55vw; max-width: 760px; max-height: 760px;
+  border-radius: 50%; filter: blur(90px); opacity: 0.5; will-change: transform;
+}
+.pf-aurora-1 { top: -10%; left: -5%;  animation: pf-drift1 18s ease-in-out infinite; }
+.pf-aurora-2 { top: 20%;  right: -10%; animation: pf-drift2 22s ease-in-out infinite; }
+.pf-aurora-3 { bottom: -15%; left: 25%; opacity: 0.35; animation: pf-drift3 26s ease-in-out infinite; }
+@keyframes pf-drift1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(8%,12%) scale(1.15)} }
+@keyframes pf-drift2 { 0%,100%{transform:translate(0,0) scale(1.1)} 50%{transform:translate(-10%,8%) scale(0.9)} }
+@keyframes pf-drift3 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(6%,-10%) scale(1.2)} }
+
+.pf-mesh { position:absolute; inset:-20%; background-size:160% 160%; animation: pf-mesh-pan 24s ease infinite; }
+@keyframes pf-mesh-pan { 0%,100%{background-position:0% 0%} 50%{background-position:100% 100%} }
+
+.pf-wave-1 { animation: pf-wave-x 14s ease-in-out infinite; }
+.pf-wave-2 { animation: pf-wave-x 20s ease-in-out infinite reverse; }
+@keyframes pf-wave-x { 0%,100%{transform:translateX(0)} 50%{transform:translateX(-4%)} }
+
+.pf-tilt-grid {
+  position:absolute; inset:-10%; display:grid; grid-template-columns:repeat(6,1fr);
+  grid-auto-rows:1fr; gap:2px; transform: rotateX(55deg) translateY(10%);
+  animation: pf-tilt-spin 40s linear infinite;
+}
+.pf-tilt-grid span { border:1px solid; display:block; }
+@keyframes pf-tilt-spin { 0%{transform:rotateX(55deg) rotateZ(0deg) translateY(10%)} 100%{transform:rotateX(55deg) rotateZ(360deg) translateY(10%)} }
+
+.pf-terminal-scan { position:absolute; inset:0; animation: pf-scan 8s linear infinite; opacity:0.6; }
+@keyframes pf-scan { 0%{background-position:0 0} 100%{background-position:0 24px} }
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-aurora, .pf-mesh, .pf-wave-1, .pf-wave-2, .pf-tilt-grid, .pf-terminal-scan { animation: none !important; }
+}
