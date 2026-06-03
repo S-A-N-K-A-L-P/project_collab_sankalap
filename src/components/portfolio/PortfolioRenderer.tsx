@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, type Variants } from "framer-motion";
-import { Github, Linkedin, Twitter, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, GraduationCap, Quote as QuoteIcon, ChevronDown } from "lucide-react";
+import { Github, Linkedin, Twitter, Mail, Globe, Link as LinkIcon, MapPin, Briefcase, GraduationCap, Quote as QuoteIcon, ChevronDown, Award, Building2 } from "lucide-react";
 import PortfolioBackground from "./PortfolioBackground";
 import ProjectCard from "./ProjectCard";
 import { getTheme, type LightBackgroundKind, type ThreeSceneKind, type CardStyle } from "./themes/registry";
@@ -58,6 +58,19 @@ export default function PortfolioRenderer({ data, contained = false }: { data: P
   };
   const initials = (user.name || "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 
+  // Empty section: show a dashed placeholder ONLY in the builder preview
+  // (contained); on the public page an empty section renders nothing.
+  const empty = (sec: PortfolioSection, hint: string) => {
+    if (!contained) return null;
+    return (
+      <Wrap key={sec.id} title={sec.title} accent={accent} variants={variants}>
+        <div style={{ border: `1.5px dashed ${p.muted}55`, borderRadius: 12, padding: 20, textAlign: "center", color: p.muted, fontSize: 13 }}>
+          {hint} — this section is empty (hidden on the live page).
+        </div>
+      </Wrap>
+    );
+  };
+
   // Sections (normalize legacy → new shape so old data still renders)
   const sections: PortfolioSection[] = normalizeSections(data)
     .filter((s) => s.enabled)
@@ -101,28 +114,57 @@ export default function PortfolioRenderer({ data, contained = false }: { data: P
         return <Wrap key={sec.id} title={sec.title} accent={accent} variants={variants}><p style={{ fontSize: 17, lineHeight: 1.7, color: p.text, whiteSpace: "pre-wrap" }}>{body}</p></Wrap>;
       }
       case "skills": {
-        const items: string[] = (c.items?.length ? c.items : user.skills) || [];
-        if (!items.length) return null;
+        const raw: any[] = (c.items?.length ? c.items : (user.skills || []));
+        const items = raw.map((s) => (typeof s === "string" ? { name: s, level: undefined } : s)).filter((s) => s?.name);
+        if (!items.length) return empty(sec, "Add skills");
+        const hasLevels = items.some((s: any) => typeof s.level === "number" && s.level > 0);
         return <Wrap key={sec.id} title={sec.title} accent={accent} variants={variants}>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-            {items.map((s, i) => {
-              const logo = logoFor(s);
-              return (
-                <span key={i} style={{ ...surfaceCard, display: "inline-flex", alignItems: "center", gap: 8, padding: logo ? "6px 14px 6px 8px" : "7px 14px", borderRadius: 999, fontSize: 14, fontWeight: 500, color: p.text }}>
-                  {logo && <img src={logo} alt="" style={{ width: 20, height: 20, objectFit: "contain", background: "rgba(255,255,255,0.85)", borderRadius: 5, padding: 2 }} />}
-                  {s}
-                </span>
-              );
-            })}
-          </div>
+          {hasLevels ? (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px,1fr))", gap: 14 }}>
+              {items.map((s: any, i: number) => {
+                const logo = logoFor(s.name); const lvl = Math.max(0, Math.min(100, Number(s.level) || 0));
+                return (
+                  <div key={i}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                      {logo && <img src={logo} alt="" style={{ width: 18, height: 18, objectFit: "contain", background: "rgba(255,255,255,0.85)", borderRadius: 4, padding: 2 }} />}
+                      <span style={{ fontSize: 13, fontWeight: 600, color: p.text }}>{s.name}</span>
+                      {lvl > 0 && <span style={{ marginLeft: "auto", fontSize: 11, color: p.muted }}>{lvl}%</span>}
+                    </div>
+                    <div style={{ height: 6, borderRadius: 999, background: p.muted + "33", overflow: "hidden" }}>
+                      <motion.div initial={{ width: 0 }} whileInView={{ width: `${lvl}%` }} viewport={{ once: true }} transition={{ duration: 0.8 }}
+                        style={{ height: "100%", borderRadius: 999, background: `linear-gradient(90deg, ${accent}, ${p.accent2})` }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+              {items.map((s: any, i: number) => {
+                const logo = logoFor(s.name);
+                return (
+                  <span key={i} style={{ ...surfaceCard, display: "inline-flex", alignItems: "center", gap: 8, padding: logo ? "6px 14px 6px 8px" : "7px 14px", borderRadius: 999, fontSize: 14, fontWeight: 500, color: p.text }}>
+                    {logo && <img src={logo} alt="" style={{ width: 20, height: 20, objectFit: "contain", background: "rgba(255,255,255,0.85)", borderRadius: 5, padding: 2 }} />}
+                    {s.name}
+                  </span>
+                );
+              })}
+            </div>
+          )}
         </Wrap>;
       }
       case "projects": {
-        if (!projects.length) return null;
+        // merge DB projects (resolved into data.projects) + manual project cards
+        const manual = (c.manual || []).filter((m: any) => m.title).map((m: any, i: number) => ({
+          _id: `manual-${i}`, title: m.title, description: m.description, coverImage: m.image,
+          liveUrl: m.live, githubRepo: m.repo, techStack: Array.isArray(m.tags) ? m.tags : (typeof m.tags === "string" ? m.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : []),
+        }));
+        const all = [...projects, ...manual];
+        if (!all.length) return empty(sec, "Add projects (pick from your work or add manually)");
         return <Wrap key={sec.id} title={sec.title} accent={accent} variants={variants}>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: "-60px" }} variants={{ show: { transition: { staggerChildren: 0.08 } } }}
             style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 18 }}>
-            {projects.map((pr, i) => <ProjectCard key={pr._id} project={pr} style={cardStyle} anim={cardAnim} index={i} accent={accent} accent2={p.accent2} surface={p.surface} text={p.text} muted={p.muted} href={pr.liveUrl || `/showcase/${pr._id}`} />)}
+            {all.map((pr, i) => <ProjectCard key={pr._id} project={pr} style={cardStyle} anim={cardAnim} index={i} accent={accent} accent2={p.accent2} surface={p.surface} text={p.text} muted={p.muted} href={pr.liveUrl || (pr._id.startsWith("manual") ? undefined : `/showcase/${pr._id}`)} />)}
           </motion.div>
         </Wrap>;
       }
@@ -156,10 +198,97 @@ export default function PortfolioRenderer({ data, contained = false }: { data: P
           </div>
         </Wrap>;
       }
+      case "certifications": {
+        const items = (c.items || []).filter((e: any) => e.name);
+        if (!items.length) return empty(sec, "Add certifications");
+        return <Wrap key={sec.id} title={sec.title} accent={accent} variants={variants}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px,1fr))", gap: 12 }}>
+            {items.map((e: any, i: number) => {
+              const inner = (
+                <div style={{ ...surfaceCard, borderRadius: 14, padding: 14, display: "flex", gap: 12, alignItems: "center", height: "100%" }}>
+                  {e.image ? <img src={e.image} alt="" style={{ width: 40, height: 40, objectFit: "contain", borderRadius: 8 }} /> : <Award size={26} style={{ color: accent }} />}
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: p.text }}>{e.name}</p>
+                    <p style={{ fontSize: 12, color: p.muted }}>{[e.issuer, e.date].filter(Boolean).join(" · ")}</p>
+                  </div>
+                </div>
+              );
+              return e.url ? <a key={i} href={e.url} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>{inner}</a> : <div key={i}>{inner}</div>;
+            })}
+          </div>
+        </Wrap>;
+      }
+      case "affiliated_orgs": {
+        const items = (c.items || []).filter((e: any) => e.name);
+        if (!items.length) return empty(sec, "Add organizations");
+        return <Wrap key={sec.id} title={sec.title} accent={accent} variants={variants}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px,1fr))", gap: 12 }}>
+            {items.map((e: any, i: number) => {
+              const inner = (
+                <div style={{ ...surfaceCard, borderRadius: 14, padding: 14, display: "flex", gap: 12, alignItems: "center", height: "100%" }}>
+                  {e.logo ? <img src={e.logo} alt="" style={{ width: 40, height: 40, objectFit: "contain", borderRadius: 8, background: "rgba(255,255,255,0.85)", padding: 3 }} /> : <Building2 size={26} style={{ color: accent }} />}
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: p.text }}>{e.name}</p>
+                    <p style={{ fontSize: 12, color: p.muted }}>{[e.role, e.period].filter(Boolean).join(" · ")}</p>
+                  </div>
+                </div>
+              );
+              return e.url ? <a key={i} href={e.url} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>{inner}</a> : <div key={i}>{inner}</div>;
+            })}
+          </div>
+        </Wrap>;
+      }
+      case "links": {
+        const items = (c.items || []).filter((l: any) => l.url);
+        if (!items.length) return empty(sec, "Add links");
+        return <Wrap key={sec.id} title={sec.title} accent={accent} variants={variants}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+            {items.map((l: any, i: number) => { const Icon = ICONS[l.icon] || LinkIcon; return <a key={i} href={l.url} target="_blank" rel="noreferrer" style={pill(accent, p)}><Icon size={15} /> {l.label || l.icon}</a>; })}
+          </div>
+        </Wrap>;
+      }
+      case "timeline": {
+        const items = (c.items || []).filter((e: any) => e.title || e.date);
+        if (!items.length) return empty(sec, "Add timeline milestones");
+        return <Wrap key={sec.id} title={sec.title} accent={accent} variants={variants}>
+          <div style={{ position: "relative", paddingLeft: 22 }}>
+            <div style={{ position: "absolute", left: 5, top: 4, bottom: 4, width: 2, background: accent + "44" }} />
+            {items.map((e: any, i: number) => (
+              <div key={i} style={{ position: "relative", marginBottom: 18 }}>
+                <span style={{ position: "absolute", left: -22, top: 3, width: 12, height: 12, borderRadius: "50%", background: accent, border: `2px solid ${p.bg}` }} />
+                {e.date && <p style={{ fontSize: 12, color: accent, fontWeight: 600 }}>{e.date}</p>}
+                <p style={{ fontSize: 15, fontWeight: 700, color: p.text }}>{e.title}</p>
+                {e.description && <p style={{ fontSize: 13, color: p.muted, marginTop: 2, lineHeight: 1.5 }}>{tk(e.description)}</p>}
+              </div>
+            ))}
+          </div>
+        </Wrap>;
+      }
+      case "testimonials": {
+        const items = (c.items || []).filter((e: any) => e.quote);
+        if (!items.length) return empty(sec, "Add testimonials");
+        return <Wrap key={sec.id} title={sec.title} accent={accent} variants={variants}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px,1fr))", gap: 14 }}>
+            {items.map((e: any, i: number) => (
+              <div key={i} style={{ ...surfaceCard, borderRadius: 16, padding: 18 }}>
+                <QuoteIcon size={18} style={{ color: accent }} />
+                <p style={{ fontSize: 14, color: p.text, lineHeight: 1.6, margin: "8px 0 12px", fontStyle: "italic" }}>{e.quote}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  {e.avatar && <img src={e.avatar} alt="" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }} />}
+                  <div><p style={{ fontSize: 13, fontWeight: 700, color: p.text }}>{e.person}</p>{e.role && <p style={{ fontSize: 11, color: p.muted }}>{e.role}</p>}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Wrap>;
+      }
       case "custom": {
         const body = tk(c.body);
-        if (!body) return null;
-        return <Wrap key={sec.id} title={sec.title} accent={accent} variants={variants}><p style={{ fontSize: 16, lineHeight: 1.7, color: p.text, whiteSpace: "pre-wrap" }}>{body}</p></Wrap>;
+        if (!body && !c.image) return empty(sec, "Add text or an image");
+        return <Wrap key={sec.id} title={sec.title} accent={accent} variants={variants}>
+          {c.image && <img src={c.image} alt="" style={{ maxWidth: "100%", borderRadius: 14, marginBottom: 14 }} />}
+          {body && <p style={{ fontSize: 16, lineHeight: 1.7, color: p.text, whiteSpace: "pre-wrap" }}>{body}</p>}
+        </Wrap>;
       }
       case "gallery": {
         const items = (c.items || []).filter((g: any) => g.url);

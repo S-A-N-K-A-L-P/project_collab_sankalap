@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import {
-  ChevronUp, ChevronDown, Trash2, Plus, Eye, EyeOff, GripVertical, X, Pencil,
+  ChevronUp, ChevronDown, Trash2, Plus, Eye, EyeOff, GripVertical, X, Pencil, Check,
 } from "lucide-react";
 import {
-  SECTION_TYPES, newSection, type PortfolioSection, type SectionType,
+  SECTION_TYPES, newSection, STARTER_TEMPLATES, sectionsFromTypes,
+  type PortfolioSection, type SectionType,
 } from "./sections";
 import { TECH_LOGOS, logoFor } from "./techLogos";
 
@@ -22,6 +23,7 @@ export default function SectionsEditor({
 }) {
   const [editing, setEditing] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [picked, setPicked] = useState<SectionType[]>([]);
 
   const list = [...sections].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
@@ -42,12 +44,20 @@ export default function SectionsEditor({
     commit(next);
   };
   const remove = (id: string) => commit(list.filter((s) => s.id !== id));
-  const add = (type: SectionType) => {
-    setAdding(false);
-    const s = newSection(type, list.length);
-    commit([...list, s]);
-    setEditing(s.id);
+  const addMany = (types: SectionType[]) => {
+    if (!types.length) return;
+    const start = list.length;
+    const added = types.map((t, i) => newSection(t, start + i));
+    commit([...list, ...added]);
+    setAdding(false); setPicked([]);
+    if (added.length === 1) setEditing(added[0].id);
   };
+  const applyTemplate = (types: SectionType[]) => {
+    if (!confirm("Replace all current sections with this template? Your section content will be reset.")) return;
+    commit(sectionsFromTypes(types));
+    setAdding(false); setPicked([]);
+  };
+  const togglePick = (t: SectionType) => setPicked((p) => p.includes(t) ? p.filter((x) => x !== t) : [...p, t]);
 
   return (
     <div className="space-y-2">
@@ -90,25 +100,49 @@ export default function SectionsEditor({
 
       {/* add */}
       {adding ? (
-        <div className="border border-border rounded-lg p-2 bg-background">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-foreground">Add a section</span>
-            <button onClick={() => setAdding(false)} className="text-muted hover:text-foreground"><X className="w-3.5 h-3.5" /></button>
+        <div className="border border-border rounded-lg p-2.5 bg-background space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-foreground">Add sections</span>
+            <button onClick={() => { setAdding(false); setPicked([]); }} className="text-muted hover:text-foreground"><X className="w-3.5 h-3.5" /></button>
           </div>
-          <div className="grid grid-cols-2 gap-1.5">
-            {SECTION_TYPES.filter((t) => !t.unique || !list.some((s) => s.type === t.type)).map((t) => (
-              <button key={t.type} onClick={() => add(t.type)}
-                className="flex items-start gap-2 px-2 py-2 rounded-lg border border-border hover:border-primary hover:bg-primary/5 text-left">
-                <span>{t.icon}</span>
-                <span><span className="block text-xs font-semibold text-foreground">{t.label}</span><span className="block text-[10px] text-muted">{t.desc}</span></span>
-              </button>
-            ))}
+
+          {/* starter templates */}
+          <div>
+            <p className="text-[10px] font-medium text-muted mb-1">Start from a template (replaces all):</p>
+            <div className="flex flex-wrap gap-1.5">
+              {STARTER_TEMPLATES.map((tpl) => (
+                <button key={tpl.id} onClick={() => applyTemplate(tpl.types)}
+                  className="text-xs px-2.5 py-1.5 rounded-lg border border-border hover:border-primary hover:bg-primary/5 text-foreground">{tpl.label}</button>
+              ))}
+            </div>
           </div>
+
+          {/* multi-select grid */}
+          <div>
+            <p className="text-[10px] font-medium text-muted mb-1">Or tick types to add:</p>
+            <div className="grid grid-cols-2 gap-1.5 max-h-56 overflow-y-auto scrollbar-thin">
+              {SECTION_TYPES.filter((t) => !t.unique || !list.some((s) => s.type === t.type)).map((t) => {
+                const on = picked.includes(t.type);
+                return (
+                  <button key={t.type} onClick={() => togglePick(t.type)}
+                    className={`flex items-start gap-2 px-2 py-2 rounded-lg border text-left transition-colors ${on ? "border-primary bg-primary/10" : "border-border hover:border-border-strong"}`}>
+                    <span className={`mt-0.5 w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${on ? "bg-primary border-primary" : "border-border"}`}>{on && <Check className="w-2.5 h-2.5 text-white" />}</span>
+                    <span><span className="block text-xs font-semibold text-foreground">{t.icon} {t.label}</span><span className="block text-[10px] text-muted">{t.desc}</span></span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <button onClick={() => addMany(picked)} disabled={!picked.length}
+            className="w-full px-3 py-2 rounded-lg bg-primary disabled:opacity-40 text-white text-sm font-semibold">
+            Add {picked.length || ""} selected
+          </button>
         </div>
       ) : (
         <button onClick={() => setAdding(true)}
           className="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border border-dashed border-border text-sm font-medium text-primary hover:bg-primary/5">
-          <Plus className="w-4 h-4" /> Add section
+          <Plus className="w-4 h-4" /> Add section(s)
         </button>
       )}
     </div>
@@ -129,8 +163,13 @@ function SectionFields({ s, available, updateContent }: { s: PortfolioSection; a
       </>);
 
     case "about":
-    case "custom":
       return <L label="Text (supports {{tokens}})"><textarea value={c.body || ""} onChange={(e) => set({ body: e.target.value })} rows={4} placeholder="Write here…" className={`${inp} resize-none`} /></L>;
+
+    case "custom":
+      return (<>
+        <L label="Text (supports {{tokens}})"><textarea value={c.body || ""} onChange={(e) => set({ body: e.target.value })} rows={4} placeholder="Write here…" className={`${inp} resize-none`} /></L>
+        <L label="Image URL (optional)"><input value={c.image || ""} onChange={(e) => set({ image: e.target.value })} placeholder="https://…" className={inp} /></L>
+      </>);
 
     case "skills":
       return <SkillsEditor items={c.items || []} onChange={(items) => set({ items })} />;
@@ -142,22 +181,61 @@ function SectionFields({ s, available, updateContent }: { s: PortfolioSection; a
       </>);
 
     case "projects":
-      return (<div className="space-y-1.5">
-        <p className="text-[10px] text-muted">Pick projects to feature (none = your completed projects).</p>
-        <div className="max-h-40 overflow-y-auto scrollbar-thin space-y-1">
-          {available.length === 0 && <p className="text-xs text-muted">No projects yet.</p>}
-          {available.map((p) => {
-            const on = (c.ids || []).includes(p._id);
-            return (
-              <button key={p._id} onClick={() => set({ ids: on ? (c.ids || []).filter((x: string) => x !== p._id) : [...(c.ids || []), p._id] })}
-                className={`w-full flex items-center gap-2 text-left px-2 py-1.5 rounded-lg border text-sm ${on ? "border-primary bg-primary/5 text-foreground" : "border-border text-muted hover:bg-background"}`}>
-                <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${on ? "bg-primary border-primary" : "border-border"}`}>{on && <span className="text-white text-[8px]">✓</span>}</span>
-                <span className="truncate">{p.title}</span>
-              </button>
-            );
-          })}
+      return (<div className="space-y-3">
+        <div>
+          <p className="text-[10px] font-medium text-muted mb-1">From your platform projects:</p>
+          <div className="max-h-36 overflow-y-auto scrollbar-thin space-y-1">
+            {available.length === 0 && <p className="text-xs text-muted">No platform projects yet — add manual ones below.</p>}
+            {available.map((p) => {
+              const on = (c.ids || []).includes(p._id);
+              return (
+                <button key={p._id} onClick={() => set({ ids: on ? (c.ids || []).filter((x: string) => x !== p._id) : [...(c.ids || []), p._id] })}
+                  className={`w-full flex items-center gap-2 text-left px-2 py-1.5 rounded-lg border text-sm ${on ? "border-primary bg-primary/5 text-foreground" : "border-border text-muted hover:bg-background"}`}>
+                  <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center ${on ? "bg-primary border-primary" : "border-border"}`}>{on && <span className="text-white text-[8px]">✓</span>}</span>
+                  <span className="truncate">{p.title}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+        <div>
+          <p className="text-[10px] font-medium text-muted mb-1">Manual projects (any project, even off-platform):</p>
+          <ListEditor items={c.manual || []} onChange={(manual) => set({ manual })} fields={[
+            { key: "title", label: "Title" }, { key: "description", label: "Description", area: true },
+            { key: "image", label: "Cover image URL" }, { key: "live", label: "Live URL" },
+            { key: "repo", label: "Repo URL" }, { key: "tags", label: "Tags (comma-separated)" },
+          ]} empty={{ title: "", description: "", image: "", live: "", repo: "", tags: "" }} addLabel="Add manual project" />
         </div>
       </div>);
+
+    case "certifications":
+      return <ListEditor items={c.items || []} onChange={(items) => set({ items })} fields={[
+        { key: "name", label: "Certificate name" }, { key: "issuer", label: "Issuer" },
+        { key: "date", label: "Date" }, { key: "url", label: "Credential URL" }, { key: "image", label: "Badge image URL" },
+      ]} empty={{ name: "", issuer: "", date: "", url: "", image: "" }} addLabel="Add certification" />;
+
+    case "affiliated_orgs":
+      return <ListEditor items={c.items || []} onChange={(items) => set({ items })} fields={[
+        { key: "name", label: "Organization" }, { key: "role", label: "Your role" },
+        { key: "period", label: "Period" }, { key: "url", label: "URL" }, { key: "logo", label: "Logo URL" },
+      ]} empty={{ name: "", role: "", period: "", url: "", logo: "" }} addLabel="Add organization" />;
+
+    case "links":
+      return <ListEditor items={c.items || []} onChange={(items) => set({ items })} fields={[
+        { key: "icon", label: "Icon", select: ["github", "linkedin", "twitter", "mail", "globe", "link"] },
+        { key: "label", label: "Label" }, { key: "url", label: "URL" },
+      ]} empty={{ icon: "link", label: "", url: "" }} addLabel="Add link" />;
+
+    case "timeline":
+      return <ListEditor items={c.items || []} onChange={(items) => set({ items })} fields={[
+        { key: "date", label: "Date" }, { key: "title", label: "Title" }, { key: "description", label: "Description", area: true },
+      ]} empty={{ date: "", title: "", description: "" }} addLabel="Add milestone" />;
+
+    case "testimonials":
+      return <ListEditor items={c.items || []} onChange={(items) => set({ items })} fields={[
+        { key: "quote", label: "Quote", area: true }, { key: "person", label: "Person" },
+        { key: "role", label: "Role" }, { key: "avatar", label: "Avatar URL" },
+      ]} empty={{ quote: "", person: "", role: "", avatar: "" }} addLabel="Add testimonial" />;
 
     case "experience":
       return <ListEditor items={c.items || []} onChange={(items) => set({ items })} fields={[
@@ -196,29 +274,58 @@ function L({ label, children }: { label: string; children: React.ReactNode }) {
   return <div><label className="block text-[11px] font-medium text-muted mb-1">{label}</label>{children}</div>;
 }
 
-/* Skills editor: chips (with logos) + tech-logo picker grid */
-function SkillsEditor({ items, onChange }: { items: string[]; onChange: (v: string[]) => void }) {
+/* Skills editor: chips (with logos) + tech-logo picker + optional proficiency */
+type Skill = { name: string; level?: number };
+function SkillsEditor({ items, onChange }: { items: any[]; onChange: (v: any[]) => void }) {
+  const norm: Skill[] = (items || []).map((s) => (typeof s === "string" ? { name: s } : { name: s.name, level: s.level }));
   const [val, setVal] = useState("");
-  const add = (name: string) => { const v = name.trim(); if (v && !items.some(i => i.toLowerCase() === v.toLowerCase())) onChange([...items, v]); };
-  const remove = (i: number) => onChange(items.filter((_, j) => j !== i));
-  const has = (name: string) => items.some(i => i.toLowerCase() === name.toLowerCase());
+  const [showLevels, setShowLevels] = useState(norm.some((s) => typeof s.level === "number" && (s.level as number) > 0));
+
+  const nameOf = (s: Skill) => s.name;
+  const has = (name: string) => norm.some((s) => s.name.toLowerCase() === name.toLowerCase());
+  const add = (name: string) => { const v = name.trim(); if (v && !has(v)) onChange([...norm, { name: v, level: showLevels ? 50 : 0 }]); };
+  const remove = (i: number) => onChange(norm.filter((_, j) => j !== i));
+  const setLevel = (i: number, level: number) => onChange(norm.map((s, j) => (j === i ? { ...s, level } : s)));
 
   return (
     <div className="space-y-2">
-      {/* current chips */}
-      <div className="flex flex-wrap gap-1.5">
-        {items.map((it, i) => {
-          const logo = logoFor(it);
-          return (
-            <span key={i} className="inline-flex items-center gap-1.5 text-xs bg-primary/10 text-primary pl-1.5 pr-2 py-1 rounded-full">
-              {logo && <img src={logo} alt="" className="w-4 h-4 object-contain rounded-sm bg-white/70 p-0.5" />}
-              {it}
-              <button onClick={() => remove(i)}><X className="w-3 h-3" /></button>
-            </span>
-          );
-        })}
-        {items.length === 0 && <span className="text-[10px] text-muted">Empty = use skills from your profile.</span>}
-      </div>
+      {/* proficiency toggle */}
+      <label className="flex items-center gap-2 text-[11px] text-muted cursor-pointer">
+        <input type="checkbox" checked={showLevels} onChange={(e) => setShowLevels(e.target.checked)} className="w-3.5 h-3.5 rounded border-border text-primary" />
+        Show proficiency bars
+      </label>
+
+      {/* current skills */}
+      {showLevels ? (
+        <div className="space-y-1.5">
+          {norm.map((s, i) => {
+            const logo = logoFor(s.name);
+            return (
+              <div key={i} className="flex items-center gap-2">
+                {logo && <img src={logo} alt="" className="w-4 h-4 object-contain rounded-sm bg-white/70 p-0.5 shrink-0" />}
+                <span className="text-xs text-foreground w-24 truncate shrink-0">{s.name}</span>
+                <input type="range" min={0} max={100} value={s.level ?? 50} onChange={(e) => setLevel(i, Number(e.target.value))} className="flex-1 accent-primary" />
+                <span className="text-[10px] text-muted w-8 text-right">{s.level ?? 50}%</span>
+                <button onClick={() => remove(i)} className="text-muted hover:text-red-500"><X className="w-3 h-3" /></button>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-1.5">
+          {norm.map((s, i) => {
+            const logo = logoFor(s.name);
+            return (
+              <span key={i} className="inline-flex items-center gap-1.5 text-xs bg-primary/10 text-primary pl-1.5 pr-2 py-1 rounded-full">
+                {logo && <img src={logo} alt="" className="w-4 h-4 object-contain rounded-sm bg-white/70 p-0.5" />}
+                {s.name}
+                <button onClick={() => remove(i)}><X className="w-3 h-3" /></button>
+              </span>
+            );
+          })}
+          {norm.length === 0 && <span className="text-[10px] text-muted">Empty = use skills from your profile.</span>}
+        </div>
+      )}
 
       {/* manual add */}
       <input value={val} onChange={(e) => setVal(e.target.value)}
@@ -233,7 +340,7 @@ function SkillsEditor({ items, onChange }: { items: string[]; onChange: (v: stri
             const on = has(t.name);
             return (
               <button key={t.name} title={t.name}
-                onClick={() => on ? onChange(items.filter(i => i.toLowerCase() !== t.name.toLowerCase())) : add(t.name)}
+                onClick={() => on ? onChange(norm.filter((s) => s.name.toLowerCase() !== t.name.toLowerCase())) : add(t.name)}
                 className={`flex flex-col items-center gap-1 p-1.5 rounded-lg border transition-all ${on ? "border-primary bg-primary/10" : "border-border hover:border-border-strong hover:bg-background"}`}>
                 <img src={t.file} alt={t.name} className="w-7 h-7 object-contain" />
                 <span className="text-[8px] text-muted truncate w-full text-center leading-none">{t.name}</span>

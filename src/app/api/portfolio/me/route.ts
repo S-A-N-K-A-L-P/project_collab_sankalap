@@ -66,15 +66,19 @@ export async function PATCH(req: Request) {
     await dbConnect();
 
     const body = await req.json();
-    const updates: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(body)) if (ALLOWED.has(k)) updates[k] = v;
 
-    const pf = await Portfolio.findOneAndUpdate(
-      { userId },
-      { $set: updates, $setOnInsert: { userId } },
-      { new: true, upsert: true }
-    );
+    // Load → modify → save, with markModified for the Mixed `sections` content.
+    // (findOneAndUpdate($set) does not reliably persist deep Mixed changes.)
+    let pf = await Portfolio.findOne({ userId });
+    if (!pf) pf = new Portfolio({ userId, sections: defaultSections() });
 
+    for (const [k, v] of Object.entries(body)) {
+      if (!ALLOWED.has(k)) continue;
+      (pf as any)[k] = v;
+      if (k === "sections") pf.markModified("sections");
+    }
+
+    await pf.save();
     return NextResponse.json({ ok: true, portfolio: JSON.parse(JSON.stringify(pf)) });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
