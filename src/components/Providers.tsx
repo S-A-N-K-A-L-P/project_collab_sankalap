@@ -19,7 +19,7 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
 }
 
 /**
- * Bridges next-themes' `data-theme` attribute → MUI's ThemeProvider so MUI
+ * Bridges next-themes' `class` attribute → MUI's ThemeProvider so MUI
  * components automatically follow our dark/light toggle.
  */
 function MuiBridge({ children }: { children: React.ReactNode }) {
@@ -40,9 +40,9 @@ function MuiBridge({ children }: { children: React.ReactNode }) {
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <NextThemesProvider
-      attribute="data-theme"
-      defaultTheme="light"
-      enableSystem={false}
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
       storageKey="pixel-platform-theme"
       disableTransitionOnChange
     >
