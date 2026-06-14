@@ -1,0 +1,58 @@
+"use client";
+
+import { PieChart, Zap, UserPlus, FileText } from "lucide-react";
+
+interface ProfileStatsBarProps {
+  stats: {
+    followers: number;
+    following: number;
+    proposals: number;
+    reputation: number;
+  };
+}
+
+export default function ProfileStatsBar({ stats }: ProfileStatsBarProps) {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-1">
+      <div className="bg-surface border border-border-subtle rounded-xl p-4 flex items-center gap-4 transition-all hover:border-border-strong duration-150 shadow-none">
+        <div className="w-10 h-10 rounded-lg bg-surface-alt flex items-center justify-center border border-border-subtle shrink-0">
+          <UserPlus className="w-5 h-5 text-accent" />
+        </div>
+        <div>
+          <p className="text-[9px] font-mono font-black text-muted uppercase tracking-widest">Network</p>
+          <p className="text-lg font-bold text-foreground leading-none">{stats.followers}</p>
+        </div>
+      </div>
+
+      <div className="bg-surface border border-border-subtle rounded-xl p-4 flex items-center gap-4 transition-all hover:border-border-strong duration-150 shadow-none">
+        <div className="w-10 h-10 rounded-lg bg-surface-alt flex items-center justify-center border border-border-subtle shrink-0">
+          <Zap className="w-5 h-5 text-emerald-500" />
+        </div>
+        <div>
+          <p className="text-[9px] font-mono font-black text-muted uppercase tracking-widest">Connection</p>
+          <p className="text-lg font-bold text-foreground leading-none">{stats.following}</p>
+        </div>
+      </div>
+
+      <div className="bg-surface border border-border-subtle rounded-xl p-4 flex items-center gap-4 transition-all hover:border-border-strong duration-150 shadow-none">
+        <div className="w-10 h-10 rounded-lg bg-surface-alt flex items-center justify-center border border-border-subtle shrink-0">
+          <FileText className="w-5 h-5 text-orange-500" />
+        </div>
+        <div>
+          <p className="text-[9px] font-mono font-black text-muted uppercase tracking-widest">Proposals</p>
+          <p className="text-lg font-bold text-foreground leading-none">{stats.proposals}</p>
+        </div>
+      </div>
+
+      <div className="bg-surface border border-border-subtle rounded-xl p-4 flex items-center gap-4 transition-all hover:border-border-strong duration-150 shadow-none">
+        <div className="w-10 h-10 rounded-lg bg-surface-alt flex items-center justify-center border border-border-subtle shrink-0">
+          <PieChart className="w-5 h-5 text-indigo-500" />
+        </div>
+        <div>
+          <p className="text-[9px] font-mono font-black text-muted uppercase tracking-widest">Contributions</p>
+          <p className="text-lg font-bold text-foreground leading-none">{stats.reputation}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
