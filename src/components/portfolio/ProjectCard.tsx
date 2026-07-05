@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { ExternalLink, Github } from "lucide-react";
 import { CARD_ANIMS, type CardStyleKind, type CardAnimKind } from "./animations";
+import { sanitizeUrl, sanitizeImageSrc } from "@/lib/sanitize-url";
 
 export interface PortfolioProject {
   _id: string; title: string; description?: string; coverImage?: string;
@@ -31,10 +32,15 @@ export default function ProjectCard({ project, style, anim, accent, accent2, sur
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
   const [flipped, setFlipped] = useState(false);
 
+  const safeHref = sanitizeUrl(href);
+  const safeLiveUrl = sanitizeUrl(project.liveUrl);
+  const safeGithubRepo = sanitizeUrl(project.githubRepo);
+  const safeCoverImage = sanitizeImageSrc(project.coverImage);
+
   // Whole-card navigation to the project. Inner Live/Code links stopPropagation.
-  const go = () => { if (href) window.open(href, href.startsWith("http") ? "_blank" : "_self"); };
+  const go = () => { if (safeHref) window.open(safeHref, safeHref.startsWith("http") ? "_blank" : "_self"); };
   const stop = (e: React.MouseEvent) => e.stopPropagation();
-  const clickable = !!href;
+  const clickable = !!safeHref;
 
   const onTilt = (e: React.MouseEvent) => {
     if (style !== "tilt3d") return;
@@ -48,8 +54,8 @@ export default function ProjectCard({ project, style, anim, accent, accent2, sur
 
   const cover = (
     <div style={{ aspectRatio: "16/9", background: `linear-gradient(135deg, ${accent}33, ${accent2}22)`, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      {project.coverImage
-        ? <img src={project.coverImage} alt={project.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      {safeCoverImage
+        ? <img src={safeCoverImage} alt={project.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         : <span style={{ fontSize: 38, fontWeight: 800, color: accent + "66" }}>{project.title?.[0]?.toUpperCase()}</span>}
     </div>
   );
@@ -69,8 +75,8 @@ export default function ProjectCard({ project, style, anim, accent, accent2, sur
         </div>
       )}
       <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
-        {project.liveUrl && <a onClick={stop} href={project.liveUrl} target="_blank" rel="noreferrer" style={{ color: accent, fontSize: 13, display: "inline-flex", alignItems: "center", gap: 4 }}><ExternalLink size={13} /> Live</a>}
-        {project.githubRepo && <a onClick={stop} href={project.githubRepo} target="_blank" rel="noreferrer" style={{ color: muted, fontSize: 13, display: "inline-flex", alignItems: "center", gap: 4 }}><Github size={13} /> Code</a>}
+        {safeLiveUrl && <a onClick={stop} href={safeLiveUrl} target="_blank" rel="noreferrer" style={{ color: accent, fontSize: 13, display: "inline-flex", alignItems: "center", gap: 4 }}><ExternalLink size={13} /> Live</a>}
+        {safeGithubRepo && <a onClick={stop} href={safeGithubRepo} target="_blank" rel="noreferrer" style={{ color: muted, fontSize: 13, display: "inline-flex", alignItems: "center", gap: 4 }}><Github size={13} /> Code</a>}
       </div>
     </div>
   );
@@ -137,8 +143,8 @@ export default function ProjectCard({ project, style, anim, accent, accent2, sur
             <h3 style={{ fontSize: 16, fontWeight: 800 }}>{project.title}</h3>
             {project.description && <p style={{ fontSize: 13, marginTop: 8, lineHeight: 1.5, opacity: 0.95 }}>{project.description.slice(0, 140)}</p>}
             <div style={{ display: "flex", gap: 12, marginTop: 14 }}>
-              {project.liveUrl && <a onClick={stop} href={project.liveUrl} target="_blank" rel="noreferrer" style={{ color: "#fff", fontSize: 13, display: "inline-flex", gap: 4, alignItems: "center" }}><ExternalLink size={13} /> Live</a>}
-              {project.githubRepo && <a onClick={stop} href={project.githubRepo} target="_blank" rel="noreferrer" style={{ color: "#fff", fontSize: 13, display: "inline-flex", gap: 4, alignItems: "center" }}><Github size={13} /> Code</a>}
+              {safeLiveUrl && <a onClick={stop} href={safeLiveUrl} target="_blank" rel="noreferrer" style={{ color: "#fff", fontSize: 13, display: "inline-flex", gap: 4, alignItems: "center" }}><ExternalLink size={13} /> Live</a>}
+              {safeGithubRepo && <a onClick={stop} href={safeGithubRepo} target="_blank" rel="noreferrer" style={{ color: "#fff", fontSize: 13, display: "inline-flex", gap: 4, alignItems: "center" }}><Github size={13} /> Code</a>}
             </div>
           </div>
         </motion.div>
