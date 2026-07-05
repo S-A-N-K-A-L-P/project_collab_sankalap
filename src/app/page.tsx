@@ -78,7 +78,7 @@ export default async function Home() {
             </div>
             <ThemeSelector />
 
-            <Link href="/login" className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-black uppercase tracking-widest shadow-xl shadow-slate-500/20 hover:scale-105 transition-all active:scale-95">
+            <Link href="/login" className="hidden md:inline-block px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-xs font-black uppercase tracking-widest shadow-xl shadow-slate-500/20 hover:scale-105 transition-all active:scale-95">
               Initialize Sync
             </Link>
           </div>
