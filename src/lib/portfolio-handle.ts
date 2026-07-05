@@ -4,7 +4,7 @@ export const RESERVED_HANDLES = new Set([
   "admin", "api", "portfolio", "login", "register", "feed", "orgs", "org",
   "showcase", "marketplace", "settings", "me", "new", "null", "undefined",
   "dashboard", "profile", "ideas", "tasks", "discover", "notifications",
-  "my-completed", "unauthorized", "project_tracker", "projects",
+  "my-completed", "unauthorized", "project_tracker", "projects", "preview",
 ]);
 
 const HANDLE_RE = /^[a-z0-9](?:[a-z0-9-]{1,28}[a-z0-9])$/; // 3–30, a-z0-9-, no leading/trailing dash
