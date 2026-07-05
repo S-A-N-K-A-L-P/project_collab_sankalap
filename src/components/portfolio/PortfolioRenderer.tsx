@@ -8,6 +8,7 @@ import { getTheme, type LightBackgroundKind, type ThreeSceneKind, type CardStyle
 import { SECTION_ANIMS, type SectionAnimKind, type CardStyleKind, type CardAnimKind, resolveTokens } from "./animations";
 import { normalizeSections, type PortfolioSection } from "./sections";
 import { logoFor } from "./techLogos";
+import { sanitizeUrl, sanitizeImageSrc } from "@/lib/sanitize-url";
 
 export interface PortfolioData {
   handle?: string;
@@ -87,7 +88,7 @@ export default function PortfolioRenderer({ data, contained = false }: { data: P
             <motion.div initial="hidden" animate="show" variants={variants} transition={{ duration: 0.6 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
                 <div style={{ width: 84, height: 84, borderRadius: 20, overflow: "hidden", border: `2px solid ${accent}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, fontWeight: 800, color: accent, background: p.surface, flexShrink: 0 }}>
-                  {user.avatar ? <img src={user.avatar} alt={user.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials}
+                  {user.avatar ? <img src={sanitizeImageSrc(user.avatar)} alt={user.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials}
                 </div>
                 <div>
                   {tagline && <p style={{ color: accent, fontWeight: 600, fontSize: 14, letterSpacing: 1, textTransform: "uppercase" }}>{tagline}</p>}
@@ -164,7 +165,7 @@ export default function PortfolioRenderer({ data, contained = false }: { data: P
         return <Wrap key={sec.id} title={sec.title} accent={accent} variants={variants}>
           <motion.div initial="hidden" whileInView="show" viewport={{ once: true, margin: "-60px" }} variants={{ show: { transition: { staggerChildren: 0.08 } } }}
             style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 18 }}>
-            {all.map((pr, i) => <ProjectCard key={pr._id} project={pr} style={cardStyle} anim={cardAnim} index={i} accent={accent} accent2={p.accent2} surface={p.surface} text={p.text} muted={p.muted} href={pr.liveUrl || (pr._id.startsWith("manual") ? undefined : `/showcase/${pr._id}`)} />)}
+            {all.map((pr, i) => <ProjectCard key={pr._id} project={pr} style={cardStyle} anim={cardAnim} index={i} accent={accent} accent2={p.accent2} surface={p.surface} text={p.text} muted={p.muted} href={sanitizeUrl(pr.liveUrl) || (pr._id.startsWith("manual") ? undefined : `/showcase/${pr._id}`)} />)}
           </motion.div>
         </Wrap>;
       }
@@ -206,14 +207,15 @@ export default function PortfolioRenderer({ data, contained = false }: { data: P
             {items.map((e: any, i: number) => {
               const inner = (
                 <div style={{ ...surfaceCard, borderRadius: 14, padding: 14, display: "flex", gap: 12, alignItems: "center", height: "100%" }}>
-                  {e.image ? <img src={e.image} alt="" style={{ width: 40, height: 40, objectFit: "contain", borderRadius: 8 }} /> : <Award size={26} style={{ color: accent }} />}
+                  {e.image ? <img src={sanitizeImageSrc(e.image)} alt="" style={{ width: 40, height: 40, objectFit: "contain", borderRadius: 8 }} /> : <Award size={26} style={{ color: accent }} />}
                   <div style={{ minWidth: 0 }}>
                     <p style={{ fontSize: 14, fontWeight: 700, color: p.text }}>{e.name}</p>
                     <p style={{ fontSize: 12, color: p.muted }}>{[e.issuer, e.date].filter(Boolean).join(" · ")}</p>
                   </div>
                 </div>
               );
-              return e.url ? <a key={i} href={e.url} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>{inner}</a> : <div key={i}>{inner}</div>;
+              const safeUrl = sanitizeUrl(e.url);
+              return safeUrl ? <a key={i} href={safeUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>{inner}</a> : <div key={i}>{inner}</div>;
             })}
           </div>
         </Wrap>;
@@ -226,14 +228,15 @@ export default function PortfolioRenderer({ data, contained = false }: { data: P
             {items.map((e: any, i: number) => {
               const inner = (
                 <div style={{ ...surfaceCard, borderRadius: 14, padding: 14, display: "flex", gap: 12, alignItems: "center", height: "100%" }}>
-                  {e.logo ? <img src={e.logo} alt="" style={{ width: 40, height: 40, objectFit: "contain", borderRadius: 8, background: "rgba(255,255,255,0.85)", padding: 3 }} /> : <Building2 size={26} style={{ color: accent }} />}
+                  {e.logo ? <img src={sanitizeImageSrc(e.logo)} alt="" style={{ width: 40, height: 40, objectFit: "contain", borderRadius: 8, background: "rgba(255,255,255,0.85)", padding: 3 }} /> : <Building2 size={26} style={{ color: accent }} />}
                   <div style={{ minWidth: 0 }}>
                     <p style={{ fontSize: 14, fontWeight: 700, color: p.text }}>{e.name}</p>
                     <p style={{ fontSize: 12, color: p.muted }}>{[e.role, e.period].filter(Boolean).join(" · ")}</p>
                   </div>
                 </div>
               );
-              return e.url ? <a key={i} href={e.url} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>{inner}</a> : <div key={i}>{inner}</div>;
+              const safeUrl = sanitizeUrl(e.url);
+              return safeUrl ? <a key={i} href={safeUrl} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>{inner}</a> : <div key={i}>{inner}</div>;
             })}
           </div>
         </Wrap>;
@@ -243,7 +246,7 @@ export default function PortfolioRenderer({ data, contained = false }: { data: P
         if (!items.length) return empty(sec, "Add links");
         return <Wrap key={sec.id} title={sec.title} accent={accent} variants={variants}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-            {items.map((l: any, i: number) => { const Icon = ICONS[l.icon] || LinkIcon; return <a key={i} href={l.url} target="_blank" rel="noreferrer" style={pill(accent, p)}><Icon size={15} /> {l.label || l.icon}</a>; })}
+            {items.map((l: any, i: number) => { const Icon = ICONS[l.icon] || LinkIcon; const safeUrl = sanitizeUrl(l.url); return safeUrl ? <a key={i} href={safeUrl} target="_blank" rel="noreferrer" style={pill(accent, p)}><Icon size={15} /> {l.label || l.icon}</a> : null; })}
           </div>
         </Wrap>;
       }
@@ -274,7 +277,7 @@ export default function PortfolioRenderer({ data, contained = false }: { data: P
                 <QuoteIcon size={18} style={{ color: accent }} />
                 <p style={{ fontSize: 14, color: p.text, lineHeight: 1.6, margin: "8px 0 12px", fontStyle: "italic" }}>{e.quote}</p>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  {e.avatar && <img src={e.avatar} alt="" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }} />}
+                  {e.avatar && <img src={sanitizeImageSrc(e.avatar)} alt="" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }} />}
                   <div><p style={{ fontSize: 13, fontWeight: 700, color: p.text }}>{e.person}</p>{e.role && <p style={{ fontSize: 11, color: p.muted }}>{e.role}</p>}</div>
                 </div>
               </div>
@@ -286,7 +289,7 @@ export default function PortfolioRenderer({ data, contained = false }: { data: P
         const body = tk(c.body);
         if (!body && !c.image) return empty(sec, "Add text or an image");
         return <Wrap key={sec.id} title={sec.title} accent={accent} variants={variants}>
-          {c.image && <img src={c.image} alt="" style={{ maxWidth: "100%", borderRadius: 14, marginBottom: 14 }} />}
+          {c.image && <img src={sanitizeImageSrc(c.image)} alt="" style={{ maxWidth: "100%", borderRadius: 14, marginBottom: 14 }} />}
           {body && <p style={{ fontSize: 16, lineHeight: 1.7, color: p.text, whiteSpace: "pre-wrap" }}>{body}</p>}
         </Wrap>;
       }
@@ -297,7 +300,7 @@ export default function PortfolioRenderer({ data, contained = false }: { data: P
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px,1fr))", gap: 12 }}>
             {items.map((g: any, i: number) => (
               <figure key={i} style={{ ...surfaceCard, borderRadius: 12, overflow: "hidden", margin: 0 }}>
-                <img src={g.url} alt={g.caption || ""} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
+                <img src={sanitizeImageSrc(g.url)} alt={g.caption || ""} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
                 {g.caption && <figcaption style={{ padding: "8px 10px", fontSize: 12, color: p.muted }}>{g.caption}</figcaption>}
               </figure>
             ))}
@@ -333,7 +336,7 @@ export default function PortfolioRenderer({ data, contained = false }: { data: P
         if (!links.length && !user.github) return null;
         return <Wrap key={sec.id} title={sec.title} accent={accent} variants={variants}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-            {links.map((l: any, i: number) => { const Icon = ICONS[l.icon] || LinkIcon; return <a key={i} href={l.url} target="_blank" rel="noreferrer" style={pill(accent, p)}><Icon size={15} /> {l.label || l.icon}</a>; })}
+            {links.map((l: any, i: number) => { const Icon = ICONS[l.icon] || LinkIcon; const safeUrl = sanitizeUrl(l.url); return safeUrl ? <a key={i} href={safeUrl} target="_blank" rel="noreferrer" style={pill(accent, p)}><Icon size={15} /> {l.label || l.icon}</a> : null; })}
             {user.github && <a href={`https://github.com/${user.github}`} target="_blank" rel="noreferrer" style={pill(accent, p)}><Github size={15} /> {user.github}</a>}
           </div>
         </Wrap>;
