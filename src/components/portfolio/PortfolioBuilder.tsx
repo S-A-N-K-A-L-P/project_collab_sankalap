@@ -6,7 +6,8 @@ import {
   Monitor, Smartphone, Box, Sparkles, Download, Upload, Wand2,
   Palette, Layers, Image as ImageIcon, FileJson, Rocket,
 } from "lucide-react";
-import PortfolioRenderer, { type PortfolioData } from "./PortfolioRenderer";
+import { type PortfolioData } from "./PortfolioRenderer";
+import { buildPreviewData } from "./previewData";
 import SectionsEditor from "./SectionsEditor";
 import { THEMES, ALL_BACKGROUNDS, ALL_THREE_SCENES, THEME_CATEGORIES } from "./themes/registry";
 import {
@@ -31,8 +32,11 @@ export default function PortfolioBuilder() {
   const [cfg, setCfg] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
   const [available, setAvailable] = useState<any[]>([]);
-  const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [tab, setTab] = useState<Tab>("sections");
+
+  // live preview iframe + brief "pressed" flash on the desktop (jump-out) button
+  const previewFrameRef = useRef<HTMLIFrameElement>(null);
+  const [desktopFlash, setDesktopFlash] = useState(false);
 
   const [handle, setHandle] = useState("");
   const [handleState, setHandleState] = useState<{ checking: boolean; ok?: boolean; msg?: string }>({ checking: false });
@@ -84,19 +88,38 @@ export default function PortfolioBuilder() {
     else setHandleState({ checking: false, ok: false, msg: d.error });
   }
 
-  // ── preview projects (from projects section ids → fallback completed) ──
-  const previewProjects = useMemo(() => {
-    if (!cfg) return [];
-    const projSection = (cfg.sections || []).find((s: any) => s.type === "projects");
-    const ids: string[] = projSection?.content?.ids || [];
-    if (ids.length) {
-      const byId = new Map(available.map((p: any) => [p._id, p]));
-      return ids.map((id) => byId.get(id)).filter(Boolean);
-    }
-    return available.filter((p: any) => p.status === "completed").slice(0, 6);
-  }, [cfg, available]);
+  // ── live preview data (projects resolved via shared helper) ──
+  const previewData: PortfolioData | null = useMemo(
+    () => buildPreviewData(cfg, user, available),
+    [cfg, user, available],
+  );
 
-  const previewData: PortfolioData | null = cfg && { ...cfg, user, projects: previewProjects };
+  // ── push live (unsaved) preview data into the iframe ──
+  const previewUrl = "/portfolio/preview";
+  const pushPreviewData = () => {
+    const win = previewFrameRef.current?.contentWindow;
+    if (win && previewData) win.postMessage({ type: "sankalp-preview", data: previewData }, window.location.origin);
+  };
+  useEffect(() => {
+    pushPreviewData();
+    // Re-push when the iframe (re)announces it's ready (e.g. after reload).
+    const onMsg = (e: MessageEvent) => {
+      if (e.origin === window.location.origin && e.data?.type === "sankalp-preview-ready") pushPreviewData();
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, [previewData]);
+
+  // Desktop = "jump out": open the full-width preview in a new tab (real
+  // viewport). Flush any pending autosave first so the tab shows fresh data,
+  // then briefly flash the button — we do NOT persist desktop as a mode.
+  const openDesktopPreview = () => {
+    clearTimeout(saveTimer.current);
+    if (cfg) save(cfg);
+    window.open(previewUrl, "_blank", "noopener,noreferrer");
+    setDesktopFlash(true);
+    setTimeout(() => setDesktopFlash(false), 600);
+  };
 
   // ── Data tab: export / import / autofill ──
   const buildExport = () => ({
@@ -351,18 +374,37 @@ export default function PortfolioBuilder() {
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-medium text-muted flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-primary" /> Live preview {cfg.heavy3d && can3d && <span className="text-primary">· 3D on</span>}</span>
           <div className="flex items-center gap-1">
-            <button onClick={() => setDevice("desktop")} className={`p-1.5 rounded ${device === "desktop" ? "bg-primary text-white" : "text-muted hover:bg-background"}`}><Monitor className="w-3.5 h-3.5" /></button>
-            <button onClick={() => setDevice("mobile")} className={`p-1.5 rounded ${device === "mobile" ? "bg-primary text-white" : "text-muted hover:bg-background"}`}><Smartphone className="w-3.5 h-3.5" /></button>
+            <button
+              onClick={openDesktopPreview}
+              aria-label="Preview on desktop (opens new tab)"
+              title="Open full-width preview in a new tab"
+              className={`p-1.5 rounded flex items-center gap-0.5 transition-colors ${desktopFlash ? "bg-primary text-white" : "text-muted hover:bg-background"}`}
+            >
+              <Monitor className="w-3.5 h-3.5" />
+              <ExternalLink className="w-2.5 h-2.5" />
+            </button>
+            <button
+              aria-label="Preview on mobile"
+              aria-pressed={true}
+              className="p-1.5 rounded bg-primary text-white"
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
-        <div className="rounded-2xl border border-border overflow-hidden shadow-md bg-card" style={{ height: "calc(100vh - 190px)", minHeight: 500 }}>
-          <div className="h-full overflow-y-auto scrollbar-thin mx-auto transition-all" style={{ width: device === "mobile" ? 390 : "100%", maxWidth: "100%" }}>
-            {previewData && (
-              <PortfolioRenderer
-                key={`${cfg.themeId}|${cfg.bgOverride}|${cfg.threeOverride}|${cfg.heavy3d}|${(cfg.sections || []).length}`}
-                data={previewData} contained
+        <div className="rounded-2xl border border-border shadow-md bg-card flex items-center justify-center p-4" style={{ height: "calc(100vh - 190px)", minHeight: 500 }}>
+          {/* phone-style frame — the iframe gets its own viewport so the
+              portfolio's real media queries fire and it scrolls internally */}
+          <div className="relative h-full" style={{ width: 390, maxWidth: "100%" }}>
+            <div className="h-full rounded-[2rem] border-[6px] border-neutral-800 bg-neutral-800 overflow-hidden shadow-xl">
+              <iframe
+                ref={previewFrameRef}
+                src={previewUrl}
+                title="Live portfolio preview"
+                onLoad={pushPreviewData}
+                className="w-full h-full border-0 bg-transparent rounded-[1.5rem]"
               />
-            )}
+            </div>
           </div>
         </div>
       </div>

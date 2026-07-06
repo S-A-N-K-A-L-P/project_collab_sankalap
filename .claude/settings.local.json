@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(npm run:*)",
+      "Bash(npx tsc *)",
       "Bash(git status *)"
     ]
   }
