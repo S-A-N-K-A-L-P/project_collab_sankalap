@@ -71,6 +71,18 @@ const UserSchema = new Schema(
       type: Number,
       default: 0,
     },
+    isPro: {
+      type: Boolean,
+      default: false,
+    },
+    proSince: {
+      type: Date,
+      default: null,
+    },
+    razorpayPaymentId: {
+      type: String,
+      default: "",
+    },
     followers: [{
       type: Schema.Types.ObjectId,
       ref: "User",

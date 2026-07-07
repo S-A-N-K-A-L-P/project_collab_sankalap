@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import NextLink from "next/link";
+import { useRazorpay } from "@/hooks/useRazorpay";
 import {
   Loader2, Check, Monitor, Smartphone, ExternalLink, Eye, EyeOff,
   UserCircle, Trophy, LayoutTemplate, ShoppingBag, Settings2,
@@ -51,6 +52,7 @@ const RADIUS_OPTS = [
 export default function PortfolioBuilderPage() {
   const { data: session } = useSession();
   const sessionUser = session?.user as any;
+  const { openCheckout, state: payState, error: payError } = useRazorpay();
 
   const [loading, setLoading]       = useState(true);
   const [saving, setSaving]         = useState(false);
@@ -68,6 +70,7 @@ export default function PortfolioBuilderPage() {
   const [jsonText, setJsonText]     = useState("");
   const [dataMsg, setDataMsg]       = useState<string | null>(null);
   const [radius, setRadius]         = useState("medium");
+  const [isPro, setIsPro]           = useState(false);
 
   useEffect(() => {
     fetch("/api/portfolio/me")
@@ -75,11 +78,17 @@ export default function PortfolioBuilderPage() {
       .then(d => {
         setCfg(d.portfolio);
         setUser(d.user);
+        setIsPro(!!d.user?.isPro);
         setAvailable(d.availableProjects || []);
         setHandle(d.user?.handle || "");
       })
       .finally(() => setLoading(false));
   }, []);
+
+  // When Razorpay payment succeeds, update local isPro flag
+  useEffect(() => {
+    if (payState === "success") setIsPro(true);
+  }, [payState]);
 
   const saveTimer = useRef<any>(null);
   const queueSave = (next: any) => {
@@ -273,16 +282,41 @@ export default function PortfolioBuilderPage() {
           {/* Upgrade card */}
           {sidebarOpen && (
             <div className="p-3 space-y-3 border-t border-border">
-              <div className="bg-gradient-to-br from-primary/20 to-violet-500/10 border border-primary/20 rounded-2xl p-3">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <Crown className="w-4 h-4 text-yellow-400" />
-                  <span className="text-[11px] font-bold text-foreground">Upgrade to Pro</span>
+              {isPro || payState === "success" ? (
+                /* Pro badge */
+                <div className="bg-gradient-to-br from-yellow-500/20 to-amber-400/10 border border-yellow-500/30 rounded-2xl p-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Crown className="w-4 h-4 text-yellow-400" />
+                    <span className="text-[11px] font-bold text-yellow-400">Pro Active</span>
+                  </div>
+                  <p className="text-[10px] text-muted leading-relaxed">All premium features unlocked. Thank you!</p>
                 </div>
-                <p className="text-[10px] text-muted leading-relaxed mb-2">Unlock premium themes, custom domain and more.</p>
-                <button className="w-full py-1.5 bg-primary text-white rounded-lg text-[11px] font-bold hover:bg-primary/90 transition-colors">
-                  Upgrade Now →
-                </button>
-              </div>
+              ) : (
+                /* Upgrade CTA */
+                <div className="bg-gradient-to-br from-primary/20 to-violet-500/10 border border-primary/20 rounded-2xl p-3">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Crown className="w-4 h-4 text-yellow-400" />
+                    <span className="text-[11px] font-bold text-foreground">Upgrade to Pro</span>
+                  </div>
+                  <p className="text-[10px] text-muted leading-relaxed mb-1">
+                    Unlock premium themes, custom domain &amp; more.
+                  </p>
+                  <p className="text-[11px] font-bold text-primary mb-2">₹299 <span className="font-normal text-muted">/ one-time</span></p>
+                  {payError && (
+                    <p className="text-[10px] text-red-500 mb-1.5">{payError}</p>
+                  )}
+                  <button
+                    onClick={openCheckout}
+                    disabled={payState === "loading" || payState === "processing"}
+                    className="w-full py-1.5 bg-primary text-white rounded-lg text-[11px] font-bold hover:bg-primary/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-1.5">
+                    {payState === "loading"
+                      ? <><Loader2 className="w-3 h-3 animate-spin" /> Creating order…</>
+                      : payState === "processing"
+                      ? <><Loader2 className="w-3 h-3 animate-spin" /> Processing…</>
+                      : "Upgrade Now →"}
+                  </button>
+                </div>
+              )}
               <div className="space-y-1">
                 <p className="text-[10px] font-semibold text-muted flex items-center gap-1.5">
                   <BookOpen className="w-3 h-3" /> Need Help?
