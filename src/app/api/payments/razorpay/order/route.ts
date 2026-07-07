@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import Razorpay from "razorpay";
 
-const PRO_AMOUNT_PAISE = 29900; // ₹299 in paise
+const PRO_AMOUNT_PAISE = 100; // ₹1 in paise (test)
 const CURRENCY = "INR";
 
 const razorpay = new Razorpay({

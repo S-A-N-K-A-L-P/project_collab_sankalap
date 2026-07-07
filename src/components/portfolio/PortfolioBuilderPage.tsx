@@ -301,7 +301,7 @@ export default function PortfolioBuilderPage() {
                   <p className="text-[10px] text-muted leading-relaxed mb-1">
                     Unlock premium themes, custom domain &amp; more.
                   </p>
-                  <p className="text-[11px] font-bold text-primary mb-2">₹299 <span className="font-normal text-muted">/ one-time</span></p>
+                  <p className="text-[11px] font-bold text-primary mb-2">₹1 <span className="font-normal text-muted">/ one-time</span></p>
                   {payError && (
                     <p className="text-[10px] text-red-500 mb-1.5">{payError}</p>
                   )}
