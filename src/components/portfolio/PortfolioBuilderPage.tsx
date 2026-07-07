@@ -2,14 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
-import NextLink from "next/link";
 import { useRazorpay } from "@/hooks/useRazorpay";
 import {
   Loader2, Check, Monitor, Smartphone, ExternalLink, Eye, EyeOff,
-  UserCircle, Trophy, LayoutTemplate, ShoppingBag, Settings2,
   Palette, Image as ImageIcon, Layers, Database, Send,
-  Wand2, Download, Upload, Copy, Crown, BookOpen,
-  ChevronLeft, ChevronRight, RotateCcw, Sparkles, X,
+  Wand2, Download, Upload, Copy, Crown,
+  RotateCcw, Sparkles, X,
 } from "lucide-react";
 import PortfolioRenderer, { type PortfolioData } from "./PortfolioRenderer";
 import SectionsEditor from "./SectionsEditor";
@@ -62,7 +60,6 @@ export default function PortfolioBuilderPage() {
   const [available, setAvailable]   = useState<any[]>([]);
   const [tab, setTab]               = useState<Tab>("theme");
   const [device, setDevice]         = useState<Device>("mobile");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
   const [showAllThemes, setShowAllThemes] = useState(false);
   const [handle, setHandle]         = useState("");
@@ -140,10 +137,6 @@ export default function PortfolioBuilderPage() {
   const publicUrl = user?.handle ? `/portfolio/${user.handle}` : null;
   const can3d = activeTheme.supports3d || (!!cfg?.threeOverride && cfg?.threeOverride !== "none");
 
-  const initials = (sessionUser?.name || user?.name || "?")
-    .split(" ").map((w: string) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
-  const profileHref = sessionUser?.id ? `/profile/${sessionUser.id}` : "/profile";
-
   /* data tab helpers */
   const buildExport = () => ({
     version: 1,
@@ -217,6 +210,20 @@ export default function PortfolioBuilderPage() {
               ? <><div className="w-2 h-2 rounded-full bg-emerald-500" /> Auto-saved {formatAgo(savedAt)}</>
               : null}
           </span>
+          {/* Upgrade / Pro badge */}
+          {isPro || payState === "success" ? (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-xs font-bold text-yellow-500">
+              <Crown className="w-3.5 h-3.5" /> Pro
+            </div>
+          ) : (
+            <button onClick={openCheckout} disabled={payState === "loading" || payState === "processing"}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary hover:bg-primary/90 disabled:opacity-60 text-white rounded-lg text-xs font-bold transition-colors">
+              {payState === "loading" || payState === "processing"
+                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                : <Crown className="w-3.5 h-3.5" />}
+              {payState === "loading" ? "Creating…" : payState === "processing" ? "Processing…" : "Upgrade ₹1"}
+            </button>
+          )}
           {/* Mobile preview toggle */}
           <button onClick={() => setShowMobilePreview(true)}
             className="xl:hidden flex items-center gap-1.5 px-3 py-1.5 border border-border rounded-lg text-xs font-medium text-muted hover:text-foreground hover:bg-card transition-colors">
@@ -233,110 +240,6 @@ export default function PortfolioBuilderPage() {
 
       {/* ── BODY ─────────────────────────────────────────────── */}
       <div className="flex flex-1 overflow-hidden">
-
-        {/* ── INNER SIDEBAR ────────────────────────────────── */}
-        <div className={`${sidebarOpen ? "w-[220px]" : "w-[60px]"} shrink-0 border-r border-border bg-card flex flex-col transition-all duration-200 overflow-hidden`}>
-
-          {/* User info */}
-          {sidebarOpen ? (
-            <div className="p-4 border-b border-border">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white text-sm font-bold shrink-0">
-                  {initials}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-bold text-foreground truncate">{user?.name || sessionUser?.name || "Builder"}</p>
-                  <p className="text-[11px] text-muted truncate">Builder on S.A.N.K.A.L.P.</p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="p-3 border-b border-border flex justify-center">
-              <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold">
-                {initials}
-              </div>
-            </div>
-          )}
-
-          {/* Nav items */}
-          <nav className="flex-1 p-2 space-y-0.5 overflow-y-auto">
-            {[
-              { label: "Profile",      Icon: UserCircle,     href: profileHref,     active: false },
-              { label: "Achievements", Icon: Trophy,         href: "/my-completed", active: false },
-              { label: "Portfolio",    Icon: LayoutTemplate, href: "/my-portfolio", active: true  },
-              { label: "Store",        Icon: ShoppingBag,    href: "/marketplace",  active: false },
-              { label: "Settings",     Icon: Settings2,      href: "/settings",     active: false },
-            ].map(({ label, Icon, href, active }) => (
-              <NextLink key={label} href={href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
-                  active
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted hover:text-foreground hover:bg-background"
-                }`}>
-                <Icon className="w-4 h-4 shrink-0" />
-                {sidebarOpen && <span>{label}</span>}
-              </NextLink>
-            ))}
-          </nav>
-
-          {/* Upgrade card */}
-          {sidebarOpen && (
-            <div className="p-3 space-y-3 border-t border-border">
-              {isPro || payState === "success" ? (
-                /* Pro badge */
-                <div className="bg-gradient-to-br from-yellow-500/20 to-amber-400/10 border border-yellow-500/30 rounded-2xl p-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Crown className="w-4 h-4 text-yellow-400" />
-                    <span className="text-[11px] font-bold text-yellow-400">Pro Active</span>
-                  </div>
-                  <p className="text-[10px] text-muted leading-relaxed">All premium features unlocked. Thank you!</p>
-                </div>
-              ) : (
-                /* Upgrade CTA */
-                <div className="bg-gradient-to-br from-primary/20 to-violet-500/10 border border-primary/20 rounded-2xl p-3">
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <Crown className="w-4 h-4 text-yellow-400" />
-                    <span className="text-[11px] font-bold text-foreground">Upgrade to Pro</span>
-                  </div>
-                  <p className="text-[10px] text-muted leading-relaxed mb-1">
-                    Unlock premium themes, custom domain &amp; more.
-                  </p>
-                  <p className="text-[11px] font-bold text-primary mb-2">₹1 <span className="font-normal text-muted">/ one-time</span></p>
-                  {payError && (
-                    <p className="text-[10px] text-red-500 mb-1.5">{payError}</p>
-                  )}
-                  <button
-                    onClick={openCheckout}
-                    disabled={payState === "loading" || payState === "processing"}
-                    className="w-full py-1.5 bg-primary text-white rounded-lg text-[11px] font-bold hover:bg-primary/90 transition-colors disabled:opacity-60 flex items-center justify-center gap-1.5">
-                    {payState === "loading"
-                      ? <><Loader2 className="w-3 h-3 animate-spin" /> Creating order…</>
-                      : payState === "processing"
-                      ? <><Loader2 className="w-3 h-3 animate-spin" /> Processing…</>
-                      : "Upgrade Now →"}
-                  </button>
-                </div>
-              )}
-              <div className="space-y-1">
-                <p className="text-[10px] font-semibold text-muted flex items-center gap-1.5">
-                  <BookOpen className="w-3 h-3" /> Need Help?
-                </p>
-                <p className="text-[10px] text-muted">Check our docs to learn more.</p>
-                <button className="flex items-center gap-1 text-[10px] text-primary font-medium hover:underline">
-                  <ExternalLink className="w-3 h-3" /> View Docs
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Collapse button */}
-          <button onClick={() => setSidebarOpen(o => !o)}
-            className="flex items-center justify-center gap-2 px-3 py-3 border-t border-border text-xs text-muted hover:text-foreground hover:bg-background transition-colors">
-            {sidebarOpen
-              ? <><ChevronLeft className="w-4 h-4" /> <span>Collapse</span></>
-              : <ChevronRight className="w-4 h-4" />}
-          </button>
-        </div>
 
         {/* ── TAB LIST ─────────────────────────────────────── */}
         <div className="w-[210px] shrink-0 border-r border-border bg-background flex flex-col overflow-y-auto">
