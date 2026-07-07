@@ -37,7 +37,23 @@ export async function POST() {
       keyId: process.env.RAZORPAY_KEY_ID,
     });
   } catch (error: any) {
-    console.error("[RAZORPAY_ORDER_ERROR]", error);
-    return NextResponse.json({ error: error.message || "Failed to create order" }, { status: 500 });
+    console.error("[RAZORPAY_ORDER_ERROR]", JSON.stringify(error, null, 2));
+
+    // The Razorpay SDK throws an object shaped like
+    //   { statusCode, error: { code, description, reason } }
+    // NOT a standard Error — so error.message is usually undefined.
+    const rzpStatus = error?.statusCode;
+    const rzpDesc   = error?.error?.description || error?.error?.reason;
+
+    // Surface the REAL reason so the client alert is actionable.
+    let reason = rzpDesc || error?.message || "Failed to create order";
+    if (rzpStatus === 401) {
+      reason = "Razorpay authentication failed — RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET do not match (re-copy both from the SAME key generation).";
+    }
+
+    return NextResponse.json(
+      { error: reason, statusCode: rzpStatus ?? 500 },
+      { status: 500 }
+    );
   }
 }
