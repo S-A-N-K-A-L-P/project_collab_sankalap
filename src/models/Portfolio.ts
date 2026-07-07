@@ -66,6 +66,10 @@ const PortfolioSchema = new Schema(
       description: { type: String, default: "" },
     },
 
+    // Snapshot of the publishable fields taken on "Republish". The public page
+    // renders THIS, not the top-level draft. Null until first publish/migration.
+    published:   { type: Schema.Types.Mixed, default: null },
+
     views:           { type: Number, default: 0 },
     lastPublishedAt: { type: Date },
   },

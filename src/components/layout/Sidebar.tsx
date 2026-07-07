@@ -9,6 +9,7 @@ import LightModeRounded          from "@mui/icons-material/LightModeRounded";
 import EmojiEventsRounded        from "@mui/icons-material/EmojiEventsRounded";
 import StorefrontRounded         from "@mui/icons-material/StorefrontRounded";
 import PermMediaRounded          from "@mui/icons-material/PermMediaRounded";
+import DesktopWindowsRounded    from "@mui/icons-material/DesktopWindowsRounded";
 const SettingsIcon    = SettingsRounded;
 const LogoutIcon      = LogoutRounded;
 const AdminIcon       = AdminPanelSettingsRounded;
@@ -17,6 +18,7 @@ const LightIcon       = LightModeRounded;
 const TrophyIcon      = EmojiEventsRounded;
 const ShopIcon        = StorefrontRounded;
 const PortfolioIcon   = PermMediaRounded;
+const DesktopIcon     = DesktopWindowsRounded;
 import NextLink   from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useTheme }  from "next-themes";
@@ -131,6 +133,11 @@ export default function Sidebar() {
       {/* My Portfolio */}
       <RailBtn title="My Portfolio" href="/my-portfolio">
         <PortfolioIcon sx={{ fontSize: 20, color: "#a78bfa" }} />
+      </RailBtn>
+
+      {/* Syncro Desktop App */}
+      <RailBtn title="Syncro Desktop App" href="/desktop">
+        <DesktopIcon sx={{ fontSize: 20, color: "#818cf8" }} />
       </RailBtn>
 
       {/* Settings */}
