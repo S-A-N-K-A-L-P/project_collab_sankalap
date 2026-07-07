@@ -34,8 +34,12 @@ export async function GET(
       return NextResponse.json({ error: "This portfolio isn't public." }, { status: 404 });
     }
 
+    // Serve the published snapshot; fall back to the draft for un-migrated docs.
+    const pub = (pf as any).published && Object.keys((pf as any).published).length ? (pf as any).published : null;
+    const view = pub || pf;
+
     // Featured projects (ordered) or fall back to the user's completed projects
-    const featuredIds = (pf as any).featuredProjectIds || [];
+    const featuredIds = (view as any).featuredProjectIds || [];
     let projects: any[] = [];
     if (featuredIds.length) {
       const found = await Project.find({ _id: { $in: featuredIds } })
@@ -58,7 +62,7 @@ export async function GET(
     Portfolio.updateOne({ _id: (pf as any)._id }, { $inc: { views: 1 } }).catch(() => null);
 
     return NextResponse.json({
-      portfolio: JSON.parse(JSON.stringify(pf)),
+      portfolio: JSON.parse(JSON.stringify({ ...pf, ...(pub || {}) })),
       user: JSON.parse(JSON.stringify(user)),
       projects: JSON.parse(JSON.stringify(projects)),
     });

@@ -5,8 +5,10 @@ import {
   Loader2, Check, Copy, ExternalLink, Eye, EyeOff,
   Monitor, Smartphone, Box, Sparkles, Download, Upload, Wand2,
   Palette, Layers, Image as ImageIcon, FileJson, Rocket,
+  UploadCloud, CheckCircle2, CircleDot,
 } from "lucide-react";
 import { type PortfolioData } from "./PortfolioRenderer";
+import { hasUnpublishedChanges } from "./publish";
 import { buildPreviewData } from "./previewData";
 import SectionsEditor from "./SectionsEditor";
 import { THEMES, ALL_BACKGROUNDS, ALL_THREE_SCENES, THEME_CATEGORIES } from "./themes/registry";
@@ -28,6 +30,7 @@ export default function PortfolioBuilder() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving]   = useState(false);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [publishing, setPublishing] = useState(false);
 
   const [cfg, setCfg] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
@@ -63,7 +66,7 @@ export default function PortfolioBuilder() {
   async function save(next: any) {
     setSaving(true);
     try {
-      const { _id, userId, createdAt, updatedAt, views, __v, ...payload } = next;
+      const { _id, userId, createdAt, updatedAt, views, __v, published, lastPublishedAt, ...payload } = next;
       const res = await fetch("/api/portfolio/me", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       if (res.ok) setSavedAt(new Date());
     } finally { setSaving(false); }
@@ -121,6 +124,26 @@ export default function PortfolioBuilder() {
     setTimeout(() => setDesktopFlash(false), 600);
   };
 
+  // ── publish (draft → live) ──
+  // `cfg.published` holds the last published snapshot; compare the live draft
+  // against it to know whether there are changes to push.
+  const dirty = useMemo(() => hasUnpublishedChanges(cfg, cfg?.published), [cfg]);
+  async function republish() {
+    if (!cfg) return;
+    setPublishing(true);
+    try {
+      // Flush any pending debounced autosave so the server draft is current.
+      clearTimeout(saveTimer.current);
+      await save(cfg);
+      const res = await fetch("/api/portfolio/me", { method: "POST" });
+      const d = await res.json();
+      if (res.ok) {
+        // Update the baseline in place → `dirty` recomputes to false.
+        setCfg((c: any) => ({ ...c, published: d.published, lastPublishedAt: d.lastPublishedAt }));
+      }
+    } finally { setPublishing(false); }
+  }
+
   // ── Data tab: export / import / autofill ──
   const buildExport = () => ({
     version: 1,
@@ -174,28 +197,80 @@ export default function PortfolioBuilder() {
   const activeTheme = THEMES.find(t => t.id === cfg.themeId) || THEMES[0];
   const publicUrl = user?.handle ? `/portfolio/${user.handle}` : null;
   const can3d = activeTheme.supports3d || (!!cfg.threeOverride && cfg.threeOverride !== "none");
+  const isPrivate = cfg.isPublished === false;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[minmax(330px,440px)_1fr] gap-5">
-      {/* ════ LEFT: tabbed controls ════ */}
-      <div className="space-y-3 lg:max-h-[calc(100vh-150px)] lg:overflow-y-auto lg:pr-2 scrollbar-thin">
-        {/* tab bar */}
-        <div className="flex items-center justify-between gap-2 sticky top-0 bg-background/80 backdrop-blur z-10 py-1">
-          <div className="flex items-center gap-0.5 bg-card border border-border rounded-lg p-1 overflow-x-auto">
+    <div className="space-y-4">
+      {/* ════ Publish status bar (draft → live) ════ */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-card border border-border rounded-2xl shadow-sm px-4 py-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          {isPrivate ? (
+            <>
+              <EyeOff className="w-5 h-5 text-muted shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground">Private</p>
+                <p className="text-xs text-muted truncate">Only you can see this — go public in the Publish tab.</p>
+              </div>
+            </>
+          ) : dirty ? (
+            <>
+              <CircleDot className="w-5 h-5 text-amber-500 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground">Unpublished changes</p>
+                <p className="text-xs text-muted truncate">Your live portfolio is out of date — republish to push your edits.</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground">Published</p>
+                <p className="text-xs text-muted truncate">Live &amp; up to date{cfg.lastPublishedAt ? ` · ${timeAgo(cfg.lastPublishedAt)}` : ""}.</p>
+              </div>
+            </>
+          )}
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          <span className="text-xs text-muted flex items-center gap-1.5">
+            {saving ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving draft…</>
+              : savedAt ? <><Check className="w-3.5 h-3.5 text-emerald-500" /> Draft saved</> : null}
+          </span>
+          {dirty && (
+            <button
+              onClick={republish}
+              disabled={publishing}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary hover:bg-primary-hover disabled:opacity-60 text-white text-sm font-semibold shadow-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+            >
+              {publishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
+              {publishing ? "Publishing…" : "Republish"}
+            </button>
+          )}
+        </div>
+      </div>
+
+    <div className="grid grid-cols-1 lg:grid-cols-[minmax(340px,460px)_1fr] gap-6 items-start">
+      {/* ════ LEFT: tabbed controls (single panel) ════ */}
+      <div className="bg-card border border-border rounded-2xl shadow-sm flex flex-col lg:max-h-[calc(100vh-150px)] overflow-hidden">
+        {/* tab bar — underline style, matches page-level tabs */}
+        <div className="flex items-center justify-between gap-2 px-3 sm:px-4 border-b border-border">
+          <div className="flex items-center gap-1 overflow-x-auto overflow-y-hidden scrollbar-thin -mb-px">
             {TABS.map(t => {
               const Icon = t.icon; const on = tab === t.id;
               return (
-                <button key={t.id} onClick={() => setTab(t.id)}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-colors ${on ? "bg-primary text-white" : "text-muted hover:text-foreground"}`}>
-                  <Icon className="w-3.5 h-3.5" /> {t.label}
+                <button key={t.id} onClick={() => setTab(t.id)} aria-current={on ? "page" : undefined}
+                  className={`flex items-center gap-1.5 px-3 py-3 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-t ${on ? "border-primary text-primary" : "border-transparent text-muted hover:text-foreground"}`}>
+                  <Icon className="w-4 h-4" /> {t.label}
                 </button>
               );
             })}
           </div>
-          <span className="text-xs text-muted flex items-center gap-1 shrink-0">
-            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : savedAt ? <Check className="w-3 h-3 text-emerald-500" /> : null}
+          <span className="text-xs text-muted flex items-center gap-1 shrink-0 pl-1">
+            {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : savedAt ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : null}
           </span>
         </div>
+
+        {/* scrollable tab content */}
+        <div className="flex-1 overflow-y-auto scrollbar-thin p-4 sm:p-5 space-y-6">
 
         {/* ── THEME tab ── */}
         {tab === "theme" && (<>
@@ -367,67 +442,89 @@ export default function PortfolioBuilder() {
             </div>
           </Card>
         </>)}
+        </div>
       </div>
 
-      {/* ════ RIGHT: live preview ════ */}
-      <div className="lg:sticky lg:top-4 lg:self-start">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-medium text-muted flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-primary" /> Live preview {cfg.heavy3d && can3d && <span className="text-primary">· 3D on</span>}</span>
-          <div className="flex items-center gap-1">
+      {/* ════ RIGHT: live preview (single panel) ════ */}
+      <div className="lg:sticky lg:top-4 lg:self-start bg-card border border-border rounded-2xl shadow-sm flex flex-col overflow-hidden">
+        {/* preview header */}
+        <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3 border-b border-border">
+          <span className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" /> Live preview
+            {cfg.heavy3d && can3d && <span className="text-[11px] font-medium text-primary bg-primary/10 rounded-full px-2 py-0.5">3D on</span>}
+          </span>
+          {/* device switcher */}
+          <div className="flex items-center gap-1 bg-background rounded-lg p-1 border border-border">
             <button
               onClick={openDesktopPreview}
               aria-label="Preview on desktop (opens new tab)"
               title="Open full-width preview in a new tab"
-              className={`p-1.5 rounded flex items-center gap-0.5 transition-colors ${desktopFlash ? "bg-primary text-white" : "text-muted hover:bg-background"}`}
+              className={`flex items-center gap-1 px-2 py-1.5 rounded-md text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${desktopFlash ? "bg-primary text-white" : "text-muted hover:text-foreground hover:bg-card"}`}
             >
-              <Monitor className="w-3.5 h-3.5" />
+              <Monitor className="w-4 h-4" />
               <ExternalLink className="w-2.5 h-2.5" />
             </button>
             <button
               aria-label="Preview on mobile"
               aria-pressed={true}
-              className="p-1.5 rounded bg-primary text-white"
+              title="Mobile preview"
+              className="flex items-center px-2 py-1.5 rounded-md bg-primary text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
             >
-              <Smartphone className="w-3.5 h-3.5" />
+              <Smartphone className="w-4 h-4" />
             </button>
           </div>
         </div>
-        <div className="rounded-2xl border border-border shadow-md bg-card flex items-center justify-center p-4" style={{ height: "calc(100vh - 190px)", minHeight: 500 }}>
+        {/* preview stage */}
+        <div className="flex items-center justify-center p-5 sm:p-6 bg-background/60" style={{ height: "calc(100vh - 210px)", minHeight: 500 }}>
           {/* phone-style frame — the iframe gets its own viewport so the
               portfolio's real media queries fire and it scrolls internally */}
-          <div className="relative h-full" style={{ width: 390, maxWidth: "100%" }}>
-            <div className="h-full rounded-[2rem] border-[6px] border-neutral-800 bg-neutral-800 overflow-hidden shadow-xl">
+          <div className="relative h-full" style={{ width: 380, maxWidth: "100%" }}>
+            <div className="h-full rounded-[2.25rem] border-[7px] border-neutral-800 bg-neutral-800 overflow-hidden shadow-2xl">
               <iframe
                 ref={previewFrameRef}
                 src={previewUrl}
                 title="Live portfolio preview"
                 onLoad={pushPreviewData}
-                className="w-full h-full border-0 bg-transparent rounded-[1.5rem]"
+                className="w-full h-full border-0 bg-transparent rounded-[1.6rem]"
               />
             </div>
           </div>
         </div>
       </div>
     </div>
+    </div>
   );
+}
+
+function timeAgo(iso: string | Date): string {
+  const then = new Date(iso).getTime();
+  if (!then) return "";
+  const s = Math.max(0, Math.round((Date.now() - then) / 1000));
+  if (s < 60) return "just now";
+  const m = Math.round(s / 60); if (m < 60) return `${m}m ago`;
+  const h = Math.round(m / 60); if (h < 24) return `${h}h ago`;
+  const d = Math.round(h / 24); if (d < 7) return `${d}d ago`;
+  return new Date(iso).toLocaleDateString();
 }
 
 const inp = "w-full px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30";
 
+/* A titled group inside the builder panel — flat (no nested border) so the
+   single surrounding panel provides the framing and hierarchy stays clean. */
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-card border border-border rounded-xl p-4" style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
-      <h3 className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">{title}</h3>
+    <section>
+      <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wider mb-3">{title}</h3>
       {children}
-    </div>
+    </section>
   );
 }
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div className="mb-3 last:mb-0"><label className="block text-xs font-medium text-muted mb-1">{label}</label>{children}</div>;
+  return <div className="mb-3 last:mb-0"><label className="block text-xs font-medium text-muted mb-1.5">{label}</label>{children}</div>;
 }
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-background border border-border rounded-lg p-3">
+    <div className="bg-background border border-border rounded-xl p-3">
       <p className="text-sm font-bold text-foreground truncate">{value}</p>
       <p className="text-[10px] text-muted uppercase tracking-wider mt-0.5">{label}</p>
     </div>

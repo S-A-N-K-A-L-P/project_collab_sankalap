@@ -24,7 +24,11 @@ const load = cache(async (handle: string): Promise<PortfolioData | null> => {
   const pf: any = await Portfolio.findOne({ userId: user._id }).lean();
   if (!pf || pf.isPublished === false) return null;
 
-  const featuredIds = pf.featuredProjectIds || [];
+  // Render the published snapshot; fall back to the draft for un-migrated docs.
+  const pub = pf.published && Object.keys(pf.published).length ? pf.published : null;
+  const view = pub || pf;
+
+  const featuredIds = view.featuredProjectIds || [];
   let projects: any[] = [];
   if (featuredIds.length) {
     const found = await Project.find({ _id: { $in: featuredIds } })
@@ -39,7 +43,7 @@ const load = cache(async (handle: string): Promise<PortfolioData | null> => {
 
   Portfolio.updateOne({ _id: pf._id }, { $inc: { views: 1 } }).catch(() => null);
 
-  return JSON.parse(JSON.stringify({ ...pf, user, projects }));
+  return JSON.parse(JSON.stringify({ ...pf, ...(pub || {}), user, projects }));
 });
 
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {

@@ -25,10 +25,29 @@ export default function SectionsEditor({
   const [adding, setAdding] = useState(false);
   const [picked, setPicked] = useState<SectionType[]>([]);
 
+  // drag & drop reorder state. `dragHandle` gates draggability so a drag can
+  // only start from the grip (keeps text selection in the editor inputs sane).
+  const [dragHandle, setDragHandle] = useState(false);
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
+
   const list = [...sections].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
   const commit = (next: PortfolioSection[]) =>
     onChange(next.map((s, i) => ({ ...s, order: i })));
+
+  // Move `fromId` so it lands relative to the row it was dropped on.
+  const reorder = (fromId: string, toId: string) => {
+    if (fromId === toId) return;
+    const from = list.findIndex((s) => s.id === fromId);
+    const to = list.findIndex((s) => s.id === toId);
+    if (from < 0 || to < 0) return;
+    const next = list.filter((s) => s.id !== fromId);
+    const at = next.findIndex((s) => s.id === toId);
+    next.splice(from < to ? at + 1 : at, 0, list[from]);
+    commit(next);
+  };
+  const endDrag = () => { setDragId(null); setOverId(null); setDragHandle(false); };
 
   const update = (id: string, patch: Partial<PortfolioSection>) =>
     commit(list.map((s) => (s.id === id ? { ...s, ...patch } : s)));
@@ -60,34 +79,59 @@ export default function SectionsEditor({
   const togglePick = (t: SectionType) => setPicked((p) => p.includes(t) ? p.filter((x) => x !== t) : [...p, t]);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       {list.map((s) => {
         const meta = SECTION_TYPES.find((t) => t.type === s.type);
         const open = editing === s.id;
         return (
-          <div key={s.id} className="border border-border rounded-lg bg-background overflow-hidden">
+          <div
+            key={s.id}
+            draggable={dragHandle}
+            onDragStart={(e) => { setDragId(s.id); e.dataTransfer.effectAllowed = "move"; }}
+            onDragEnd={endDrag}
+            onDragOver={(e) => { if (dragId) { e.preventDefault(); e.dataTransfer.dropEffect = "move"; if (overId !== s.id) setOverId(s.id); } }}
+            onDragLeave={() => setOverId((o) => (o === s.id ? null : o))}
+            onDrop={(e) => { e.preventDefault(); if (dragId) reorder(dragId, s.id); endDrag(); }}
+            className={`rounded-xl border bg-background overflow-hidden transition-all ${
+              dragId === s.id ? "opacity-40" : ""
+            } ${
+              overId === s.id && dragId && dragId !== s.id ? "border-primary ring-2 ring-primary/30"
+              : open ? "border-primary/50 shadow-sm"
+              : "border-border hover:border-border-strong hover:shadow-sm"
+            }`}
+          >
             {/* row */}
-            <div className="flex items-center gap-1.5 px-2 py-2">
-              <GripVertical className="w-3.5 h-3.5 text-muted shrink-0" />
-              <span className="text-sm">{meta?.icon}</span>
-              <button onClick={() => setEditing(open ? null : s.id)} className="flex-1 text-left min-w-0">
-                <span className={`text-sm font-medium truncate ${s.enabled ? "text-foreground" : "text-muted line-through"}`}>{s.title || meta?.label}</span>
-                <span className="text-[10px] text-muted ml-1.5">{meta?.label}</span>
+            <div className="flex items-center gap-2 px-2.5 py-2.5">
+              <button
+                type="button"
+                onMouseDown={() => setDragHandle(true)}
+                onMouseUp={() => setDragHandle(false)}
+                onKeyDown={(e) => { if (e.key === "ArrowUp") { e.preventDefault(); move(s.id, -1); } else if (e.key === "ArrowDown") { e.preventDefault(); move(s.id, 1); } }}
+                aria-label="Drag to reorder (or use arrow keys)"
+                title="Drag to reorder"
+                className="shrink-0 flex items-center justify-center text-muted/50 hover:text-muted cursor-grab active:cursor-grabbing rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              >
+                <GripVertical className="w-4 h-4" aria-hidden />
+              </button>
+              <span className="text-base leading-none shrink-0">{meta?.icon}</span>
+              <button onClick={() => setEditing(open ? null : s.id)} className="flex-1 text-left min-w-0 flex items-baseline gap-1.5">
+                <span className={`text-sm font-semibold truncate ${s.enabled ? "text-foreground" : "text-muted line-through"}`}>{s.title || meta?.label}</span>
+                <span className="text-[11px] text-muted shrink-0">{meta?.label}</span>
               </button>
               <div className="flex items-center gap-0.5 shrink-0">
-                <button onClick={() => move(s.id, -1)} className="p-1 text-muted hover:text-foreground"><ChevronUp className="w-3.5 h-3.5" /></button>
-                <button onClick={() => move(s.id, 1)} className="p-1 text-muted hover:text-foreground"><ChevronDown className="w-3.5 h-3.5" /></button>
-                <button onClick={() => update(s.id, { enabled: !s.enabled })} className="p-1 text-muted hover:text-foreground" title={s.enabled ? "Hide" : "Show"}>
-                  {s.enabled ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                <button onClick={() => move(s.id, -1)} title="Move up" className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:bg-card hover:text-foreground transition-colors"><ChevronUp className="w-4 h-4" /></button>
+                <button onClick={() => move(s.id, 1)} title="Move down" className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:bg-card hover:text-foreground transition-colors"><ChevronDown className="w-4 h-4" /></button>
+                <button onClick={() => update(s.id, { enabled: !s.enabled })} className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:bg-card hover:text-foreground transition-colors" title={s.enabled ? "Hide" : "Show"}>
+                  {s.enabled ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                 </button>
-                <button onClick={() => setEditing(open ? null : s.id)} className={`p-1 ${open ? "text-primary" : "text-muted hover:text-foreground"}`}><Pencil className="w-3.5 h-3.5" /></button>
-                {s.type !== "hero" && <button onClick={() => remove(s.id)} className="p-1 text-muted hover:text-red-500"><Trash2 className="w-3.5 h-3.5" /></button>}
+                <button onClick={() => setEditing(open ? null : s.id)} title="Edit" className={`w-7 h-7 flex items-center justify-center rounded-md transition-colors ${open ? "text-primary bg-primary/10" : "text-muted hover:bg-card hover:text-foreground"}`}><Pencil className="w-4 h-4" /></button>
+                {s.type !== "hero" && <button onClick={() => remove(s.id)} title="Delete" className="w-7 h-7 flex items-center justify-center rounded-md text-muted hover:bg-red-500/10 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>}
               </div>
             </div>
 
             {/* editor */}
             {open && (
-              <div className="px-3 pb-3 pt-1 space-y-2 border-t border-border">
+              <div className="px-3 pb-3 pt-3 space-y-2 border-t border-border bg-card">
                 {s.type !== "hero" && (
                   <L label="Section title"><input value={s.title} onChange={(e) => update(s.id, { title: e.target.value })} className={inp} /></L>
                 )}
@@ -141,7 +185,7 @@ export default function SectionsEditor({
         </div>
       ) : (
         <button onClick={() => setAdding(true)}
-          className="w-full flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border border-dashed border-border text-sm font-medium text-primary hover:bg-primary/5">
+          className="w-full flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl border border-dashed border-border-strong text-sm font-semibold text-primary hover:bg-primary/5 hover:border-primary transition-colors">
           <Plus className="w-4 h-4" /> Add section(s)
         </button>
       )}
