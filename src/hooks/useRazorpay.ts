@@ -37,7 +37,12 @@ export function useRazorpay() {
       // 1. Create order
       const orderRes = await fetch("/api/payments/razorpay/order", { method: "POST" });
       const orderData = await orderRes.json();
-      if (!orderRes.ok) throw new Error(orderData.error || "Order creation failed");
+      if (!orderRes.ok) {
+        throw new Error(orderData.error || `Order creation failed (HTTP ${orderRes.status})`);
+      }
+      if (!orderData.keyId) {
+        throw new Error("RAZORPAY_KEY_ID is not set on the server (Netlify env vars).");
+      }
 
       // 2. Load Razorpay SDK
       await loadScript();
@@ -100,8 +105,12 @@ export function useRazorpay() {
         rzp.open();
       });
     } catch (err: any) {
+      const msg = err.message || "Something went wrong";
       setState("error");
-      setError(err.message || "Something went wrong");
+      setError(msg);
+      // Surface the failure so it is never silent
+      console.error("[Razorpay]", err);
+      if (typeof window !== "undefined") alert(`Payment could not start:\n${msg}`);
     }
   }, [session, updateSession, state]);
 
