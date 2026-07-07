@@ -1,32 +1,58 @@
 "use client";
 
 import { SessionProvider } from "next-auth/react";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+import { ThemeProvider as MuiThemeProvider } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
 import { LayoutProvider } from "@/context/LayoutContext";
+import { muiDarkTheme, muiLightTheme } from "@/lib/mui-theme";
+import { useEffect, useState } from "react";
 
-// Temporary workaround for React 19 / Next.js 15 warning caused by next-themes injecting a script tag.
+// React 19 / Next 15 next-themes warning suppression
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   const originalError = console.error;
   console.error = (...args: any[]) => {
-    if (typeof args[0] === "string" && args[0].includes("Encountered a script tag")) {
-      return;
-    }
+    if (typeof args[0] === "string" && args[0].includes("Encountered a script tag")) return;
     originalError.apply(console, args);
   };
 }
 
+/**
+ * Bridges next-themes' `class` attribute → MUI's ThemeProvider so MUI
+ * components automatically follow our dark/light toggle.
+ */
+function MuiBridge({ children }: { children: React.ReactNode }) {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // Default to light (matches HTML reference); switch only when explicitly dark
+  const theme = mounted && resolvedTheme === "dark" ? muiDarkTheme : muiLightTheme;
+
+  return (
+    <MuiThemeProvider theme={theme}>
+      {children}
+    </MuiThemeProvider>
+  );
+}
+
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider
-      attribute="data-theme"
+    <NextThemesProvider
+      attribute="class"
       defaultTheme="system"
       enableSystem
       storageKey="pixel-platform-theme"
       disableTransitionOnChange
     >
-      <LayoutProvider>
-        <SessionProvider>{children}</SessionProvider>
-      </LayoutProvider>
-    </ThemeProvider>
+      <AppRouterCacheProvider options={{ key: "mui", enableCssLayer: false }}>
+        <MuiBridge>
+          <LayoutProvider>
+            <SessionProvider>{children}</SessionProvider>
+          </LayoutProvider>
+        </MuiBridge>
+      </AppRouterCacheProvider>
+    </NextThemesProvider>
   );
 }

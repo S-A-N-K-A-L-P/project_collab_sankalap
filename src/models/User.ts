@@ -30,6 +30,14 @@ const UserSchema = new Schema(
       required: [true, "Password is required"],
       select: false,
     },
+    handle: {
+      type: String,
+      unique: true,
+      sparse: true,      // allow many nulls without unique collision
+      lowercase: true,
+      trim: true,
+      // 3–30 chars, [a-z0-9-]; validated at the API layer + reserved list
+    },
     avatar: {
       type: String,
       default: "",
@@ -56,7 +64,7 @@ const UserSchema = new Schema(
     },
     role: {
       type: String,
-      enum: ["admin", "user", "pixel_head", "project_lead", "pixel_member", "normal_user"],
+      enum: ["user", "sankalp_member", "sankalp_associate", "master_admin"],
       default: "user",
     },
     reputation: {

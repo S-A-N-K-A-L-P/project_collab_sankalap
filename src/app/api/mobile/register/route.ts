@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       enrollmentNumber,
       techStackPreference,
       password: hashedPassword,
-      role: role || "normal_user",
+      role: ["user", "sankalp_member"].includes(role) ? role : "user",
     });
 
     return NextResponse.json({ message: "User registered successfully", userId: user._id }, { status: 201 });

@@ -67,4 +67,15 @@ export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
 };
 
+// Stub for pages that were written against Supabase auth.
+// This platform uses NextAuth; the server routes ignore this token and use
+// getServerSession instead, so returning null session is safe.
+export function createSupabaseClient() {
+  return {
+    auth: {
+      getSession: async () => ({ data: { session: null as null } }),
+    },
+  };
+}
+
 export default authOptions;

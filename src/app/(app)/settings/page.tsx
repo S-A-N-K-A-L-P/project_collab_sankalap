@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Save, User as UserIcon, Shield, Code2, MapPin, Loader2, Sparkles, Zap } from "lucide-react";
-import { motion } from "framer-motion";
+import { Save, User as UserIcon, Code2, MapPin, Loader2, Github } from "lucide-react";
 import GitSettings from "@/components/settings/GitSettings";
 
 export default function SettingsPage() {
@@ -45,7 +44,6 @@ export default function SettingsPage() {
     e.preventDefault();
     setLoading(true);
     setSuccess(false);
-
     try {
       const res = await fetch("/api/user/profile/update", {
         method: "PATCH",
@@ -55,10 +53,8 @@ export default function SettingsPage() {
           skills: formData.skills.split(",").map(s => s.trim()).filter(Boolean),
         }),
       });
-
       if (res.ok) {
         setSuccess(true);
-        setTimeout(() => setSuccess(true), 100); // Trigger re-render pulse
         setTimeout(() => setSuccess(false), 3000);
         await fetchProfile();
         await update();
@@ -70,130 +66,121 @@ export default function SettingsPage() {
     }
   };
 
+  const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+    <div className="space-y-1.5">
+      <label className="block text-xs font-semibold text-muted">{label}</label>
+      {children}
+    </div>
+  );
+
+  const inputCls = "w-full px-3 py-2.5 bg-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition";
+
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
-      <div className="bg-surface p-8 rounded-2xl border border-border-subtle shadow-sm">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Control Center</h1>
-        <p className="text-muted text-[13px] font-medium mt-2 leading-relaxed">Configure your node telemetry and identity within the collective network.</p>
+    <div className="max-w-3xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="bg-card border-l-4 border-l-primary border border-border rounded-xl p-6 shadow-sm">
+        <h1 className="text-2xl font-bold text-foreground">Account Settings</h1>
+        <p className="text-sm text-muted mt-1">Update your profile information and preferences.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 p-1">
-          {/* Section 1: Identity */}
-          <div className="space-y-1">
-            <h3 className="text-[10px] font-bold text-accent uppercase tracking-[0.15em] flex items-center gap-2 font-mono">
-              <UserIcon className="w-3.5 h-3.5" /> Identity Layer
-            </h3>
-            <p className="text-[11px] text-muted font-medium leading-relaxed">Public telemetry visible to other nodes.</p>
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Profile section */}
+        <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+          <div className="flex items-center gap-2 px-5 py-3.5 border-b border-border bg-background/40">
+            <UserIcon className="w-4 h-4 text-primary" />
+            <h2 className="text-sm font-semibold text-foreground">Profile Information</h2>
           </div>
-
-          <div className="md:col-span-2 bg-surface border border-border-subtle rounded-2xl p-6 space-y-6 shadow-sm">
-            <div className="space-y-2">
-              <label className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest ml-1">Bio / Mission Statement</label>
+          <div className="p-5 space-y-4">
+            <Field label="Bio">
               <textarea
                 value={formData.bio}
-                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                placeholder="Architecting the future of decentralized coordination..."
-                className="w-full px-4 py-3 bg-background border border-border-subtle rounded-xl text-[13px] font-medium outline-none focus:border-accent/50 transition-all min-h-[120px] text-foreground placeholder:text-muted"
+                onChange={e => setFormData({ ...formData, bio: e.target.value })}
+                placeholder="Tell the community about yourself and your interests…"
+                className={`${inputCls} min-h-[100px] resize-none`}
               />
-            </div>
-
+            </Field>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest ml-1">Location / Node</label>
+              <Field label="Location">
                 <div className="relative">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
                   <input
                     type="text"
                     value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    placeholder="Monaco, HQ"
-                    className="w-full pl-11 pr-4 py-3 bg-background border border-border-subtle rounded-xl text-[13px] font-medium outline-none focus:border-accent/50 transition-all text-foreground placeholder:text-muted"
+                    onChange={e => setFormData({ ...formData, location: e.target.value })}
+                    placeholder="City, Country"
+                    className={`${inputCls} pl-9`}
                   />
                 </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest ml-1">Protocol Role</label>
-                <div className="relative">
-                  <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-                  <select
-                    value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    className="w-full pl-11 pr-4 py-3 bg-background border border-border-subtle rounded-xl text-[13px] font-black uppercase outline-none focus:border-accent/50 transition-all appearance-none text-foreground cursor-pointer"
-                  >
-                    <option value="user">USER / NODE</option>
-                    <option value="pixel_member">PIXEL MEMBER / CORE</option>
-                    <option value="project_lead">PROJECT LEAD / ARCHITECT</option>
-                  </select>
-                </div>
-              </div>
+              </Field>
+              <Field label="Role">
+                <select
+                  value={formData.role}
+                  onChange={e => setFormData({ ...formData, role: e.target.value })}
+                  className={`${inputCls} cursor-pointer`}
+                >
+                  <option value="user">User</option>
+                  <option value="sankalp_member">Sankalp Member</option>
+                </select>
+              </Field>
             </div>
           </div>
+        </div>
 
-          {/* Section 2: Technical Specs */}
-          <div className="space-y-1">
-            <h3 className="text-[10px] font-bold text-emerald-500 uppercase tracking-[0.15em] flex items-center gap-2 font-mono">
-              <Code2 className="w-3.5 h-3.5" /> Technical Specs
-            </h3>
-            <p className="text-[11px] text-muted font-medium leading-relaxed">Skills and technical stack configuration.</p>
+        {/* Technical section */}
+        <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+          <div className="flex items-center gap-2 px-5 py-3.5 border-b border-border bg-background/40">
+            <Code2 className="w-4 h-4 text-emerald-600" />
+            <h2 className="text-sm font-semibold text-foreground">Skills &amp; Technical Profile</h2>
           </div>
-
-          <div className="md:col-span-2 bg-surface border border-border-subtle rounded-2xl p-6 space-y-6 shadow-sm">
-            <div className="space-y-2">
-              <label className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest ml-1">Skills (Comma Separated)</label>
+          <div className="p-5 space-y-4">
+            <Field label="Skills (comma-separated)">
+              <input
+                type="text"
+                value={formData.skills}
+                onChange={e => setFormData({ ...formData, skills: e.target.value })}
+                placeholder="React, TypeScript, Python, Docker…"
+                className={inputCls}
+              />
+            </Field>
+            <Field label="GitHub Profile URL">
               <div className="relative">
-                <Sparkles className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                <Github className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted pointer-events-none" />
                 <input
-                  type="text"
-                  value={formData.skills}
-                  onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
-                  placeholder="React, TypeScript, Solidity, Rust..."
-                  className="w-full pl-11 pr-4 py-3 bg-background border border-border-subtle rounded-xl text-[13px] font-medium outline-none focus:border-accent/50 transition-all text-foreground placeholder:text-muted"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest ml-1">GitHub Profile Link</label>
-              <div className="relative">
-                <Zap className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-                <input
-                  type="text"
+                  type="url"
                   value={formData.github}
-                  onChange={(e) => setFormData({ ...formData, github: e.target.value })}
-                  placeholder="https://github.com/your-username"
-                  className="w-full pl-11 pr-4 py-3 bg-background border border-border-subtle rounded-xl text-[13px] font-medium outline-none focus:border-accent/50 transition-all text-foreground placeholder:text-muted"
+                  onChange={e => setFormData({ ...formData, github: e.target.value })}
+                  placeholder="https://github.com/username"
+                  className={`${inputCls} pl-9`}
                 />
               </div>
-            </div>
+            </Field>
           </div>
+        </div>
 
-          <div className="md:col-span-3">
-            <div className="h-px bg-border-subtle w-full my-4" />
+        {/* Git integration */}
+        <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+          <div className="px-5 py-3.5 border-b border-border bg-background/40">
+            <h2 className="text-sm font-semibold text-foreground">Git Integration</h2>
           </div>
-
-          <div className="md:col-span-3">
+          <div className="p-5">
             {session?.user && <GitSettings userId={(session.user as any).id} />}
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-6 pt-4">
+        {/* Save button */}
+        <div className="flex items-center justify-end gap-4 pt-2">
           {success && (
-            <motion.p
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest font-mono"
-            >
-              Telemetry Updated
-            </motion.p>
+            <span className="text-sm font-medium text-emerald-600">
+              ✓ Profile saved successfully
+            </span>
           )}
           <button
             type="submit"
             disabled={loading}
-            className="px-8 py-3.5 bg-accent hover:bg-[#4f46e5] text-white rounded-xl font-bold text-[11px] uppercase tracking-wider flex items-center gap-3 shadow-lg shadow-[0_0_18px_var(--accent-glow)] active:scale-95 transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-lg text-sm font-semibold transition-colors shadow-sm disabled:opacity-50"
           >
-            {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-            Commit Changes
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            Save Changes
           </button>
         </div>
       </form>

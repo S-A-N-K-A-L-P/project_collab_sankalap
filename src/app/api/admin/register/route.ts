@@ -33,7 +33,7 @@ export async function POST(req: Request) {
       universityName,
       enrollmentNumber,
       techStackPreference,
-      role: "admin",
+      role: "master_admin",
     });
 
     return NextResponse.json({ message: "Admin account created successfully" }, { status: 201 });
