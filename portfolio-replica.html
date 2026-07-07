@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>S.A.N.K.A.L.P — Portfolio Builder (Replica)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; background: #f2f3f7; color: #1f2430; }
+
+  .app { display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 72px; background: #ffffff; border-right: 1px solid #e6e8ee;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 16px 0; gap: 18px;
+  }
+  .sidebar .avatar {
+    width: 40px; height: 40px; border-radius: 50%; background: #6d5bf0;
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; margin-bottom: 10px;
+  }
+  .sidebar .icon {
+    width: 36px; height: 36px; border-radius: 10px; display: flex;
+    align-items: center; justify-content: center; font-size: 18px; color: #8a90a2;
+  }
+  .sidebar .icon.active { color: #4f46e5; }
+  .sidebar .spacer { flex: 1; }
+
+  /* Main content */
+  .main { flex: 1; padding: 28px 32px; max-width: 1400px; }
+
+  /* Stat cards row */
+  .stats-row { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .stat-card {
+    background: #fff; border: 1px solid #e6e8ee; border-radius: 14px;
+    padding: 14px 18px; display: flex; align-items: center; gap: 12px;
+    min-width: 150px; flex: 1;
+  }
+  .stat-card .stat-icon {
+    width: 36px; height: 36px; border-radius: 10px; background: #f3f2fe;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .stat-card .stat-label { font-size: 11px; letter-spacing: .04em; color: #8a90a2; text-transform: uppercase; }
+  .stat-card .stat-value { font-size: 20px; font-weight: 700; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 28px; border-bottom: 1px solid #e6e8ee; margin-bottom: 18px; }
+  .tab { padding: 10px 2px; font-size: 14px; font-weight: 600; color: #8a90a2; cursor: pointer; border-bottom: 2px solid transparent; }
+  .tab.active { color: #4f46e5; border-bottom-color: #4f46e5; }
+
+  /* Editor layout: left builder panel + right preview */
+  .editor { display: grid; grid-template-columns: minmax(360px, 460px) 1fr; gap: 20px; align-items: start; }
+
+  .panel { background: #fff; border: 1px solid #e6e8ee; border-radius: 14px; padding: 16px; }
+
+  .subtabs { display: flex; gap: 4px; border-bottom: 1px solid #eef0f4; margin-bottom: 14px; overflow-x: auto; }
+  .subtab { padding: 8px 12px; font-size: 13px; color: #8a90a2; white-space: nowrap; border-radius: 8px 8px 0 0; cursor: pointer; }
+  .subtab.active { color: #4f46e5; background: #f3f2fe; font-weight: 600; }
+
+  .panel-title { font-size: 11px; letter-spacing: .05em; color: #8a90a2; text-transform: uppercase; margin: 10px 0 10px; }
+
+  .section-row {
+    display: flex; align-items: center; gap: 10px; border: 1px solid #eef0f4;
+    border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; background: #fafbff;
+  }
+  .section-row .drag { color: #c3c7d4; cursor: grab; }
+  .section-row .emoji { font-size: 16px; }
+  .section-row .name { font-weight: 700; font-size: 14px; }
+  .section-row .sub { font-size: 12px; color: #9aa0b0; margin-left: 4px; }
+  .section-row .grow { flex: 1; }
+  .section-row .btn {
+    width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+    color: #9aa0b0; border-radius: 6px; cursor: pointer; font-size: 13px;
+  }
+  .section-row .btn:hover { background: #eef0f7; color: #4f46e5; }
+
+  .add-section {
+    text-align: center; padding: 12px; border: 1px dashed #d7d9e3; border-radius: 10px;
+    color: #4f46e5; font-weight: 600; font-size: 14px; cursor: pointer; margin-bottom: 18px;
+  }
+
+  .data-tokens { font-size: 11px; letter-spacing: .05em; color: #8a90a2; text-transform: uppercase; margin-top: 6px; }
+
+  /* Preview */
+  .preview-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .preview-head .label { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .preview-toggle { display: flex; gap: 6px; }
+  .preview-toggle .t { width: 28px; height: 28px; border-radius: 8px; background: #f3f4f7; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #8a90a2; }
+  .preview-toggle .t.active { background: #4f46e5; color: #fff; }
+
+  .phone {
+    width: 260px; aspect-ratio: 9/17.5; margin: 0 auto; border-radius: 34px;
+    background: linear-gradient(160deg, #14102e, #0c2a3d 60%, #123b3f);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #fff; text-align: center; padding: 24px; position: relative; box-shadow: 0 20px 40px rgba(20,16,46,.25);
+  }
+  .phone .badge {
+    width: 64px; height: 64px; border-radius: 16px; border: 2px solid rgba(255,255,255,.5);
+    display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 800;
+    margin-bottom: 20px;
+  }
+  .phone h2 { font-size: 26px; margin-bottom: 6px; }
+  .phone p { font-size: 13px; opacity: .8; }
+  .phone .chev { margin-top: 22px; opacity: .7; }
+  .phone .footer { position: absolute; bottom: 18px; font-size: 10px; opacity: .55; }
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="avatar">A</div>
+    <div class="icon active">🏆</div>
+    <div class="icon">🏛️</div>
+    <div class="icon">⚙️</div>
+    <div class="icon">🛡️</div>
+    <div class="spacer"></div>
+    <div class="icon">🌙</div>
+    <div class="icon">⏻</div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Stat cards -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div>
+          <div class="stat-label">Network</div>
+          <div class="stat-value">0</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⚡</div>
+        <div>
+          <div class="stat-label">Connection</div>
+          <div class="stat-value">0</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📄</div>
+        <div>
+          <div class="stat-label">Proposals</div>
+          <div class="stat-value">0</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🥧</div>
+        <div>
+          <div class="stat-label">Contributions</div>
+          <div class="stat-value">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab">▦ Overview</div>
+      <div class="tab active">🎨 Portfolio</div>
+    </div>
+
+    <!-- Editor -->
+    <div class="editor">
+      <!-- Left builder panel -->
+      <div class="panel">
+        <div class="subtabs">
+          <div class="subtab">🎭 Theme</div>
+          <div class="subtab">🖼️ Background</div>
+          <div class="subtab active">📑 Sections</div>
+          <div class="subtab">🗂️ Data</div>
+        </div>
+
+        <div class="panel-title">Sections &amp; Content</div>
+
+        <div class="section-row">
+          <span class="drag">⠿</span>
+          <span class="emoji">✨</span>
+          <span class="name">Hero</span><span class="sub">Hero</span>
+          <span class="grow"></span>
+          <span class="btn">▲</span><span class="btn">▼</span><span class="btn">👁️</span><span class="btn">✎</span>
+        </div>
+        <div class="section-row">
+          <span class="drag">⠿</span>
+          <span class="emoji">📝</span>
+          <span class="name">About</span><span class="sub">About</span>
+          <span class="grow"></span>
+          <span class="btn">▲</span><span class="btn">▼</span><span class="btn">👁️</span><span class="btn">✎</span><span class="btn">🗑️</span>
+        </div>
+        <div class="section-row">
+          <span class="drag">⠿</span>
+          <span class="emoji">🎨</span>
+          <span class="name">Skills</span><span class="sub">Skills</span>
+          <span class="grow"></span>
+          <span class="btn">▲</span><span class="btn">▼</span><span class="btn">👁️</span><span class="btn">✎</span><span class="btn">🗑️</span>
+        </div>
+        <div class="section-row">
+          <span class="drag">⠿</span>
+          <span class="emoji">📦</span>
+          <span class="name">Featured Projects</span><span class="sub">Projects</span>
+          <span class="grow"></span>
+          <span class="btn">▲</span><span class="btn">▼</span><span class="btn">✎</span><span class="btn">🗑️</span>
+        </div>
+        <div class="section-row">
+          <span class="drag">⠿</span>
+          <span class="emoji">💼</span>
+          <span class="name">Experience</span><span class="sub">Experience</span>
+          <span class="grow"></span>
+          <span class="btn">▲</span><span class="btn">▼</span><span class="btn">👁️</span><span class="btn">✎</span><span class="btn">🗑️</span>
+        </div>
+        <div class="section-row">
+          <span class="drag">⠿</span>
+          <span class="emoji">📧</span>
+          <span class="name">Get in touch</span><span class="sub">Contact</span>
+          <span class="grow"></span>
+          <span class="btn">▲</span><span class="btn">▼</span><span class="btn">👁️</span><span class="btn">✎</span><span class="btn">🗑️</span>
+        </div>
+
+        <div class="add-section">+ Add section(s)</div>
+
+        <div class="data-tokens">Data Tokens</div>
+      </div>
+
+      <!-- Right preview panel -->
+      <div class="panel">
+        <div class="preview-head">
+          <div class="label">✨ Live preview</div>
+          <div class="preview-toggle">
+            <div class="t">🖥️</div>
+            <div class="t active">📱</div>
+          </div>
+        </div>
+        <div class="phone">
+          <div class="badge">A</div>
+          <h2>anant0056</h2>
+          <p>Builder on S.A.N.K.A.L.P.</p>
+          <div class="chev">⌄</div>
+          <div class="footer">Built on S.A.N.K.A.L.P. · 2026</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
