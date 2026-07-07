@@ -8,13 +8,15 @@ import DarkModeRounded           from "@mui/icons-material/DarkModeRounded";
 import LightModeRounded          from "@mui/icons-material/LightModeRounded";
 import EmojiEventsRounded        from "@mui/icons-material/EmojiEventsRounded";
 import StorefrontRounded         from "@mui/icons-material/StorefrontRounded";
-const SettingsIcon = SettingsRounded;
-const LogoutIcon   = LogoutRounded;
-const AdminIcon    = AdminPanelSettingsRounded;
-const DarkIcon     = DarkModeRounded;
-const LightIcon    = LightModeRounded;
-const TrophyIcon   = EmojiEventsRounded;
-const ShopIcon     = StorefrontRounded;
+import PermMediaRounded          from "@mui/icons-material/PermMediaRounded";
+const SettingsIcon    = SettingsRounded;
+const LogoutIcon      = LogoutRounded;
+const AdminIcon       = AdminPanelSettingsRounded;
+const DarkIcon        = DarkModeRounded;
+const LightIcon       = LightModeRounded;
+const TrophyIcon      = EmojiEventsRounded;
+const ShopIcon        = StorefrontRounded;
+const PortfolioIcon   = PermMediaRounded;
 import NextLink   from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useTheme }  from "next-themes";
@@ -124,6 +126,11 @@ export default function Sidebar() {
       {/* Marketplace */}
       <RailBtn title="Marketplace" href="/marketplace">
         <ShopIcon sx={{ fontSize: 20, color: "#34d399" }} />
+      </RailBtn>
+
+      {/* My Portfolio */}
+      <RailBtn title="My Portfolio" href="/my-portfolio">
+        <PortfolioIcon sx={{ fontSize: 20, color: "#a78bfa" }} />
       </RailBtn>
 
       {/* Settings */}
