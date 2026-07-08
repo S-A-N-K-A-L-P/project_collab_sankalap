@@ -13,7 +13,7 @@ function StatItem({ icon: Icon, label, value, color = "text-foreground dark:text
   icon: any; label: string; value: string | number; color?: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-1.5 p-4 rounded-xl bg-muted dark:bg-white/5 border border-border dark:border-white/10">
+    <div className="flex flex-col items-center gap-1.5 p-4 rounded-xl bg-muted-bg dark:bg-white/5 border border-border dark:border-white/10">
       <Icon size={20} className={color} />
       <span className={`text-2xl font-bold ${color}`}>{value}</span>
       <span className="text-xs text-muted-foreground dark:text-white/40 text-center leading-tight">{label}</span>

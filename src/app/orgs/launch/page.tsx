@@ -50,7 +50,7 @@ function SlugField({ slug, setSlug, available, checking }: {
           value={slug}
           onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
           placeholder="my-org"
-          className="w-full pl-36 pr-10 py-2.5 rounded-xl bg-muted dark:bg-white/5 border border-border dark:border-white/10 text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 focus:outline-none focus:border-primary dark:focus:border-indigo-400/60 transition-all"
+          className="w-full pl-36 pr-10 py-2.5 rounded-xl bg-card dark:bg-white/5 border border-border dark:border-white/10 text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 shadow-sm focus:outline-none focus:border-primary dark:focus:border-indigo-400/60 focus:ring-2 focus:ring-primary/15 dark:focus:ring-indigo-400/15 transition-all"
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
           {checking ? <Loader2 size={14} className="animate-spin text-muted-foreground dark:text-white/30" /> :
@@ -160,7 +160,7 @@ export default function OrgLaunchPage() {
     return null;
   }
 
-  const inputCls = "w-full px-3 py-2.5 rounded-xl bg-muted dark:bg-white/5 border border-border dark:border-white/10 text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 focus:outline-none focus:border-primary dark:focus:border-indigo-400/60 transition-all";
+  const inputCls = "w-full px-3 py-2.5 rounded-xl bg-card dark:bg-white/5 border border-border dark:border-white/10 text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 shadow-sm focus:outline-none focus:border-primary dark:focus:border-indigo-400/60 focus:ring-2 focus:ring-primary/15 dark:focus:ring-indigo-400/15 transition-all";
   const labelCls = "block text-sm font-medium text-muted-foreground dark:text-white/70 mb-1.5";
   const errCls   = "text-xs text-error dark:text-red-400 mt-1";
 
@@ -186,9 +186,9 @@ export default function OrgLaunchPage() {
               <div key={s.id} className="flex items-center flex-1">
                 <div className={`flex flex-col items-center gap-1 flex-shrink-0 ${i > 0 ? "ml-2" : ""}`}>
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                    i < step  ? "bg-primary dark:bg-indigo-500 text-primary-foreground dark:text-white" :
+                    i < step  ? "bg-gradient-to-br from-primary to-primary-hover dark:from-indigo-400 dark:to-purple-500 text-primary-foreground dark:text-white shadow-md" :
                     i === step ? "bg-primary/10 dark:bg-indigo-500/20 border-2 border-primary dark:border-indigo-400 text-primary dark:text-indigo-300" :
-                    "bg-muted dark:bg-white/5 border border-border dark:border-white/10 text-muted-foreground dark:text-white/30"
+                    "bg-card dark:bg-white/5 border border-border dark:border-white/10 text-muted-foreground dark:text-white/30"
                   }`}>
                     {i < step ? <Check size={14} /> : <Icon size={14} />}
                   </div>
@@ -197,7 +197,7 @@ export default function OrgLaunchPage() {
                   }`}>{s.label}</span>
                 </div>
                 {i < STEPS.length - 1 && (
-                  <div className={`flex-1 h-px mx-2 transition-all ${i < step ? "bg-primary dark:bg-indigo-500" : "bg-border dark:bg-white/10"}`} />
+                  <div className={`flex-1 h-px mx-2 transition-all ${i < step ? "bg-gradient-to-r from-primary to-primary-hover dark:from-indigo-500 dark:to-purple-500" : "bg-border dark:bg-white/10"}`} />
                 )}
               </div>
             );
@@ -249,8 +249,8 @@ export default function OrgLaunchPage() {
                       <button key={c.value} type="button" onClick={() => set("category", c.value)}
                         className={`p-3 rounded-xl text-left border transition-all ${
                           form.category === c.value
-                            ? "border-primary dark:border-indigo-400/60 bg-primary/10 dark:bg-indigo-500/10 text-foreground dark:text-white"
-                            : "border-border dark:border-white/10 bg-muted dark:bg-white/5 text-muted-foreground dark:text-white/60 hover:border-border dark:hover:border-white/20"
+                            ? "border-primary dark:border-indigo-400/60 bg-gradient-to-br from-primary/10 to-tertiary/10 dark:from-indigo-500/15 dark:to-purple-500/10 text-foreground dark:text-white shadow-sm"
+                            : "border-border dark:border-white/10 bg-card dark:bg-white/5 text-muted-foreground dark:text-white/60 hover:border-primary/40 dark:hover:border-white/20"
                         }`}>
                         <p className="text-xs font-semibold">{c.label}</p>
                         <p className="text-[10px] text-muted-foreground dark:text-white/40 mt-0.5">{c.desc}</p>

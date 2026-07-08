@@ -28,7 +28,7 @@ export default function JoinButton({
     return (
       <a
         href={`/login?callbackUrl=/orgs/${slug}`}
-        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-primary-foreground font-semibold text-sm transition-all"
+        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-hover text-primary-foreground font-semibold text-sm transition-all hover:brightness-110 shadow-sm"
       >
         <UserPlus size={15} /> Sign in to Join
       </a>
@@ -92,7 +92,7 @@ export default function JoinButton({
         disabled={joining}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-semibold text-sm transition-all shadow-[0_4px_20px_rgba(79,70,229,0.3)] dark:shadow-[0_4px_20px_rgba(129,140,248,0.3)]"
+        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-hover disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground font-semibold text-sm transition-all hover:brightness-110 shadow-[0_4px_20px_rgba(79,70,229,0.3)] dark:shadow-[0_4px_20px_rgba(129,140,248,0.3)]"
       >
         {joining ? <Loader2 size={15} className="animate-spin" /> : <UserPlus size={15} />}
         {joining ? "Joining…" : requiresRequest ? "Request to Join" : "Join Organization"}

@@ -5,10 +5,10 @@ import { Users, FolderOpen, ExternalLink, Crown, Building2 } from "lucide-react"
 import type { IOrgPublic } from "@/types/org";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  community:   "from-blue-500/20 to-indigo-500/20 border-blue-500/20",
-  academic:    "from-emerald-500/20 to-teal-500/20 border-emerald-500/20",
-  company:     "from-orange-500/20 to-amber-500/20 border-orange-500/20",
-  open_source: "from-purple-500/20 to-fuchsia-500/20 border-purple-500/20",
+  community:   "from-blue-500 to-indigo-500",
+  academic:    "from-emerald-500 to-teal-500",
+  company:     "from-orange-500 to-amber-500",
+  open_source: "from-purple-500 to-fuchsia-500",
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -31,30 +31,35 @@ export default function OrgCard({ org, index = 0 }: OrgCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04, duration: 0.4 }}
       whileHover={{ y: -4, scale: 1.01 }}
-      className={`group relative flex flex-col rounded-2xl border bg-gradient-to-br ${colorClass}
-        bg-card border-border backdrop-blur-sm overflow-hidden cursor-pointer transition-all duration-300
-        hover:shadow-lg hover:border-primary/30 dark:hover:shadow-lg dark:hover:border-primary/30`}
+      className="group relative flex flex-col rounded-2xl border border-border dark:border-white/10
+        bg-card dark:bg-white/[0.03] backdrop-blur-sm overflow-hidden cursor-pointer transition-all duration-300
+        hover:shadow-xl hover:border-transparent dark:hover:border-transparent"
     >
-      {/* Banner */}
-      <div className="relative h-24 overflow-hidden bg-gradient-to-br from-muted-foreground/5 dark:from-white/5 to-muted-foreground/0 dark:to-white/0">
-        {(org.bannerImage || org.banner) && (
+      {/* Hover glow ring */}
+      <div className={`pointer-events-none absolute -inset-px rounded-2xl bg-gradient-to-br ${colorClass} opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 blur-[1px]`} />
+
+      {/* Banner — vivid category gradient */}
+      <div className={`relative h-24 overflow-hidden bg-gradient-to-br ${colorClass}`}>
+        {(org.bannerImage || org.banner) ? (
           <img
             src={org.bannerImage || org.banner}
             alt=""
-            className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+            className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500"
           />
+        ) : (
+          <div className="absolute inset-0 opacity-90 mix-blend-overlay bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.5),transparent_55%)]" />
         )}
         {/* Shimmer overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 dark:to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/30" />
 
         {/* Category badge */}
-        <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-background/60 dark:bg-black/40 backdrop-blur-sm text-foreground dark:text-white/80 border border-border dark:border-white/10">
+        <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-black/30 backdrop-blur-sm text-white border border-white/20">
           {CATEGORY_LABELS[org.category]}
         </span>
 
         {/* Host org badge */}
         {org.isHost && (
-          <span className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-400/30">
+          <span className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-yellow-400/90 text-yellow-950 shadow-sm">
             <Crown size={9} /> Official
           </span>
         )}
@@ -63,7 +68,7 @@ export default function OrgCard({ org, index = 0 }: OrgCardProps) {
       {/* Logo + Name */}
       <div className="px-4 -mt-6 flex items-end gap-3 relative z-10">
         <div
-          className="w-12 h-12 rounded-xl border-2 border-border dark:border-white/20 overflow-hidden flex items-center justify-center text-lg font-bold flex-shrink-0 shadow-lg"
+          className="w-12 h-12 rounded-xl border-2 border-card dark:border-[#151b2e] overflow-hidden flex items-center justify-center text-lg font-bold flex-shrink-0 shadow-lg"
           style={{ background: org.themeColor || "#6366f1" }}
         >
           {logo ? (

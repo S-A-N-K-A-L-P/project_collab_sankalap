@@ -31,7 +31,7 @@ export default function MemberGrid({ members, maxVisible = 12, className = "" }:
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.03 }}
-              className="group flex flex-col items-center gap-2 p-3 rounded-xl bg-muted dark:bg-white/5 border border-border dark:border-white/8 hover:border-primary dark:hover:border-white/20 hover:bg-muted-strong dark:hover:bg-white/10 transition-all cursor-pointer"
+              className="group flex flex-col items-center gap-2 p-3 rounded-xl bg-card dark:bg-white/5 border border-border dark:border-white/8 hover:border-primary/40 dark:hover:border-white/20 hover:bg-muted-bg dark:hover:bg-white/10 hover:shadow-sm transition-all cursor-pointer"
             >
               <div className="relative">
                 <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-sm font-bold bg-gradient-to-br from-primary to-primary/60 text-primary-foreground dark:from-indigo-500 dark:to-purple-600 dark:text-white">
