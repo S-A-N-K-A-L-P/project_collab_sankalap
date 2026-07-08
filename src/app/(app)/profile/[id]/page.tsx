@@ -7,6 +7,7 @@ import ProfileStatsBar from "@/components/profile/ProfileStatsBar";
 import FeedList from "@/components/feed/FeedList";
 import GitProfileMetrics from "@/components/profile/GitProfileMetrics";
 import ProfileTabs from "@/components/portfolio/ProfileTabs";
+import ImpactAnalytics from "@/components/profile/ImpactAnalytics";
 import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -55,6 +56,16 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
     reputation: (user as any).reputation || 0,
   };
 
+  const analyticsStats = {
+    projectsBuilt: proposals.length,
+    downloads: Math.floor(Math.random() * 10000) + 500, // Mock for now
+    views: Math.floor(Math.random() * 50000) + 1000, // Mock for now
+    followers: user.followers?.length || 0,
+    contributions: Math.floor(Math.random() * 100) + 5, // Mock for now
+    stars: Math.floor(Math.random() * 2000) + 10, // Mock for now
+    impactScore: ((user as any).reputation || 0) * 10 + Math.floor(Math.random() * 500) + 2000,
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-20">
       {/* LinkedIn-style Header */}
@@ -70,7 +81,9 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
       {/* Overview / Portfolio tabs */}
       <ProfileTabs isOwnProfile={isOwnProfile} handle={(user as any).handle}>
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-        <div className="md:col-span-8 space-y-6">
+        <div className="md:col-span-8 space-y-8">
+          <ImpactAnalytics stats={analyticsStats} />
+
           <section className="space-y-3">
             <h2 className="text-sm font-semibold text-foreground px-1">
               Proposals

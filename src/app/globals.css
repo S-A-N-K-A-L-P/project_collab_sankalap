@@ -65,6 +65,26 @@
   --warning-muted:      #fef3c7;      /* yellow-100 */
   --warning-text:       #92400e;      /* yellow-800 */
 
+  --research:           #7e22ce;      /* purple-700 */
+  --research-foreground:#ffffff;
+  --research-muted:     #f3e8ff;      /* purple-100 */
+
+  --ai:                 #0f766e;      /* teal-700 */
+  --ai-foreground:      #ffffff;
+  --ai-muted:           #ccfbf1;      /* teal-100 */
+
+  --marketplace:        #be123c;      /* rose-700 */
+  --marketplace-foreground: #ffffff;
+  --marketplace-muted:  #ffe4e6;      /* rose-100 */
+
+  --os:                 #ea580c;      /* orange-600 */
+  --os-foreground:      #ffffff;
+  --os-muted:           #ffedd5;      /* orange-100 */
+
+  --enterprise:         #334155;      /* slate-700 */
+  --enterprise-foreground: #ffffff;
+  --enterprise-muted:   #f1f5f9;      /* slate-100 */
+
   --error:              #b91c1c;
   --error-foreground:   #ffffff;
   --error-muted:        #fee2e2;      /* red-100 */
@@ -139,6 +159,26 @@
   --warning-muted:      rgba(251, 191, 36, 0.16);
   --warning-text:       #fcd34d;
 
+  --research:           #c084fc;
+  --research-foreground:#0f172a;
+  --research-muted:     rgba(192, 132, 252, 0.16);
+
+  --ai:                 #2dd4bf;
+  --ai-foreground:      #0f172a;
+  --ai-muted:           rgba(45, 212, 191, 0.16);
+
+  --marketplace:        #fb7185;
+  --marketplace-foreground: #0f172a;
+  --marketplace-muted:  rgba(251, 113, 133, 0.16);
+
+  --os:                 #fb923c;
+  --os-foreground:      #0f172a;
+  --os-muted:           rgba(251, 146, 60, 0.16);
+
+  --enterprise:         #94a3b8;
+  --enterprise-foreground: #0f172a;
+  --enterprise-muted:   rgba(148, 163, 184, 0.16);
+
   --error:              #f87171;
   --error-foreground:   #0f172a;
   --error-muted:        rgba(248, 113, 113, 0.16);
@@ -197,6 +237,26 @@
   --color-warning-foreground:   var(--warning-foreground);
   --color-warning-muted:        var(--warning-muted);
   --color-warning-text:         var(--warning-text);
+  
+  --color-research:             var(--research);
+  --color-research-foreground:  var(--research-foreground);
+  --color-research-muted:       var(--research-muted);
+
+  --color-ai:                   var(--ai);
+  --color-ai-foreground:        var(--ai-foreground);
+  --color-ai-muted:             var(--ai-muted);
+
+  --color-marketplace:          var(--marketplace);
+  --color-marketplace-foreground: var(--marketplace-foreground);
+  --color-marketplace-muted:    var(--marketplace-muted);
+
+  --color-os:                   var(--os);
+  --color-os-foreground:        var(--os-foreground);
+  --color-os-muted:             var(--os-muted);
+
+  --color-enterprise:           var(--enterprise);
+  --color-enterprise-foreground: var(--enterprise-foreground);
+  --color-enterprise-muted:     var(--enterprise-muted);
   --color-error:                var(--error);
   --color-error-foreground:     var(--error-foreground);
   --color-error-muted:          var(--error-muted);
@@ -399,3 +459,10 @@ h1, h2, h3, h4, h5, h6 {
   .pf-aurora, .pf-mesh, .pf-wave-1, .pf-wave-2, .pf-tilt-grid, .pf-terminal-scan,
   .pf-gradient, .pf-conic, .pf-synthgrid, .pf-orb { animation: none !important; }
 }
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+

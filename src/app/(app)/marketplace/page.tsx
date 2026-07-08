@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Store, Loader2, IndianRupee } from "lucide-react";
+import { Store, Loader2, IndianRupee, ArrowRight } from "lucide-react";
 import ShowcaseCard from "@/components/showcase/ShowcaseCard";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function MarketplacePage() {
   const [projects, setProjects] = useState<any[]>([]);
@@ -40,13 +43,18 @@ export default function MarketplacePage() {
           <p className="text-sm text-muted">Loading marketplace…</p>
         </div>
       ) : projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 bg-card border border-border rounded-xl">
-          <Store className="w-12 h-12 text-muted/30 mb-3" />
-          <p className="text-sm font-medium text-foreground">No listings right now</p>
-          <p className="text-xs text-muted mt-1 max-w-sm text-center">
-            When project owners list their completed work for sale, the listings will appear here.
-          </p>
-        </div>
+        <EmptyState
+          icon={<Store size={32} />}
+          title="No listings right now"
+          description="Be the first to list a completed project. Publish your work to the marketplace to get discovered."
+          action={
+            <Button asChild className="bg-primary hover:bg-primary-hover text-white rounded-xl shadow-md">
+              <Link href="/projects/new">
+                Publish your first project <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+            </Button>
+          }
+        />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {projects.map(p => <ShowcaseCard key={p._id} project={p} />)}
