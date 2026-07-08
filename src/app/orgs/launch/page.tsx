@@ -10,6 +10,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import ImageUploader from "@/components/ui/ImageUploader";
 import type { IOrgCreate } from "@/types/org";
+import AppLayoutClient from "@/components/layout/AppLayoutClient";
 
 const STEPS = [
   { id: "basics",   label: "Basics",  icon: Rocket },
@@ -164,19 +165,19 @@ export default function OrgLaunchPage() {
   const errCls   = "text-xs text-red-400 mt-1";
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col">
-      {/* Header */}
-      <div className="border-b border-white/8 px-4 sm:px-6 py-4 flex items-center gap-3">
-        <a href="/orgs" className="text-white/40 hover:text-white/70 transition-colors">
-          <ArrowLeft size={18} />
-        </a>
-        <div>
-          <h1 className="font-bold text-white">Launch Organization</h1>
-          <p className="text-xs text-white/40">Step {step + 1} of {STEPS.length}</p>
+    <AppLayoutClient>
+      <div className="text-white max-w-2xl mx-auto w-full py-4">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/8">
+          <a href="/orgs" className="text-white/40 hover:text-white/70 transition-colors">
+            <ArrowLeft size={18} />
+          </a>
+          <div>
+            <h1 className="text-xl font-bold text-white">Launch Organization</h1>
+            <p className="text-xs text-white/40">Step {step + 1} of {STEPS.length}</p>
+          </div>
         </div>
-      </div>
 
-      <div className="flex-1 max-w-2xl mx-auto w-full px-4 sm:px-6 py-8">
         {/* Progress */}
         <div className="flex items-center gap-0 mb-8">
           {STEPS.map((s, i) => {
@@ -412,6 +413,6 @@ export default function OrgLaunchPage() {
           )}
         </div>
       </div>
-    </div>
+    </AppLayoutClient>
   );
 }

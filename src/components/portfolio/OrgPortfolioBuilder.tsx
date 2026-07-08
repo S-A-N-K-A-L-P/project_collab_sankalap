@@ -14,6 +14,7 @@ import {
 } from "./animations";
 import { defaultTitleFor, defaultContentFor, newSection, type SectionType, type PortfolioSection } from "./sections";
 import OrgPortfolioRenderer from "./OrgPortfolioRenderer";
+import AppLayoutClient from "@/components/layout/AppLayoutClient";
 
 type Tab = "theme" | "background" | "sections" | "publish";
 const TABS: { id: Tab; label: string; icon: any }[] = [
@@ -166,16 +167,17 @@ export default function OrgPortfolioBuilder({ slug }: OrgPortfolioBuilderProps) 
   }
 
   return (
-    <div className="h-screen flex flex-col bg-[#0a0a0f] text-white overflow-hidden">
-      {/* Top Navbar */}
-      <div className="h-14 border-b border-white/8 bg-black/40 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-20">
-        <div className="flex items-center gap-3">
-          <a href={`/orgs/${slug}/admin`} className="text-white/40 hover:text-white/80 transition-colors text-sm font-semibold">
-            ← Console
-          </a>
-          <span className="text-white/20">|</span>
-          <span className="text-sm font-semibold text-white/80">Page Designer: {org?.name}</span>
-        </div>
+    <AppLayoutClient>
+      <div className="flex flex-col bg-[#0a0a0f] text-white h-[calc(100vh-140px)] overflow-hidden rounded-2xl border border-white/8">
+        {/* Top Navbar */}
+        <div className="h-14 border-b border-white/8 bg-black/40 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-20">
+          <div className="flex items-center gap-3">
+            <a href={`/orgs/${slug}/admin`} className="text-white/40 hover:text-white/80 transition-colors text-sm font-semibold">
+              ← Console
+            </a>
+            <span className="text-white/20">|</span>
+            <span className="text-sm font-semibold text-white/80">Page Designer: {org?.name}</span>
+          </div>
 
         <div className="flex items-center gap-4">
           {saving ? (
@@ -407,6 +409,7 @@ export default function OrgPortfolioBuilder({ slug }: OrgPortfolioBuilderProps) 
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </AppLayoutClient>
   );
 }

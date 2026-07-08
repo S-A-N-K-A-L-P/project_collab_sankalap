@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useOrg } from "@/context/OrgContext";
 import { useRouter } from "next/navigation";
+import AppLayoutClient from "@/components/layout/AppLayoutClient";
 
 export default function OrgAdminDashboard() {
   const { org, members, loading, error, isAdmin, refresh } = useOrg();
@@ -52,12 +53,12 @@ export default function OrgAdminDashboard() {
   if (error || !org || !isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
-      {/* Top Header */}
-      <div className="border-b border-white/8 bg-black/20 backdrop-blur-sm sticky top-0 z-20">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+    <AppLayoutClient>
+      <div className="text-white space-y-6">
+        {/* Top Header */}
+        <div className="flex items-center justify-between pb-4 mb-4 border-b border-white/8">
           <div className="flex items-center gap-3">
-            <h1 className="font-bold text-white flex items-center gap-2 text-sm md:text-base">
+            <h1 className="font-bold text-white flex items-center gap-2 text-base">
               <LayoutDashboard size={16} className="text-indigo-400" /> Admin Console
             </h1>
             <span className="text-xs text-white/30">|</span>
@@ -66,7 +67,6 @@ export default function OrgAdminDashboard() {
             </a>
           </div>
         </div>
-      </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
         {/* Org Banner Summary */}
@@ -167,6 +167,7 @@ export default function OrgAdminDashboard() {
           </a>
         </div>
       </div>
-    </div>
+      </div>
+    </AppLayoutClient>
   );
 }

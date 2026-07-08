@@ -6,6 +6,7 @@ import { Search, Plus, Building2, Filter, Loader2, Globe } from "lucide-react";
 import { useSession } from "next-auth/react";
 import OrgCard from "@/components/org/OrgCard";
 import type { IOrgPublic } from "@/types/org";
+import AppLayoutClient from "@/components/layout/AppLayoutClient";
 
 const CATEGORIES = [
   { value: "",            label: "All" },
@@ -50,16 +51,17 @@ export default function OrgsDirectoryPage() {
   }, [debouncedSearch]);
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
-      {/* Page header */}
-      <div className="border-b border-white/8 bg-black/20 backdrop-blur-sm sticky top-0 z-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold flex items-center gap-2">
-              <Globe size={20} className="text-indigo-400" /> Organizations
-            </h1>
-            <p className="text-xs text-white/40 mt-0.5">{total} active organizations</p>
-          </div>
+    <AppLayoutClient>
+      <div className="text-white">
+        {/* Page header */}
+        <div className="border-b border-white/8 bg-black/20 backdrop-blur-sm sticky top-0 z-10 py-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold flex items-center gap-2">
+                <Globe size={20} className="text-indigo-400" /> Organizations
+              </h1>
+              <p className="text-xs text-white/40 mt-0.5">{total} active organizations</p>
+            </div>
           {session && (
             <a
               href="/orgs/launch"
@@ -161,6 +163,7 @@ export default function OrgsDirectoryPage() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </AppLayoutClient>
   );
 }

@@ -6,6 +6,7 @@ import { ArrowLeft, Loader2, AlertCircle, Save, Check } from "lucide-react";
 import { useOrg } from "@/context/OrgContext";
 import { useRouter } from "next/navigation";
 import ImageUploader from "@/components/ui/ImageUploader";
+import AppLayoutClient from "@/components/layout/AppLayoutClient";
 
 export default function OrgAdminSettingsPage() {
   const { org, loading: loadingOrg, error: orgError, isAdmin, refresh } = useOrg();
@@ -120,19 +121,18 @@ export default function OrgAdminSettingsPage() {
   const labelCls = "block text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5";
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
-      {/* Top Header */}
-      <div className="border-b border-white/8 bg-black/20 backdrop-blur-sm sticky top-0 z-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-3">
+    <AppLayoutClient>
+      <div className="text-white max-w-4xl mx-auto w-full py-4">
+        {/* Top Header */}
+        <div className="flex items-center gap-3 pb-4 mb-6 border-b border-white/8">
           <a href={`/orgs/${org.slug}/admin`} className="text-white/40 hover:text-white/70 transition-colors">
             <ArrowLeft size={18} />
           </a>
           <div>
-            <h1 className="font-bold text-white">Organization Settings</h1>
+            <h1 className="text-xl font-bold text-white">Organization Settings</h1>
             <p className="text-xs text-white/40">Modify branding and core properties of {org.name}</p>
           </div>
         </div>
-      </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -305,6 +305,7 @@ export default function OrgAdminSettingsPage() {
           </div>
         </form>
       </div>
-    </div>
+      </div>
+    </AppLayoutClient>
   );
 }

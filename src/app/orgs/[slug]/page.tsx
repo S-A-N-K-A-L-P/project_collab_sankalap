@@ -16,6 +16,7 @@ import MemberGrid from "@/components/org/MemberGrid";
 import JoinButton from "@/components/org/JoinButton";
 import OrgPortfolioRenderer from "@/components/portfolio/OrgPortfolioRenderer";
 import { canManageOrg } from "@/lib/org-permissions";
+import AppLayoutClient from "@/components/layout/AppLayoutClient";
 
 export default function OrgPage() {
   const { slug } = useParams() as { slug: string };
@@ -121,10 +122,10 @@ export default function OrgPage() {
 
   // ── MODE 2: Default Mode ──────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white pb-16">
-      {/* Top Navbar */}
-      <div className="border-b border-white/8 bg-black/20 backdrop-blur-sm sticky top-0 z-20">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+    <AppLayoutClient>
+      <div className="text-white pb-16">
+        {/* Top Header Controls */}
+        <div className="flex items-center justify-between pb-4 mb-6 border-b border-white/8">
           <a href="/orgs" className="text-white/40 hover:text-white/80 transition-colors text-sm font-medium">
             ← Organizations
           </a>
@@ -260,6 +261,6 @@ export default function OrgPage() {
           </div>
         </div>
       </div>
-    </div>
+    </AppLayoutClient>
   );
 }

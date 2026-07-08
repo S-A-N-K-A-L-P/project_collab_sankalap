@@ -9,6 +9,7 @@ import {
 import { useOrg } from "@/context/OrgContext";
 import { useRouter } from "next/navigation";
 import { ORG_ROLE_LABELS } from "@/lib/org-permissions";
+import AppLayoutClient from "@/components/layout/AppLayoutClient";
 
 export default function OrgAdminMembersPage() {
   const { org, loading: loadingOrg, error: orgError, isAdmin } = useOrg();
@@ -129,19 +130,18 @@ export default function OrgAdminMembersPage() {
   if (orgError || !org || !isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
-      {/* Top Header */}
-      <div className="border-b border-white/8 bg-black/20 backdrop-blur-sm sticky top-0 z-20">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-3">
+    <AppLayoutClient>
+      <div className="text-white max-w-5xl mx-auto w-full py-4 space-y-6">
+        {/* Top Header */}
+        <div className="flex items-center gap-3 pb-4 mb-6 border-b border-white/8">
           <a href={`/orgs/${org.slug}/admin`} className="text-white/40 hover:text-white/70 transition-colors">
             <ArrowLeft size={18} />
           </a>
           <div>
-            <h1 className="font-bold text-white">Manage Members</h1>
+            <h1 className="text-xl font-bold text-white">Manage Members</h1>
             <p className="text-xs text-white/40">Approve requests and adjust roles for {org.name}</p>
           </div>
         </div>
-      </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-8">
         {error && (
@@ -255,6 +255,7 @@ export default function OrgAdminMembersPage() {
           </div>
         </section>
       </div>
-    </div>
+      </div>
+    </AppLayoutClient>
   );
 }

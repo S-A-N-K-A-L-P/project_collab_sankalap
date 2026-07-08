@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import AppLayoutClient from "@/components/layout/AppLayoutClient";
 
 interface OrgRequest {
   _id: string;
@@ -73,19 +74,19 @@ export default function OrgLaunchStatusPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col">
-      {/* Header */}
-      <div className="border-b border-white/8 px-4 sm:px-6 py-4 flex items-center gap-3">
-        <a href="/orgs" className="text-white/40 hover:text-white/70 transition-colors">
-          <ArrowLeft size={18} />
-        </a>
-        <div>
-          <h1 className="font-bold text-white">Launch Requests</h1>
-          <p className="text-xs text-white/40">Track the status of your organization proposals</p>
+    <AppLayoutClient>
+      <div className="text-white max-w-3xl mx-auto w-full py-4">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/8">
+          <a href="/orgs" className="text-white/40 hover:text-white/70 transition-colors">
+            <ArrowLeft size={18} />
+          </a>
+          <div>
+            <h1 className="text-xl font-bold text-white">Launch Requests</h1>
+            <p className="text-xs text-white/40">Track the status of your organization proposals</p>
+          </div>
         </div>
-      </div>
 
-      <div className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-8">
         {error && (
           <div className="p-4 mb-6 rounded-xl bg-red-500/10 border border-red-400/20 flex items-start gap-2">
             <AlertCircle className="text-red-400 mt-0.5 flex-shrink-0" size={16} />
@@ -162,6 +163,6 @@ export default function OrgLaunchStatusPage() {
           )}
         </div>
       </div>
-    </div>
+    </AppLayoutClient>
   );
 }

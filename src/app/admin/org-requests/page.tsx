@@ -9,6 +9,7 @@ import {
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { isPlatformReviewer } from "@/lib/roles";
+import AppLayoutClient from "@/components/layout/AppLayoutClient";
 
 interface RequestDetail {
   _id: string;
@@ -123,17 +124,18 @@ export default function PlatformOrgRequestsPage() {
   if (!isPlatformReviewer(role)) return null;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col h-screen overflow-hidden">
-      {/* Top Header */}
-      <div className="h-14 border-b border-white/8 bg-black/20 backdrop-blur-sm flex items-center justify-between px-6 shrink-0 z-20">
-        <div className="flex items-center gap-3">
-          <a href="/dashboard" className="text-white/40 hover:text-white/70 transition-colors">
-            <ArrowLeft size={16} />
-          </a>
-          <h1 className="font-bold text-white text-sm">Org Launch requests Queue</h1>
+    <AppLayoutClient>
+      <div className="text-white flex flex-col h-[calc(100vh-140px)] overflow-hidden">
+        {/* Top Header */}
+        <div className="flex items-center justify-between pb-4 mb-4 border-b border-white/8 shrink-0">
+          <div className="flex items-center gap-3">
+            <a href="/dashboard" className="text-white/40 hover:text-white/70 transition-colors">
+              <ArrowLeft size={16} />
+            </a>
+            <h1 className="font-bold text-white text-base">Org Launch Requests Queue</h1>
+          </div>
+          <span className="text-xs text-white/40">{requests.length} pending requests</span>
         </div>
-        <span className="text-xs text-white/40">{requests.length} pending requests</span>
-      </div>
 
       {error && (
         <div className="m-4 p-3 rounded-xl bg-red-500/10 border border-red-400/20 text-xs text-red-300 flex items-center gap-2 shrink-0">
@@ -284,7 +286,8 @@ export default function PlatformOrgRequestsPage() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </AppLayoutClient>
   );
 }
 
