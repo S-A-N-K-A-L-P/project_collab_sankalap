@@ -62,9 +62,17 @@ const UserSchema = new Schema(
       type: String,
       default: "",
     },
+    /**
+     * Platform roles (hierarchy.md §3.1):
+     *   user               — regular registered user
+     *   sankalp_member     — active host-org contributor
+     *   sankalp_associate  — host-org manager (admin panel access, read-only config)
+     *   platform_moderator — review org requests, moderate content (NEW)
+     *   master_admin       — full platform control
+     */
     role: {
       type: String,
-      enum: ["user", "sankalp_member", "sankalp_associate", "master_admin"],
+      enum: ["user", "sankalp_member", "sankalp_associate", "platform_moderator", "master_admin"],
       default: "user",
     },
     reputation: {

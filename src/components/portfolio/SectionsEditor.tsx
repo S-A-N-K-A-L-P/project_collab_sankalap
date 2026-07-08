@@ -309,6 +309,92 @@ function SectionFields({ s, available, updateContent }: { s: PortfolioSection; a
         { key: "label", label: "Label" }, { key: "url", label: "URL" },
       ]} empty={{ icon: "link", label: "", url: "" }} addLabel="Add link" />;
 
+    // ── Org Sections (orgMode only) ───────────────────────────────────
+    case "mission":
+      return (
+        <>
+          <L label="Mission / Charter Statement"><textarea value={c.body || ""} onChange={(e) => set({ body: e.target.value })} rows={4} placeholder="We exist to..." className={`${inp} resize-none`} /></L>
+          <L label="Founder Name"><input value={c.founderName || ""} onChange={(e) => set({ founderName: e.target.value })} placeholder="Founder name" className={inp} /></L>
+          <L label="Founded Date"><input value={c.foundedDate || ""} onChange={(e) => set({ foundedDate: e.target.value })} placeholder="e.g. July 2026" className={inp} /></L>
+        </>
+      );
+    case "team":
+      return (
+        <>
+          <L label="Max Visible Members"><input type="number" value={c.limit || 12} onChange={(e) => set({ limit: Number(e.target.value) || 12 })} className={inp} /></L>
+          <label className="flex items-center gap-2 text-[11px] text-muted cursor-pointer mt-2">
+            <input type="checkbox" checked={c.showRoles !== false} onChange={(e) => set({ showRoles: e.target.checked })} className="w-3.5 h-3.5 rounded border-border text-primary" />
+            Show role badges
+          </label>
+        </>
+      );
+    case "projects_showcase":
+      return (
+        <>
+          <L label="Max Visible Projects"><input type="number" value={c.limit || 6} onChange={(e) => set({ limit: Number(e.target.value) || 6 })} className={inp} /></L>
+          <div className="flex gap-4 mt-2">
+            <label className="flex items-center gap-2 text-[11px] text-muted cursor-pointer">
+              <input type="checkbox" checked={c.showCompleted !== false} onChange={(e) => set({ showCompleted: e.target.checked })} className="w-3.5 h-3.5 rounded border-border text-primary" />
+              Show completed projects
+            </label>
+            <label className="flex items-center gap-2 text-[11px] text-muted cursor-pointer">
+              <input type="checkbox" checked={c.showActive !== false} onChange={(e) => set({ showActive: e.target.checked })} className="w-3.5 h-3.5 rounded border-border text-primary" />
+              Show active projects
+            </label>
+          </div>
+        </>
+      );
+    case "org_stats":
+      return (
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-[11px] text-muted cursor-pointer">
+            <input type="checkbox" checked={c.showTrustScore !== false} onChange={(e) => set({ showTrustScore: e.target.checked })} className="w-3.5 h-3.5 rounded border-border text-primary" />
+            Show project completion rate
+          </label>
+          <label className="flex items-center gap-2 text-[11px] text-muted cursor-pointer">
+            <input type="checkbox" checked={c.showMembers !== false} onChange={(e) => set({ showMembers: e.target.checked })} className="w-3.5 h-3.5 rounded border-border text-primary" />
+            Show active member count
+          </label>
+          <label className="flex items-center gap-2 text-[11px] text-muted cursor-pointer">
+            <input type="checkbox" checked={c.showProjects !== false} onChange={(e) => set({ showProjects: e.target.checked })} className="w-3.5 h-3.5 rounded border-border text-primary" />
+            Show total projects count
+          </label>
+        </div>
+      );
+    case "roadmap":
+      return <ListEditor items={c.items || []} onChange={(items) => set({ items })} fields={[
+        { key: "date", label: "Date / Phase" },
+        { key: "title", label: "Milestone Title" },
+        { key: "description", label: "Description", area: true },
+        { key: "status", label: "Status", select: ["planned", "in-progress", "completed"] }
+      ]} empty={{ date: "", title: "", description: "", status: "planned" }} addLabel="Add roadmap milestone" />;
+    case "sponsors":
+      return <ListEditor items={c.items || []} onChange={(items) => set({ items })} fields={[
+        { key: "name", label: "Partner Name" },
+        { key: "logo", label: "Logo URL (Cloudinary preferred)" },
+        { key: "url", label: "Link URL" }
+      ]} empty={{ name: "", logo: "", url: "" }} addLabel="Add sponsor/partner" />;
+    case "events":
+      return <ListEditor items={c.items || []} onChange={(items) => set({ items })} fields={[
+        { key: "date", label: "Event Date" },
+        { key: "title", label: "Event Title" },
+        { key: "description", label: "Short Description", area: true },
+        { key: "url", label: "Info/Registration Link" }
+      ]} empty={{ date: "", title: "", description: "", url: "" }} addLabel="Add event" />;
+    case "join_cta":
+      return (
+        <>
+          <L label="CTA Button Text"><input value={c.buttonText || "Join Us"} onChange={(e) => set({ buttonText: e.target.value })} className={inp} /></L>
+          <label className="flex items-center gap-2 text-[11px] text-muted cursor-pointer mb-2">
+            <input type="checkbox" checked={c.showMemberCount !== false} onChange={(e) => set({ showMemberCount: e.target.checked })} className="w-3.5 h-3.5 rounded border-border text-primary" />
+            Show member count status
+          </label>
+          <ListEditor items={c.benefits || []} onChange={(benefits) => set({ benefits })} fields={[
+            { key: "benefit", label: "Benefit statement" }
+          ]} empty={{ benefit: "" }} addLabel="Add benefit statement" />
+        </>
+      );
+
     default:
       return null;
   }

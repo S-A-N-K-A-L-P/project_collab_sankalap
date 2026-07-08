@@ -3,7 +3,7 @@ import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const ADMIN_ROLES = ["sankalp_associate", "master_admin"];
+const ADMIN_ROLES = ["sankalp_associate", "platform_moderator", "master_admin"];
 
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
@@ -56,7 +56,9 @@ export async function middleware(req: NextRequest) {
     path.startsWith("/profile") ||
     path.startsWith("/settings") ||
     path.startsWith("/ideas") ||
-    path.startsWith("/project_tracker");
+    path.startsWith("/project_tracker") ||
+    path.startsWith("/orgs/launch") ||
+    (path.startsWith("/orgs/") && path.includes("/admin"));
 
   if (isProtectedRoute && !token) {
     const loginUrl = new URL("/login", req.url);
@@ -79,5 +81,7 @@ export const config = {
     "/ideas/:path*",
     "/user/:path*",
     "/project_tracker/:path*",
+    "/orgs/launch/:path*",
+    "/orgs/:slug/admin/:path*",
   ],
 };

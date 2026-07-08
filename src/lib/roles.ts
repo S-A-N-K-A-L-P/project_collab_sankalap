@@ -12,6 +12,9 @@
  *                     Can: manage proposals, projects, and tasks.
  *                     Has access to the admin panel.
  *
+ *  platform_moderator Review org launch requests, moderate content
+ *                     across all orgs. Cannot change platform config.
+ *
  *  master_admin       Full platform administrator.
  *                     Can: everything above + platform configuration,
  *                     org management, role assignment, template publishing.
@@ -22,21 +25,39 @@ export type AppRole =
   | "user"
   | "sankalp_member"
   | "sankalp_associate"
+  | "platform_moderator"
   | "master_admin";
+
+/** All valid org-level roles in ascending privilege order */
+export type OrgRole =
+  | "observer"
+  | "member"
+  | "contributor"
+  | "lead"
+  | "admin"
+  | "owner";
 
 /** All valid roles in ascending privilege order */
 export const ROLES: AppRole[] = [
   "user",
   "sankalp_member",
   "sankalp_associate",
+  "platform_moderator",
   "master_admin",
 ];
 
 /** Roles with access to the /admin panel */
-export const ADMIN_ROLES: AppRole[] = ["sankalp_associate", "master_admin"];
+export const ADMIN_ROLES: AppRole[] = [
+  "sankalp_associate",
+  "platform_moderator",
+  "master_admin",
+];
 
 /** Role that can manage platform-level configuration */
 export const MASTER_ROLES: AppRole[] = ["master_admin"];
+
+/** Roles that can review org launch requests */
+export const REVIEWER_ROLES: AppRole[] = ["platform_moderator", "master_admin"];
 
 // ── Guard helpers ─────────────────────────────────────────────
 
@@ -52,6 +73,16 @@ export function isAdminRole(role?: string): boolean {
 /** Returns true only for master_admin — platform config gates */
 export function isMasterAdmin(role?: string): boolean {
   return role === "master_admin";
+}
+
+/** Returns true for platform_moderator or master_admin */
+export function isPlatformReviewer(role?: string): boolean {
+  return role === "platform_moderator" || role === "master_admin";
+}
+
+/** Returns true for platform_moderator (review org requests, moderate content) */
+export function isPlatformModerator(role?: string): boolean {
+  return role === "platform_moderator" || role === "master_admin";
 }
 
 // ── Feature-level permissions ─────────────────────────────────
@@ -78,6 +109,7 @@ export function canUpdateProgress(role?: string): boolean {
   return (
     role === "sankalp_member" ||
     role === "sankalp_associate" ||
+    role === "platform_moderator" ||
     role === "master_admin"
   );
 }
@@ -102,20 +134,27 @@ export function canConfigurePlatform(role?: string): boolean {
   return isMasterAdmin(role);
 }
 
+/** Can review org launch requests (approve/reject) */
+export function canReviewOrgRequests(role?: string): boolean {
+  return isPlatformReviewer(role);
+}
+
 // ── Display metadata ──────────────────────────────────────────
 
 export const ROLE_LABELS: Record<AppRole, string> = {
-  user:               "User",
-  sankalp_member:     "SANKALP Member",
-  sankalp_associate:  "SANKALP Associate",
-  master_admin:       "Master Admin",
+  user:                "User",
+  sankalp_member:      "SANKALP Member",
+  sankalp_associate:   "SANKALP Associate",
+  platform_moderator:  "Platform Moderator",
+  master_admin:        "Master Admin",
 };
 
 export const ROLE_COLORS: Record<AppRole, string> = {
-  user:               "role-user",
-  sankalp_member:     "role-member",
-  sankalp_associate:  "role-associate",
-  master_admin:       "role-admin",
+  user:                "role-user",
+  sankalp_member:      "role-member",
+  sankalp_associate:   "role-associate",
+  platform_moderator:  "role-moderator",
+  master_admin:        "role-admin",
 };
 
 /** The two roles a new member can self-select during registration */

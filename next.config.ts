@@ -13,6 +13,19 @@ const nextConfig: NextConfig = {
       "@mui/material/styles",
     ],
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.githubusercontent.com",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

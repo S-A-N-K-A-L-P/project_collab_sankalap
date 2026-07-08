@@ -4,6 +4,7 @@ const BADGE_STYLES: Record<AppRole, string> = {
   user:               "bg-zinc-500/15 text-zinc-400 border-zinc-500/20",
   sankalp_member:     "bg-indigo-500/15 text-indigo-400 border-indigo-500/20",
   sankalp_associate:  "bg-purple-500/15 text-purple-400 border-purple-500/20",
+  platform_moderator: "bg-cyan-500/15 text-cyan-400 border-cyan-500/20",
   master_admin:       "bg-rose-500/15 text-rose-400 border-rose-500/20",
 };
 
