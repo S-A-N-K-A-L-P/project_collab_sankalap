@@ -15,8 +15,6 @@ const DoneIcon = TaskAlt;
 const ShipIcon = RocketLaunchRounded;
 const DocIcon  = DescriptionRounded;
 const ShopIcon = StorefrontRounded;
-import { isUploadEnabled } from "@/lib/cloudinary";
-
 interface DocEntry {
   kind: "business" | "how-to-use";
   externalUrl: string;
@@ -58,8 +56,6 @@ export default function MarkCompleteWizard({
   const [licenseType, setLicenseType]   = useState("one-time");
   const [priceINR, setPriceINR]         = useState<number>(0);
   const [contactEmail, setContactEmail] = useState(defaultEmail || "");
-
-  const uploadEnabled = isUploadEnabled();
 
   // ── Validation ──────────────────────────────────────────
   const validVersion = /^v?\d+\.\d+\.\d+/.test(version);
@@ -144,7 +140,7 @@ export default function MarkCompleteWizard({
         label="Cover image URL"
         value={coverImage} onChange={e => setCoverImage(e.target.value)}
         placeholder="https://...jpg or png"
-        helperText={uploadEnabled ? "Or upload below" : "File uploads not configured — paste an image URL (Imgur, GitHub raw, etc.)"}
+        helperText="Paste a public image URL (Imgur, GitHub raw, etc.)"
         size="small" fullWidth
       />
       <TextField
