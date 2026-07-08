@@ -18,6 +18,9 @@ import LogoutRounded       from "@mui/icons-material/LogoutRounded";
 import ChevronRightRounded from "@mui/icons-material/ChevronRightRounded";
 import ArrowBackRounded    from "@mui/icons-material/ArrowBackRounded";
 import EmailRounded        from "@mui/icons-material/EmailRounded";
+import CorporateFareRounded from "@mui/icons-material/CorporateFareRounded";
+import TuneRounded         from "@mui/icons-material/TuneRounded";
+import { isPlatformReviewer, isAdminRole } from "@/lib/roles";
 const DashboardIcon = DashboardRounded;
 const UsersIcon     = PeopleAltRounded;
 const DocIcon       = DescriptionRounded;
@@ -27,6 +30,8 @@ const LogoutIcon    = LogoutRounded;
 const ChevronIcon   = ChevronRightRounded;
 const BackIcon      = ArrowBackRounded;
 const InquiryIcon   = EmailRounded;
+const OrgIcon       = CorporateFareRounded;
+const ConfigIcon    = TuneRounded;
 
 const WIDTH = 250;
 
@@ -36,6 +41,23 @@ const NAV = [
   { href: "/admin/proposals",            label: "Proposals", icon: DocIcon       },
   { href: "/admin/projects",             label: "Projects",  icon: FolderIcon    },
   { href: "/admin/marketplace/inquiries", label: "Inquiries", icon: InquiryIcon  },
+];
+
+/** Role-gated entries appended after the base NAV */
+const GATED_NAV = [
+  {
+    href: "/admin/org-requests",
+    label: "Org Requests",
+    icon: OrgIcon,
+    show: (role?: string) => isPlatformReviewer(role),
+  },
+  {
+    href: "/admin/config",
+    label: "Config",
+    icon: ConfigIcon,
+    // read-only for other admin roles; page enforces write gating
+    show: (role?: string) => isAdminRole(role),
+  },
 ];
 
 export default function AdminSidebar() {
@@ -115,7 +137,7 @@ export default function AdminSidebar() {
           Management
         </Typography>
         <List dense disablePadding>
-          {NAV.map((item) => {
+          {[...NAV, ...GATED_NAV.filter((g) => g.show(user?.role))].map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
             const Icon = item.icon;
             return (
