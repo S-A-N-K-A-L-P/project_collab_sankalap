@@ -12,18 +12,31 @@
 
 import { v2 as cloudinary } from "cloudinary";
 
-export const CLOUDINARY_ENABLED =
-  !!(
-    process.env.CLOUDINARY_CLOUD_NAME &&
-    process.env.CLOUDINARY_API_KEY &&
-    process.env.CLOUDINARY_API_SECRET
-  );
+// Parse CLOUDINARY_URL if separate env vars are not set
+let cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+let apiKey    = process.env.CLOUDINARY_API_KEY;
+let apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+if (process.env.CLOUDINARY_URL && (!cloudName || !apiKey || !apiSecret)) {
+  try {
+    const match = process.env.CLOUDINARY_URL.match(/cloudinary:\/\/([^:]+):([^@]+)@(.+)/);
+    if (match) {
+      apiKey    = match[1];
+      apiSecret = match[2];
+      cloudName = match[3];
+    }
+  } catch (err) {
+    console.error("Failed to parse CLOUDINARY_URL:", err);
+  }
+}
+
+export const CLOUDINARY_ENABLED = !!(cloudName && apiKey && apiSecret);
 
 if (CLOUDINARY_ENABLED) {
   cloudinary.config({
-    cloud_name:  process.env.CLOUDINARY_CLOUD_NAME!,
-    api_key:     process.env.CLOUDINARY_API_KEY!,
-    api_secret:  process.env.CLOUDINARY_API_SECRET!,
+    cloud_name:  cloudName,
+    api_key:     apiKey,
+    api_secret:  apiSecret,
     secure:      true,
   });
 }
@@ -156,13 +169,13 @@ export function generateUploadSignature(params: {
   }
   const signature = cloudinary.utils.api_sign_request(
     { folder: params.folder, timestamp: params.timestamp },
-    process.env.CLOUDINARY_API_SECRET!
+    apiSecret!
   );
   return {
     signature,
     timestamp:  params.timestamp,
-    cloudName:  process.env.CLOUDINARY_CLOUD_NAME!,
-    apiKey:     process.env.CLOUDINARY_API_KEY!,
+    cloudName:  cloudName!,
+    apiKey:     apiKey!,
   };
 }
 
