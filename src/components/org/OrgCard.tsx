@@ -31,12 +31,12 @@ export default function OrgCard({ org, index = 0 }: OrgCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04, duration: 0.4 }}
       whileHover={{ y: -4, scale: 1.01 }}
-      className={`group relative flex flex-col rounded-2xl border bg-gradient-to-br ${colorClass} 
-        backdrop-blur-sm overflow-hidden cursor-pointer transition-all duration-300
-        hover:shadow-[0_8px_40px_rgba(99,102,241,0.15)]`}
+      className={`group relative flex flex-col rounded-2xl border bg-gradient-to-br ${colorClass}
+        bg-card border-border backdrop-blur-sm overflow-hidden cursor-pointer transition-all duration-300
+        hover:shadow-lg hover:border-primary/30 dark:hover:shadow-lg dark:hover:border-primary/30`}
     >
       {/* Banner */}
-      <div className="relative h-24 overflow-hidden bg-gradient-to-br from-white/5 to-white/0">
+      <div className="relative h-24 overflow-hidden bg-gradient-to-br from-muted-foreground/5 dark:from-white/5 to-muted-foreground/0 dark:to-white/0">
         {(org.bannerImage || org.banner) && (
           <img
             src={org.bannerImage || org.banner}
@@ -45,16 +45,16 @@ export default function OrgCard({ org, index = 0 }: OrgCardProps) {
           />
         )}
         {/* Shimmer overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20 dark:to-black/40" />
 
         {/* Category badge */}
-        <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-black/40 backdrop-blur-sm text-white/80 border border-white/10">
+        <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-background/60 dark:bg-black/40 backdrop-blur-sm text-foreground dark:text-white/80 border border-border dark:border-white/10">
           {CATEGORY_LABELS[org.category]}
         </span>
 
         {/* Host org badge */}
         {org.isHost && (
-          <span className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-yellow-500/20 text-yellow-300 border border-yellow-400/30">
+          <span className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-400/30">
             <Crown size={9} /> Official
           </span>
         )}
@@ -63,7 +63,7 @@ export default function OrgCard({ org, index = 0 }: OrgCardProps) {
       {/* Logo + Name */}
       <div className="px-4 -mt-6 flex items-end gap-3 relative z-10">
         <div
-          className="w-12 h-12 rounded-xl border-2 border-white/20 overflow-hidden flex items-center justify-center text-lg font-bold flex-shrink-0 shadow-lg"
+          className="w-12 h-12 rounded-xl border-2 border-border dark:border-white/20 overflow-hidden flex items-center justify-center text-lg font-bold flex-shrink-0 shadow-lg"
           style={{ background: org.themeColor || "#6366f1" }}
         >
           {logo ? (
@@ -73,7 +73,7 @@ export default function OrgCard({ org, index = 0 }: OrgCardProps) {
           )}
         </div>
         <div className="pb-1 flex-1 min-w-0">
-          <h3 className="font-bold text-white text-sm truncate leading-tight group-hover:text-indigo-300 transition-colors">
+          <h3 className="font-bold text-foreground dark:text-white text-sm truncate leading-tight group-hover:text-primary dark:group-hover:text-indigo-300 transition-colors">
             {org.name}
           </h3>
         </div>
@@ -82,21 +82,21 @@ export default function OrgCard({ org, index = 0 }: OrgCardProps) {
       {/* Body */}
       <div className="px-4 pt-2 pb-4 flex flex-col gap-3 flex-1">
         {org.tagline && (
-          <p className="text-xs text-white/60 line-clamp-2 leading-relaxed">{org.tagline}</p>
+          <p className="text-xs text-muted-foreground dark:text-white/60 line-clamp-2 leading-relaxed">{org.tagline}</p>
         )}
 
         {/* Stats */}
-        <div className="flex items-center gap-3 mt-auto pt-2 border-t border-white/8">
-          <span className="flex items-center gap-1.5 text-xs text-white/50">
+        <div className="flex items-center gap-3 mt-auto pt-2 border-t border-border dark:border-white/8">
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground dark:text-white/50">
             <Users size={11} />
             <span>{org.stats?.memberCount ?? 0}</span>
           </span>
-          <span className="flex items-center gap-1.5 text-xs text-white/50">
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground dark:text-white/50">
             <FolderOpen size={11} />
             <span>{org.stats?.projectCount ?? 0} projects</span>
           </span>
           {org.trustScore?.completionRate > 0 && (
-            <span className="ml-auto text-[10px] font-semibold text-emerald-400">
+            <span className="ml-auto text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
               {Math.round(org.trustScore.completionRate)}% done
             </span>
           )}

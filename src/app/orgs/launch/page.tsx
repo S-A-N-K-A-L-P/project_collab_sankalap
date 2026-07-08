@@ -38,11 +38,11 @@ function SlugField({ slug, setSlug, available, checking }: {
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-white/70 mb-1.5">
-        Organization URL <span className="text-red-400">*</span>
+      <label className="block text-sm font-medium text-muted-foreground dark:text-white/70 mb-1.5">
+        Organization URL <span className="text-error dark:text-red-400">*</span>
       </label>
       <div className="relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-sm select-none">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground dark:text-white/30 text-sm select-none">
           sankalp.dev/orgs/
         </span>
         <input
@@ -50,16 +50,16 @@ function SlugField({ slug, setSlug, available, checking }: {
           value={slug}
           onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
           placeholder="my-org"
-          className="w-full pl-36 pr-10 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 focus:outline-none focus:border-indigo-400/60 transition-all"
+          className="w-full pl-36 pr-10 py-2.5 rounded-xl bg-muted dark:bg-white/5 border border-border dark:border-white/10 text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 focus:outline-none focus:border-primary dark:focus:border-indigo-400/60 transition-all"
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
-          {checking ? <Loader2 size={14} className="animate-spin text-white/30" /> :
-           available === true  ? <Check size={14} className="text-emerald-400" /> :
-           available === false ? <AlertCircle size={14} className="text-red-400" /> : null}
+          {checking ? <Loader2 size={14} className="animate-spin text-muted-foreground dark:text-white/30" /> :
+           available === true  ? <Check size={14} className="text-success dark:text-emerald-400" /> :
+           available === false ? <AlertCircle size={14} className="text-error dark:text-red-400" /> : null}
         </div>
       </div>
-      {available === false && <p className="text-xs text-red-400 mt-1">This slug is already taken</p>}
-      {available === true  && <p className="text-xs text-emerald-400 mt-1">✓ Available</p>}
+      {available === false && <p className="text-xs text-error dark:text-red-400 mt-1">This slug is already taken</p>}
+      {available === true  && <p className="text-xs text-success dark:text-emerald-400 mt-1">✓ Available</p>}
     </div>
   );
 }
@@ -160,21 +160,21 @@ export default function OrgLaunchPage() {
     return null;
   }
 
-  const inputCls = "w-full px-3 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 focus:outline-none focus:border-indigo-400/60 transition-all";
-  const labelCls = "block text-sm font-medium text-white/70 mb-1.5";
-  const errCls   = "text-xs text-red-400 mt-1";
+  const inputCls = "w-full px-3 py-2.5 rounded-xl bg-muted dark:bg-white/5 border border-border dark:border-white/10 text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 focus:outline-none focus:border-primary dark:focus:border-indigo-400/60 transition-all";
+  const labelCls = "block text-sm font-medium text-muted-foreground dark:text-white/70 mb-1.5";
+  const errCls   = "text-xs text-error dark:text-red-400 mt-1";
 
   return (
     <AppLayoutClient>
-      <div className="text-white max-w-2xl mx-auto w-full py-4">
+      <div className="text-foreground dark:text-white max-w-2xl mx-auto w-full py-4">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/8">
-          <a href="/orgs" className="text-white/40 hover:text-white/70 transition-colors">
+        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-border dark:border-white/8">
+          <a href="/orgs" className="text-muted-foreground dark:text-white/40 hover:text-foreground dark:hover:text-white/70 transition-colors">
             <ArrowLeft size={18} />
           </a>
           <div>
-            <h1 className="text-xl font-bold text-white">Launch Organization</h1>
-            <p className="text-xs text-white/40">Step {step + 1} of {STEPS.length}</p>
+            <h1 className="text-xl font-bold text-foreground dark:text-white">Launch Organization</h1>
+            <p className="text-xs text-muted-foreground dark:text-white/40">Step {step + 1} of {STEPS.length}</p>
           </div>
         </div>
 
@@ -186,18 +186,18 @@ export default function OrgLaunchPage() {
               <div key={s.id} className="flex items-center flex-1">
                 <div className={`flex flex-col items-center gap-1 flex-shrink-0 ${i > 0 ? "ml-2" : ""}`}>
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                    i < step  ? "bg-indigo-500 text-white" :
-                    i === step ? "bg-indigo-500/20 border-2 border-indigo-400 text-indigo-300" :
-                    "bg-white/5 border border-white/10 text-white/30"
+                    i < step  ? "bg-primary dark:bg-indigo-500 text-primary-foreground dark:text-white" :
+                    i === step ? "bg-primary/10 dark:bg-indigo-500/20 border-2 border-primary dark:border-indigo-400 text-primary dark:text-indigo-300" :
+                    "bg-muted dark:bg-white/5 border border-border dark:border-white/10 text-muted-foreground dark:text-white/30"
                   }`}>
                     {i < step ? <Check size={14} /> : <Icon size={14} />}
                   </div>
                   <span className={`text-[10px] font-medium hidden sm:block ${
-                    i <= step ? "text-white/60" : "text-white/20"
+                    i <= step ? "text-muted-foreground dark:text-white/60" : "text-muted-foreground dark:text-white/20"
                   }`}>{s.label}</span>
                 </div>
                 {i < STEPS.length - 1 && (
-                  <div className={`flex-1 h-px mx-2 transition-all ${i < step ? "bg-indigo-500" : "bg-white/10"}`} />
+                  <div className={`flex-1 h-px mx-2 transition-all ${i < step ? "bg-primary dark:bg-indigo-500" : "bg-border dark:bg-white/10"}`} />
                 )}
               </div>
             );
@@ -249,11 +249,11 @@ export default function OrgLaunchPage() {
                       <button key={c.value} type="button" onClick={() => set("category", c.value)}
                         className={`p-3 rounded-xl text-left border transition-all ${
                           form.category === c.value
-                            ? "border-indigo-400/60 bg-indigo-500/10 text-white"
-                            : "border-white/10 bg-white/5 text-white/60 hover:border-white/20"
+                            ? "border-primary dark:border-indigo-400/60 bg-primary/10 dark:bg-indigo-500/10 text-foreground dark:text-white"
+                            : "border-border dark:border-white/10 bg-muted dark:bg-white/5 text-muted-foreground dark:text-white/60 hover:border-border dark:hover:border-white/20"
                         }`}>
                         <p className="text-xs font-semibold">{c.label}</p>
-                        <p className="text-[10px] text-white/40 mt-0.5">{c.desc}</p>
+                        <p className="text-[10px] text-muted-foreground dark:text-white/40 mt-0.5">{c.desc}</p>
                       </button>
                     ))}
                   </div>
@@ -265,8 +265,8 @@ export default function OrgLaunchPage() {
             {step === 1 && (
               <>
                 <div>
-                  <label className={labelCls}>Mission Statement (Charter) <span className="text-red-400">*</span></label>
-                  <p className="text-xs text-white/40 mb-2">Why does this org exist? What problem does it solve?</p>
+                  <label className={labelCls}>Mission Statement (Charter) <span className="text-error dark:text-red-400">*</span></label>
+                  <p className="text-xs text-muted-foreground dark:text-white/40 mb-2">Why does this org exist? What problem does it solve?</p>
                   <textarea rows={5} placeholder="We exist to…" value={form.charter}
                     onChange={(e) => set("charter", e.target.value)}
                     className={`${inputCls} resize-none`} />
@@ -275,7 +275,7 @@ export default function OrgLaunchPage() {
 
                 <div>
                   <label className={labelCls}>Initial Roadmap</label>
-                  <p className="text-xs text-white/40 mb-2">What are your plans for the next 6–12 months? (optional)</p>
+                  <p className="text-xs text-muted-foreground dark:text-white/40 mb-2">What are your plans for the next 6–12 months? (optional)</p>
                   <textarea rows={4} placeholder="Phase 1: …&#10;Phase 2: …" value={form.roadmap}
                     onChange={(e) => set("roadmap", e.target.value)}
                     className={`${inputCls} resize-none`} />
@@ -348,24 +348,24 @@ export default function OrgLaunchPage() {
             {/* Step 3: Review */}
             {step === 3 && (
               <div className="space-y-4">
-                <p className="text-sm text-white/50">
+                <p className="text-sm text-muted-foreground dark:text-white/50">
                   Review your org details before submitting. Our team will review your request and get back to you within 24–48 hours.
                 </p>
 
-                <div className="rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+                <div className="rounded-xl border border-border dark:border-white/10 bg-card dark:bg-white/5 overflow-hidden">
                   {/* Preview card */}
-                  <div className="relative h-28 bg-gradient-to-br from-indigo-900/40 to-purple-900/40">
+                  <div className="relative h-28 bg-gradient-to-br from-primary/10 dark:from-indigo-900/40 to-primary/5 dark:to-purple-900/40">
                     {form.bannerImage && <img src={form.bannerImage} alt="" className="w-full h-full object-cover opacity-60" />}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 dark:from-black/60 to-transparent" />
                   </div>
                   <div className="px-5 -mt-6 pb-5">
-                    <div className="w-12 h-12 rounded-xl border-2 border-white/20 overflow-hidden flex items-center justify-center text-xl font-bold"
+                    <div className="w-12 h-12 rounded-xl border-2 border-border dark:border-white/20 overflow-hidden flex items-center justify-center text-xl font-bold"
                       style={{ background: form.themeColor || "#6366f1" }}>
                       {form.logo ? <img src={form.logo} alt="" className="w-full h-full object-cover" /> : form.name[0]?.toUpperCase()}
                     </div>
-                    <h2 className="font-bold text-white mt-2 text-lg">{form.name || "Org Name"}</h2>
-                    <p className="text-xs text-white/40">sankalp.dev/orgs/{form.slug}</p>
-                    <p className="text-sm text-white/60 mt-1 line-clamp-2">{form.tagline || form.description}</p>
+                    <h2 className="font-bold text-foreground dark:text-white mt-2 text-lg">{form.name || "Org Name"}</h2>
+                    <p className="text-xs text-muted-foreground dark:text-white/40">sankalp.dev/orgs/{form.slug}</p>
+                    <p className="text-sm text-muted-foreground dark:text-white/60 mt-1 line-clamp-2">{form.tagline || form.description}</p>
                   </div>
                 </div>
 
@@ -376,16 +376,16 @@ export default function OrgLaunchPage() {
                     { label: "Visibility",  value: form.visibility },
                   ].map(({ label, value }) => (
                     <div key={label} className="flex gap-3 text-sm">
-                      <span className="text-white/40 w-24 flex-shrink-0">{label}</span>
-                      <span className="text-white/70">{value}</span>
+                      <span className="text-muted-foreground dark:text-white/40 w-24 flex-shrink-0">{label}</span>
+                      <span className="text-muted-foreground dark:text-white/70">{value}</span>
                     </div>
                   ))}
                 </div>
 
                 {errors.submit && (
-                  <div className="flex items-start gap-2 p-3 rounded-xl bg-red-500/10 border border-red-400/20">
-                    <AlertCircle size={14} className="text-red-400 mt-0.5 flex-shrink-0" />
-                    <p className="text-sm text-red-300">{errors.submit}</p>
+                  <div className="flex items-start gap-2 p-3 rounded-xl bg-error-muted dark:bg-red-500/10 border border-error dark:border-red-400/20">
+                    <AlertCircle size={14} className="text-error dark:text-red-400 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-error-text dark:text-red-300">{errors.submit}</p>
                   </div>
                 )}
               </div>
@@ -394,20 +394,20 @@ export default function OrgLaunchPage() {
         </AnimatePresence>
 
         {/* Navigation */}
-        <div className="flex items-center justify-between mt-8 pt-6 border-t border-white/8">
+        <div className="flex items-center justify-between mt-8 pt-6 border-t border-border dark:border-white/8">
           <button onClick={back} disabled={step === 0}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-white/50 hover:text-white/80 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm text-muted-foreground dark:text-white/50 hover:text-foreground dark:hover:text-white/80 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
             <ArrowLeft size={14} /> Back
           </button>
 
           {step < 3 ? (
             <button onClick={next}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-semibold text-sm transition-all">
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-hover dark:bg-indigo-500 dark:hover:bg-indigo-400 text-primary-foreground dark:text-white font-semibold text-sm transition-all">
               Continue <ArrowRight size={14} />
             </button>
           ) : (
             <button onClick={submit} disabled={submitting}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 disabled:opacity-50 text-white font-semibold text-sm transition-all">
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-hover dark:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-50 text-primary-foreground dark:text-white font-semibold text-sm transition-all">
               {submitting ? <><Loader2 size={14} className="animate-spin" /> Submitting…</> : <><Rocket size={14} /> Submit Request</>}
             </button>
           )}

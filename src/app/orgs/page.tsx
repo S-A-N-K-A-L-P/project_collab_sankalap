@@ -52,20 +52,20 @@ export default function OrgsDirectoryPage() {
 
   return (
     <AppLayoutClient>
-      <div className="text-white">
+      <div className="text-foreground dark:text-white">
         {/* Page header */}
-        <div className="border-b border-white/8 bg-black/20 backdrop-blur-sm sticky top-0 z-10 py-4 mb-6">
+        <div className="border-b border-border dark:border-white/8 bg-muted dark:bg-black/20 backdrop-blur-sm sticky top-0 z-10 py-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
             <div>
               <h1 className="text-xl font-bold flex items-center gap-2">
-                <Globe size={20} className="text-indigo-400" /> Organizations
+                <Globe size={20} className="text-primary dark:text-indigo-400" /> Organizations
               </h1>
-              <p className="text-xs text-white/40 mt-0.5">{total} active organizations</p>
+              <p className="text-xs text-muted-foreground dark:text-white/40 mt-0.5">{total} active organizations</p>
             </div>
           {session && (
             <a
               href="/orgs/launch"
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-semibold text-sm transition-all shadow-[0_4px_20px_rgba(99,102,241,0.3)]"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover dark:bg-indigo-500 dark:hover:bg-indigo-400 text-primary-foreground dark:text-white font-semibold text-sm transition-all shadow-[0_4px_20px_rgba(79,70,229,0.3)] dark:shadow-[0_4px_20px_rgba(99,102,241,0.3)]"
             >
               <Plus size={14} /> Launch Org
             </a>
@@ -78,27 +78,27 @@ export default function OrgsDirectoryPage() {
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           {/* Search */}
           <div className="relative flex-1">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground dark:text-white/30" />
             <input
               type="text"
               placeholder="Search organizations…"
               value={debouncedSearch}
               onChange={(e) => setDebouncedSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 focus:outline-none focus:border-indigo-400/60 focus:bg-white/8 transition-all"
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-muted dark:bg-white/5 border border-border dark:border-white/10 text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 focus:outline-none focus:border-primary dark:focus:border-indigo-400/60 focus:bg-background dark:focus:bg-white/8 transition-all"
             />
           </div>
 
           {/* Category filter */}
           <div className="flex items-center gap-2 flex-wrap">
-            <Filter size={13} className="text-white/30 flex-shrink-0" />
+            <Filter size={13} className="text-muted-foreground dark:text-white/30 flex-shrink-0" />
             {CATEGORIES.map((c) => (
               <button
                 key={c.value}
                 onClick={() => { setCategory(c.value); setPage(1); }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
                   category === c.value
-                    ? "bg-indigo-500/20 border-indigo-400/40 text-indigo-300"
-                    : "bg-white/5 border-white/10 text-white/50 hover:text-white/80 hover:border-white/20"
+                    ? "bg-primary/10 dark:bg-indigo-500/20 border-primary dark:border-indigo-400/40 text-primary dark:text-indigo-300"
+                    : "bg-muted dark:bg-white/5 border-border dark:border-white/10 text-muted-foreground dark:text-white/50 hover:text-foreground dark:hover:text-white/80 hover:border-border dark:hover:border-white/20"
                 }`}
               >
                 {c.label}
@@ -111,7 +111,7 @@ export default function OrgsDirectoryPage() {
         <AnimatePresence mode="wait">
           {loading ? (
             <motion.div key="loading" className="flex justify-center py-20">
-              <Loader2 className="animate-spin text-indigo-400" size={28} />
+              <Loader2 className="animate-spin text-primary dark:text-indigo-400" size={28} />
             </motion.div>
           ) : orgs.length === 0 ? (
             <motion.div
@@ -120,10 +120,10 @@ export default function OrgsDirectoryPage() {
               animate={{ opacity: 1 }}
               className="flex flex-col items-center justify-center py-20 gap-3"
             >
-              <Building2 size={40} className="text-white/20" />
-              <p className="text-white/40 text-sm">No organizations found</p>
+              <Building2 size={40} className="text-muted-foreground dark:text-white/20" />
+              <p className="text-muted-foreground dark:text-white/40 text-sm">No organizations found</p>
               {session && (
-                <a href="/orgs/launch" className="text-indigo-400 text-sm hover:underline">
+                <a href="/orgs/launch" className="text-primary dark:text-indigo-400 text-sm hover:underline">
                   Be the first to launch one →
                 </a>
               )}
@@ -148,15 +148,15 @@ export default function OrgsDirectoryPage() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-4 py-2 rounded-lg text-sm bg-white/5 border border-white/10 text-white/60 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              className="px-4 py-2 rounded-lg text-sm bg-muted dark:bg-white/5 border border-border dark:border-white/10 text-muted-foreground dark:text-white/60 hover:text-foreground dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
             >
               Previous
             </button>
-            <span className="px-4 py-2 text-sm text-white/40">Page {page}</span>
+            <span className="px-4 py-2 text-sm text-muted-foreground dark:text-white/40">Page {page}</span>
             <button
               onClick={() => setPage((p) => p + 1)}
               disabled={orgs.length < 24}
-              className="px-4 py-2 rounded-lg text-sm bg-white/5 border border-white/10 text-white/60 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              className="px-4 py-2 rounded-lg text-sm bg-muted dark:bg-white/5 border border-border dark:border-white/10 text-muted-foreground dark:text-white/60 hover:text-foreground dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed"
             >
               Next
             </button>
