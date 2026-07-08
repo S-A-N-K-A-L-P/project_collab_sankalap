@@ -10,15 +10,19 @@ import EmojiEventsRounded        from "@mui/icons-material/EmojiEventsRounded";
 import StorefrontRounded         from "@mui/icons-material/StorefrontRounded";
 import PermMediaRounded          from "@mui/icons-material/PermMediaRounded";
 import DesktopWindowsRounded    from "@mui/icons-material/DesktopWindowsRounded";
-const SettingsIcon    = SettingsRounded;
-const LogoutIcon      = LogoutRounded;
-const AdminIcon       = AdminPanelSettingsRounded;
-const DarkIcon        = DarkModeRounded;
-const LightIcon       = LightModeRounded;
-const TrophyIcon      = EmojiEventsRounded;
-const ShopIcon        = StorefrontRounded;
-const PortfolioIcon   = PermMediaRounded;
-const DesktopIcon     = DesktopWindowsRounded;
+import CorporateFareRounded      from "@mui/icons-material/CorporateFareRounded";
+import RuleFolderRounded         from "@mui/icons-material/RuleFolderRounded";
+const SettingsIcon      = SettingsRounded;
+const LogoutIcon        = LogoutRounded;
+const AdminIcon         = AdminPanelSettingsRounded;
+const DarkIcon          = DarkModeRounded;
+const LightIcon         = LightModeRounded;
+const TrophyIcon        = EmojiEventsRounded;
+const ShopIcon          = StorefrontRounded;
+const PortfolioIcon     = PermMediaRounded;
+const DesktopIcon       = DesktopWindowsRounded;
+const CorporateFareIcon = CorporateFareRounded;
+const QueueIcon         = RuleFolderRounded;
 import NextLink   from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { useTheme }  from "next-themes";
@@ -75,11 +79,12 @@ export default function Sidebar() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  const user      = session?.user as any;
-  const userHref  = user?.id ? `/profile/${user.id}` : "/login";
-  const initials  = (user?.name || "?")
+  const user        = session?.user as any;
+  const userHref    = user?.id ? `/profile/${user.id}` : "/login";
+  const initials    = (user?.name || "?")
     .split(" ").map((w: string) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
-  const isAdmin   = user?.role === "sankalp_associate" || user?.role === "master_admin";
+  const isAdmin     = user?.role === "sankalp_associate" || user?.role === "master_admin";
+  const isReviewer  = user?.role === "platform_moderator" || user?.role === "master_admin";
 
   return (
     <Box
@@ -135,6 +140,11 @@ export default function Sidebar() {
         <PortfolioIcon sx={{ fontSize: 20, color: "#a78bfa" }} />
       </RailBtn>
 
+      {/* Organizations */}
+      <RailBtn title="Organizations" href="/orgs">
+        <CorporateFareIcon sx={{ fontSize: 20, color: "#60a5fa" }} />
+      </RailBtn>
+
       {/* Syncro Desktop App */}
       <RailBtn title="Syncro Desktop App" href="/desktop">
         <DesktopIcon sx={{ fontSize: 20, color: "#818cf8" }} />
@@ -149,6 +159,13 @@ export default function Sidebar() {
       {isAdmin && (
         <RailBtn title="Admin Panel" href="/admin/dashboard">
           <AdminIcon sx={{ fontSize: 20, color: "#fca5a5" }} />
+        </RailBtn>
+      )}
+
+      {/* Org Requests Queue (gated) */}
+      {isReviewer && (
+        <RailBtn title="Org Requests Queue" href="/admin/org-requests">
+          <QueueIcon sx={{ fontSize: 20, color: "#f472b6" }} />
         </RailBtn>
       )}
 

@@ -8,13 +8,15 @@ import EmojiEventsRounded   from "@mui/icons-material/EmojiEventsRounded";
 import ExploreRounded       from "@mui/icons-material/ExploreRounded";
 import NotificationsRounded from "@mui/icons-material/NotificationsRounded";
 import FlashOn from "@mui/icons-material/FlashOn";
-const HomeIcon      = HomeRounded;
-const LightbulbIcon = LightbulbRounded;
-const TasksIcon     = ChecklistRounded;
-const ShowcaseIcon  = EmojiEventsRounded;
-const DiscoverIcon  = ExploreRounded;
-const BellIcon      = NotificationsRounded;
-const BoltIcon      = FlashOn;   // BoltRounded has no individual file in @mui/icons-material@6
+import CorporateFareRounded from "@mui/icons-material/CorporateFareRounded";
+const HomeIcon          = HomeRounded;
+const LightbulbIcon     = LightbulbRounded;
+const TasksIcon         = ChecklistRounded;
+const ShowcaseIcon      = EmojiEventsRounded;
+const DiscoverIcon      = ExploreRounded;
+const BellIcon          = NotificationsRounded;
+const BoltIcon          = FlashOn;   // BoltRounded has no individual file in @mui/icons-material@6
+const CorporateFareIcon = CorporateFareRounded;
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession }  from "next-auth/react";
@@ -24,6 +26,7 @@ const NAV = [
   { href: "/feed",          label: "Feed",          Icon: HomeIcon      },
   { href: "/ideas",         label: "Proposals",     Icon: LightbulbIcon },
   { href: "/tasks",         label: "Tasks",         Icon: TasksIcon     },
+  { href: "/orgs",          label: "Orgs",          Icon: CorporateFareIcon },
   { href: "/showcase",      label: "Showcase",      Icon: ShowcaseIcon  },
   { href: "/discover",      label: "Discover",      Icon: DiscoverIcon  },
   { href: "/notifications", label: "Notifications", Icon: BellIcon      },
