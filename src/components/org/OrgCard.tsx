@@ -30,14 +30,11 @@ export default function OrgCard({ org, index = 0 }: OrgCardProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04, duration: 0.4 }}
-      whileHover={{ y: -4, scale: 1.01 }}
+      whileHover={{ y: -4 }}
       className="group relative flex flex-col rounded-2xl border border-border dark:border-white/10
-        bg-card dark:bg-white/[0.03] backdrop-blur-sm overflow-hidden cursor-pointer transition-all duration-300
-        hover:shadow-xl hover:border-transparent dark:hover:border-transparent"
+        bg-card dark:bg-white/[0.03] shadow-sm overflow-hidden cursor-pointer transition-shadow duration-300
+        hover:shadow-lg hover:border-primary/30 dark:hover:border-white/20"
     >
-      {/* Hover glow ring */}
-      <div className={`pointer-events-none absolute -inset-px rounded-2xl bg-gradient-to-br ${colorClass} opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 blur-[1px]`} />
-
       {/* Banner — vivid category gradient */}
       <div className={`relative h-24 overflow-hidden bg-gradient-to-br ${colorClass}`}>
         {(org.bannerImage || org.banner) ? (
@@ -47,9 +44,9 @@ export default function OrgCard({ org, index = 0 }: OrgCardProps) {
             className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <div className="absolute inset-0 opacity-90 mix-blend-overlay bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.5),transparent_55%)]" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/25 to-white/0" />
         )}
-        {/* Shimmer overlay */}
+        {/* Bottom fade for badge legibility */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/30" />
 
         {/* Category badge */}
