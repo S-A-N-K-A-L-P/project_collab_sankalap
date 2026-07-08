@@ -109,42 +109,42 @@ export default function OrgAdminSettingsPage() {
 
   if (loadingOrg) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center">
-        <Loader2 className="animate-spin text-indigo-400" size={28} />
+      <div className="min-h-screen bg-background dark:bg-[#0a0a0f] text-foreground dark:text-white flex items-center justify-center">
+        <Loader2 className="animate-spin text-primary dark:text-indigo-400" size={28} />
       </div>
     );
   }
 
   if (orgError || !org || !isAdmin) return null;
 
-  const inputCls = "w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 focus:outline-none focus:border-indigo-400/60 transition-all";
-  const labelCls = "block text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5";
+  const inputCls = "w-full px-3 py-2 rounded-lg bg-card dark:bg-white/5 border border-border dark:border-white/10 text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 shadow-sm focus:outline-none focus:border-primary dark:focus:border-indigo-400/60 focus:ring-2 focus:ring-primary/15 dark:focus:ring-indigo-400/15 transition-all";
+  const labelCls = "block text-xs font-semibold text-muted-foreground dark:text-white/50 uppercase tracking-wider mb-1.5";
 
   return (
     <AppLayoutClient>
-      <div className="text-white max-w-4xl mx-auto w-full py-4">
+      <div className="text-foreground dark:text-white max-w-4xl mx-auto w-full py-4">
         {/* Top Header */}
-        <div className="flex items-center gap-3 pb-4 mb-6 border-b border-white/8">
-          <a href={`/orgs/${org.slug}/admin`} className="text-white/40 hover:text-white/70 transition-colors">
+        <div className="flex items-center gap-3 pb-4 mb-6 border-b border-border dark:border-white/8">
+          <a href={`/orgs/${org.slug}/admin`} className="text-muted-foreground dark:text-white/40 hover:text-foreground dark:hover:text-white/70 transition-colors">
             <ArrowLeft size={18} />
           </a>
           <div>
-            <h1 className="text-xl font-bold text-white">Organization Settings</h1>
-            <p className="text-xs text-white/40">Modify branding and core properties of {org.name}</p>
+            <h1 className="text-xl font-bold text-foreground dark:text-white">Organization Settings</h1>
+            <p className="text-xs text-muted-foreground dark:text-white/40">Modify branding and core properties of {org.name}</p>
           </div>
         </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="p-4 rounded-xl bg-red-500/10 border border-red-400/20 flex items-start gap-2">
-              <AlertCircle className="text-red-400 mt-0.5 flex-shrink-0" size={16} />
-              <p className="text-sm text-red-300">{error}</p>
+            <div className="p-4 rounded-xl bg-error-muted dark:bg-red-500/10 border border-error dark:border-red-400/20 flex items-start gap-2">
+              <AlertCircle className="text-error dark:text-red-400 mt-0.5 flex-shrink-0" size={16} />
+              <p className="text-sm text-error-text dark:text-red-300">{error}</p>
             </div>
           )}
 
           {success && (
-            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-400/20 flex items-center gap-2 text-emerald-400">
+            <div className="p-4 rounded-xl bg-success-muted dark:bg-emerald-500/10 border border-success dark:border-emerald-400/20 flex items-center gap-2 text-success-text dark:text-emerald-400">
               <Check size={16} />
               <p className="text-sm">Settings saved successfully!</p>
             </div>
@@ -293,11 +293,11 @@ export default function OrgAdminSettingsPage() {
             </div>
           </div>
 
-          <div className="pt-6 border-t border-white/8 flex justify-end">
+          <div className="pt-6 border-t border-border dark:border-white/8 flex justify-end">
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-semibold text-sm transition-all"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-hover dark:from-indigo-500 dark:to-purple-500 text-primary-foreground dark:text-white font-semibold text-sm transition-all hover:brightness-110 shadow-sm disabled:opacity-60"
             >
               {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
               {saving ? "Saving..." : "Save Settings"}

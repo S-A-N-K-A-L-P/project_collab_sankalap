@@ -187,12 +187,20 @@
 
   --color-success:              var(--success);
   --color-success-foreground:   var(--success-foreground);
+  --color-success-muted:        var(--success-muted);
+  --color-success-text:         var(--success-text);
   --color-info:                 var(--info);
   --color-info-foreground:      var(--info-foreground);
+  --color-info-muted:           var(--info-muted);
+  --color-info-text:            var(--info-text);
   --color-warning:              var(--warning);
   --color-warning-foreground:   var(--warning-foreground);
+  --color-warning-muted:        var(--warning-muted);
+  --color-warning-text:         var(--warning-text);
   --color-error:                var(--error);
   --color-error-foreground:     var(--error-foreground);
+  --color-error-muted:          var(--error-muted);
+  --color-error-text:           var(--error-text);
   --color-tertiary:             var(--tertiary);
   --color-tertiary-foreground:  var(--tertiary-foreground);
 
