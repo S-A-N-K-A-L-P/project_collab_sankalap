@@ -49,7 +49,11 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: 'Proposal not found' }, { status: 404 });
         }
 
-        const vote = await Vote.findOne({ userId: voterId, proposalId: id }).lean();
+        // Anonymous/malformed voter ids can't be cast to Vote.userId (ObjectId);
+        // skip the lookup instead of letting Mongoose throw a CastError.
+        const vote = mongoose.isValidObjectId(voterId)
+            ? await Vote.findOne({ userId: voterId, proposalId: id }).lean()
+            : null;
         const myVote =
             vote && !Array.isArray(vote) && typeof (vote as any).optionIndex === 'number'
                 ? (vote as any).optionIndex

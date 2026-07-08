@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { getMobileSession } from "@/lib/mobileAuth";
 import dbConnect from "@/lib/mongodb";
 import Vote from "@/models/Vote";
@@ -7,6 +8,12 @@ export async function GET(req: Request) {
     try {
         const session = getMobileSession(req);
         const voterId = session.id;
+
+        // Vote.userId is an ObjectId; a malformed token id would make
+        // Mongoose throw a CastError → 500. Return empty instead.
+        if (!mongoose.isValidObjectId(voterId)) {
+            return NextResponse.json({ votes: [], voterId });
+        }
 
         await dbConnect();
 

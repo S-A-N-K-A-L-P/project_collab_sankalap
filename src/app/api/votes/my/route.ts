@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import { connectDB } from '@/lib/mongodb/connect';
 import { getVoterId } from '@/lib/voting/identity';
 import Vote from '@/models/Vote';
@@ -6,6 +7,13 @@ import Vote from '@/models/Vote';
 export async function GET() {
     try {
         const voterId = await getVoterId();
+
+        // Vote.userId is an ObjectId; "anonymous" or malformed voter ids
+        // would make Mongoose throw a CastError → 500. Return empty instead.
+        if (!mongoose.isValidObjectId(voterId)) {
+            return NextResponse.json({ votes: [], voterId });
+        }
+
         await connectDB();
 
         const votes = await Vote.find({ userId: voterId }).lean();
