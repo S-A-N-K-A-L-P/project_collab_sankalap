@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import Org from "@/models/Org";
 import OrgMember from "@/models/OrgMember";
+import User from "@/models/User";
 import { isPlatformReviewer } from "@/lib/roles";
 
 /** GET /api/admin/org-requests — list org requests for review */

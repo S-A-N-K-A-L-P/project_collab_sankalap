@@ -5,6 +5,7 @@ import dbConnect from "@/lib/mongodb";
 import Org from "@/models/Org";
 import OrgMember from "@/models/OrgMember";
 import Project from "@/models/Project";
+import User from "@/models/User";
 import { canManageOrg, isPlatformAdminOverride } from "@/lib/org-permissions";
 import { isPlatformReviewer } from "@/lib/roles";
 

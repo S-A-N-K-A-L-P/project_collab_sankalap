@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import Org from "@/models/Org";
 import OrgMember from "@/models/OrgMember";
+import User from "@/models/User";
 
 /** GET /api/orgs/[slug]/members — list org members */
 export async function GET(req: Request, { params }: { params: Promise<{ slug: string }> }) {

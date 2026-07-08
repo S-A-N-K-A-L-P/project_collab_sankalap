@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import Org from "@/models/Org";
 import OrgMember from "@/models/OrgMember";
+import User from "@/models/User";
 
 /** Reserved slugs that conflict with static routes under /orgs/* */
 const RESERVED_SLUGS = new Set([
