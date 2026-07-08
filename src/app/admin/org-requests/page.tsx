@@ -125,9 +125,9 @@ export default function PlatformOrgRequestsPage() {
 
   return (
     <AppLayoutClient>
-      <div className="text-foreground dark:text-white flex flex-col h-[calc(100vh-140px)] overflow-hidden">
+      <div className="bg-background dark:bg-[#0a0a0f] text-foreground dark:text-white flex flex-col h-[calc(100vh-140px)] overflow-hidden rounded-2xl border border-border dark:border-white/8 shadow-sm">
         {/* Top Header */}
-        <div className="flex items-center justify-between pb-4 mb-4 border-b border-border dark:border-white/8 shrink-0">
+        <div className="flex items-center justify-between p-4 border-b border-border dark:border-white/8 shrink-0 bg-card dark:bg-[#0e0e12]">
           <div className="flex items-center gap-3">
             <a href="/dashboard" className="text-muted-foreground dark:text-white/40 hover:text-foreground dark:hover:text-white/70 transition-colors">
               <ArrowLeft size={16} />
@@ -144,13 +144,13 @@ export default function PlatformOrgRequestsPage() {
       )}
 
       {/* Main Splitted Queue */}
-      <div className="flex-1 flex overflow-hidden rounded-2xl border border-border dark:border-white/8">
+      <div className="flex-1 flex overflow-hidden">
         {/* Left column: List of pending orgs (300px) */}
-        <div className="w-[300px] shrink-0 border-r border-border dark:border-white/8 bg-muted-bg dark:bg-black/10 overflow-y-auto scrollbar-thin">
+        <div className="w-[300px] shrink-0 border-r border-border dark:border-white/8 bg-muted/30 dark:bg-[#131319] overflow-y-auto scrollbar-thin">
           {requests.length === 0 ? (
-            <div className="p-6 text-center text-muted-foreground dark:text-white/30 space-y-2 mt-20">
-              <Building size={28} className="mx-auto" />
-              <p className="text-xs">Queue is empty</p>
+            <div className="p-6 text-center text-muted-foreground dark:text-white/40 space-y-2 mt-20">
+              <Building size={28} className="mx-auto opacity-50" />
+              <p className="text-xs font-medium">Queue is empty</p>
             </div>
           ) : (
             <div className="divide-y divide-border dark:divide-white/5">
@@ -280,7 +280,7 @@ export default function PlatformOrgRequestsPage() {
               </div>
             </div>
           ) : (
-            <div className="h-full flex items-center justify-center text-muted-foreground dark:text-white/30">
+            <div className="h-full flex items-center justify-center text-muted-foreground dark:text-white/50 font-medium">
               Select an org request from the queue to review
             </div>
           )}
