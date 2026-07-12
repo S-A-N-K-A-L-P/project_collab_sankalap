@@ -33,8 +33,10 @@ function FlutterPreviewContent() {
       .then((d) => {
         if (alive && d.portfolio) {
           const previewData = buildPreviewData(d.portfolio, d.user, d.availableProjects || []);
-          previewData.portfolio.heavy3d = false; // Disable heavy 3D for mobile WebViews
-          setData(previewData);
+          if (previewData) {
+            previewData.portfolio.heavy3d = false; // Disable heavy 3D for mobile WebViews
+            setData(previewData);
+          }
         }
       })
       .catch((e) => console.error("Failed to fetch mobile portfolio", e));
