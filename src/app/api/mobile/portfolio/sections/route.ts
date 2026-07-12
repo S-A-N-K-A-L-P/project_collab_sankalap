@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
-import { dbConnect } from "@/lib/db";
-import { Portfolio } from "@/models/Portfolio";
-import { User } from "@/models/User";
-import { authMiddleware } from "@/lib/auth";
+import dbConnect from "@/lib/mongodb";
+import Portfolio from "@/models/Portfolio";
+import User from "@/models/User";
+import { getMobileSession } from "@/lib/mobileAuth";
 
 export async function PUT(req: Request) {
   try {
+    const session = getMobileSession(req);
+    const userId = session.id;
     await dbConnect();
-    const { userId } = await authMiddleware(req);
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await req.json();
     const { publishNow, sections } = body;
