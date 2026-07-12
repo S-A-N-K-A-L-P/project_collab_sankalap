@@ -34,7 +34,7 @@ function FlutterPreviewContent() {
         if (alive && d.portfolio) {
           const previewData = buildPreviewData(d.portfolio, d.user, d.availableProjects || []);
           if (previewData) {
-            previewData.portfolio.heavy3d = false; // Disable heavy 3D for mobile WebViews
+            previewData.heavy3d = false; // Disable heavy 3D for mobile WebViews
             setData(previewData);
           }
         }
@@ -82,7 +82,7 @@ function FlutterPreviewContent() {
   }, []);
 
   // 3. Apply mobile-specific body styles (safe areas, overscroll bounce)
-  const theme = getTheme(localOverrides.themeId || data?.portfolio?.themeId);
+  const theme = getTheme(localOverrides.themeId || data?.themeId);
   useEffect(() => {
     const bg = theme.palette.bg;
     document.documentElement.style.background = bg;
@@ -107,12 +107,9 @@ function FlutterPreviewContent() {
   // Merge server data with real-time JS bridge deltas
   const mergedData = {
     ...data,
-    portfolio: {
-      ...data.portfolio,
-      ...localOverrides,
-      heavy3d: false, // Ensure it stays false
-      bgOverride: data.portfolio.heavy3d ? "constellation" : (localOverrides.bgOverride || data.portfolio.bgOverride),
-    }
+    ...localOverrides,
+    heavy3d: false, // Ensure it stays false
+    bgOverride: data.heavy3d ? "constellation" : (localOverrides.bgOverride || data.bgOverride),
   };
 
   return (
