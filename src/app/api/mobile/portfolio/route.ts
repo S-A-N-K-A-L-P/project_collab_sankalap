@@ -87,7 +87,8 @@ export async function PUT(req: Request) {
     }
 
     await pf.save();
-    return NextResponse.json({ ok: true, portfolio: JSON.parse(JSON.stringify(pf)) });
+    const user = await User.findById(userId).select("handle").lean();
+    return NextResponse.json({ ok: true, portfolio: JSON.parse(JSON.stringify(pf)), user: JSON.parse(JSON.stringify(user)) });
   } catch (error: any) {
     if (error.message?.includes("Missing") || error.message?.includes("jwt")) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
