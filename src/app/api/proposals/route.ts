@@ -72,13 +72,21 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
+    const q = searchParams.get("q");
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "50", 10);
     const skip = (page - 1) * limit;
 
     await dbConnect();
 
-    const query = userId ? { createdBy: userId } : {};
+    const query: any = {};
+    if (userId) query.createdBy = userId;
+    if (q) {
+      query.$or = [
+        { title: { $regex: q, $options: "i" } },
+        { description: { $regex: q, $options: "i" } },
+      ];
+    }
     const proposals = await Proposal.find(query)
       .populate("createdBy", "name avatar role universityName")
       .sort({ createdAt: -1 })

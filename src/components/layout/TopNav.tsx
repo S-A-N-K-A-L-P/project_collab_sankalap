@@ -46,7 +46,8 @@ function roleLabel(role?: string) {
   return role.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-interface SearchResult {
+interface PersonResult {
+  kind: "person";
   _id: string;
   name: string;
   avatar?: string;
@@ -54,11 +55,22 @@ interface SearchResult {
   universityName?: string;
 }
 
-/* ── Search box: live people-search dropdown ─────────── */
+interface ProposalResult {
+  kind: "proposal";
+  _id: string;
+  title: string;
+  type?: string;
+  status?: string;
+}
+
+type CombinedResult = PersonResult | ProposalResult;
+
+/* ── Search box: live people + proposals dropdown ─────── */
 function NavSearch() {
   const router = useRouter();
   const [query, setQuery]     = useState("");
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const [people, setPeople]   = useState<PersonResult[]>([]);
+  const [proposals, setProposals] = useState<ProposalResult[]>([]);
   const [open, setOpen]       = useState(false);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -66,25 +78,37 @@ function NavSearch() {
   useEffect(() => {
     const q = query.trim();
     if (q.length < 2) {
-      setResults([]);
+      setPeople([]);
+      setProposals([]);
       setLoading(false);
       return;
     }
     setLoading(true);
     const timer = setTimeout(() => {
-      fetch(`/api/developers/search?q=${encodeURIComponent(q)}`)
-        .then((r) => (r.ok ? r.json() : []))
-        .then((data) => setResults(Array.isArray(data) ? data.slice(0, 6) : []))
-        .catch(() => setResults([]))
+      Promise.all([
+        fetch(`/api/developers/search?q=${encodeURIComponent(q)}`)
+          .then((r) => (r.ok ? r.json() : []))
+          .catch(() => []),
+        fetch(`/api/proposals?q=${encodeURIComponent(q)}&limit=5`)
+          .then((r) => (r.ok ? r.json() : { proposals: [] }))
+          .catch(() => ({ proposals: [] })),
+      ])
+        .then(([peopleData, proposalData]) => {
+          setPeople(Array.isArray(peopleData) ? peopleData.slice(0, 4).map((p: any) => ({ kind: "person", ...p })) : []);
+          const proposalList = Array.isArray(proposalData?.proposals) ? proposalData.proposals : [];
+          setProposals(proposalList.slice(0, 5).map((p: any) => ({ kind: "proposal", _id: p._id, title: p.title, type: p.type, status: p.status })));
+        })
         .finally(() => setLoading(false));
     }, 300);
     return () => clearTimeout(timer);
   }, [query]);
 
-  const handleSelect = (id: string) => {
+  const results: CombinedResult[] = [...proposals, ...people];
+
+  const handleSelect = (result: CombinedResult) => {
     setOpen(false);
     setQuery("");
-    router.push(`/profile/${id}`);
+    router.push(result.kind === "person" ? `/profile/${result._id}` : `/ideas/${result._id}`);
   };
 
   return (
@@ -108,7 +132,7 @@ function NavSearch() {
             onFocus={() => setOpen(true)}
             onKeyDown={(e) => {
               if (e.key === "Escape") { setOpen(false); inputRef.current?.blur(); }
-              if (e.key === "Enter" && results[0]) handleSelect(results[0]._id);
+              if (e.key === "Enter" && results[0]) handleSelect(results[0]);
             }}
             placeholder="Search proposals, modules, or users..."
             sx={{ fontSize: 13.5, flex: 1, "& input": { p: 0 } }}
@@ -121,7 +145,7 @@ function NavSearch() {
               position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0,
               bgcolor: "background.paper", border: "1px solid", borderColor: "divider",
               borderRadius: 2, boxShadow: 4, zIndex: (t) => t.zIndex.drawer + 3,
-              maxHeight: 320, overflowY: "auto", py: 0.5,
+              maxHeight: 360, overflowY: "auto", py: 0.5,
             }}
           >
             {loading && (
@@ -129,10 +153,45 @@ function NavSearch() {
                 Searching…
               </Typography>
             )}
-            {!loading && results.map((r) => (
+
+            {!loading && proposals.length > 0 && (
+              <Typography sx={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "text.secondary", px: 1.5, pt: 0.75, pb: 0.25 }}>
+                Proposals
+              </Typography>
+            )}
+            {!loading && proposals.map((r) => (
               <Box
-                key={r._id}
-                onClick={() => handleSelect(r._id)}
+                key={`proposal-${r._id}`}
+                onClick={() => handleSelect(r)}
+                sx={{
+                  display: "flex", alignItems: "center", gap: 1.25,
+                  px: 1.5, py: 1, cursor: "pointer",
+                  "&:hover": { bgcolor: "action.hover" },
+                }}
+              >
+                <Box sx={{ width: 28, height: 28, borderRadius: 1, bgcolor: alpha("#6366f1", 0.12), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <ProposalsIcon sx={{ fontSize: 16, color: "primary.main" }} />
+                </Box>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography sx={{ fontSize: 13, fontWeight: 600, lineHeight: 1.3 }} noWrap>
+                    {r.title}
+                  </Typography>
+                  <Typography sx={{ fontSize: 11, color: "text.secondary", lineHeight: 1.3, textTransform: "capitalize" }} noWrap>
+                    {r.type || "idea"}{r.status ? ` · ${r.status}` : ""}
+                  </Typography>
+                </Box>
+              </Box>
+            ))}
+
+            {!loading && people.length > 0 && (
+              <Typography sx={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "text.secondary", px: 1.5, pt: 0.75, pb: 0.25 }}>
+                People
+              </Typography>
+            )}
+            {!loading && people.map((r) => (
+              <Box
+                key={`person-${r._id}`}
+                onClick={() => handleSelect(r)}
                 sx={{
                   display: "flex", alignItems: "center", gap: 1.25,
                   px: 1.5, py: 1, cursor: "pointer",
