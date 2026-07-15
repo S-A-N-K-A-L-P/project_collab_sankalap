@@ -5,10 +5,11 @@ import TopNav    from "./TopNav";
 import Sidebar   from "./Sidebar";
 import RightPanel from "./RightPanel";
 import { useLayout } from "@/context/LayoutContext";
-import { TOP_NAV_HEIGHT, ICON_RAIL_WIDTH } from "./constants";
+import { TOP_NAV_HEIGHT, SIDEBAR_COLLAPSED_WIDTH, SIDEBAR_EXPANDED_WIDTH } from "./constants";
 
 export default function AppLayoutClient({ children }: { children: React.ReactNode }) {
-  const { isRightPanelCollapsed } = useLayout();
+  const { isRightPanelCollapsed, isSidebarCollapsed } = useLayout();
+  const sidebarWidth = isSidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH;
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh", bgcolor: "background.default" }}>
@@ -24,8 +25,14 @@ export default function AppLayoutClient({ children }: { children: React.ReactNod
           pt: `${TOP_NAV_HEIGHT}px`,   /* push content below AppBar */
         }}
       >
-        {/* Spacer that mirrors the fixed icon rail */}
-        <Box sx={{ width: ICON_RAIL_WIDTH, flexShrink: 0 }} />
+        {/* Spacer that mirrors the fixed sidebar's width, animating in sync with it */}
+        <Box
+          sx={{
+            width: sidebarWidth,
+            flexShrink: 0,
+            transition: "width 200ms cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
+        />
 
         {/* Fixed icon rail (profile / settings / theme / sign-out) */}
         <Sidebar />
