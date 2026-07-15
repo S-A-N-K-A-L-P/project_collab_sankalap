@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Box, Avatar, Tooltip, Divider } from "@mui/material";
+import { Box, Avatar, Tooltip, Divider, useMediaQuery, useTheme as useMuiTheme } from "@mui/material";
 import {
   Trophy,
   ShoppingBag,
@@ -23,7 +23,7 @@ import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { useLayout } from "@/context/LayoutContext";
-import { TOP_NAV_HEIGHT, SIDEBAR_COLLAPSED_WIDTH, SIDEBAR_EXPANDED_WIDTH } from "./constants";
+import { TOP_NAV_HEIGHT, SIDEBAR_COLLAPSED_WIDTH, SIDEBAR_EXPANDED_WIDTH, SIDEBAR_MOBILE_WIDTH } from "./constants";
 
 /* ── Sidebar palette — CSS vars from globals.css, follow next-themes' `.dark`
        class automatically (off-white rail in light mode, slate in dark) ── */
@@ -181,11 +181,22 @@ function NavItem({
 export default function Sidebar() {
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
-  const { isSidebarCollapsed, toggleSidebarCollapsed } = useLayout();
+  const {
+    isSidebarCollapsed, toggleSidebarCollapsed,
+    isMobileSidebarOpen, closeMobileSidebar,
+  } = useLayout();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
+  const muiTheme = useMuiTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"));
   useEffect(() => setMounted(true), []);
+
+  // Auto-close the mobile drawer whenever the route changes
+  useEffect(() => {
+    closeMobileSidebar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   const user       = session?.user as any;
   const userHref   = user?.id ? `/profile/${user.id}` : "/login";
@@ -198,32 +209,58 @@ export default function Sidebar() {
   const isActive = (href: string) =>
     pathname === href || pathname?.startsWith(`${href}/`);
 
-  const width = isSidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH;
+  // On mobile the rail is a full-label overlay drawer — collapsing it makes no sense there
+  const collapsed = isMobile ? false : isSidebarCollapsed;
+  const desktopWidth = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH;
   const labelTransition = reducedMotion
     ? "none"
     : "opacity 130ms ease, max-width 130ms ease";
 
   return (
-    <Box
-      sx={{
-        position: "fixed",
-        top: TOP_NAV_HEIGHT,
-        left: 0,
-        bottom: 0,
-        width,
-        bgcolor: D.bg,
-        borderRight: `1px solid ${D.border}`,
-        display: "flex",
-        flexDirection: "column",
-        py: 2,
-        gap: 0.5,
-        overflowX: "hidden",
-        zIndex: (t) => t.zIndex.drawer,
-        transition: reducedMotion ? "none" : "width 200ms cubic-bezier(0.4, 0, 0.2, 1)",
-      }}
-    >
+    <>
+      {/* Backdrop — mobile drawer only */}
+      <Box
+        onClick={closeMobileSidebar}
+        sx={{
+          display: isMobileSidebarOpen ? { xs: "block", sm: "none" } : "none",
+          position: "fixed",
+          top: TOP_NAV_HEIGHT,
+          left: 0, right: 0, bottom: 0,
+          bgcolor: "rgba(0,0,0,0.45)",
+          zIndex: (t) => t.zIndex.drawer,
+        }}
+      />
+
+      <Box
+        style={{
+          width: isMobile ? SIDEBAR_MOBILE_WIDTH : desktopWidth,
+          maxWidth: isMobile ? "82vw" : "none",
+          transform: isMobile
+            ? (isMobileSidebarOpen ? "translateX(0px)" : `translateX(-${SIDEBAR_MOBILE_WIDTH}px)`)
+            : "none",
+          transition: reducedMotion
+            ? "none"
+            : isMobile
+              ? "transform 220ms cubic-bezier(0.4, 0, 0.2, 1)"
+              : "width 200ms cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
+        sx={{
+          position: "fixed",
+          top: TOP_NAV_HEIGHT,
+          left: 0,
+          bottom: 0,
+          bgcolor: D.bg,
+          borderRight: `1px solid ${D.border}`,
+          display: "flex",
+          flexDirection: "column",
+          py: 2,
+          gap: 0.5,
+          overflowX: "hidden",
+          zIndex: (t) => t.zIndex.drawer + 1,
+        }}
+      >
       {/* User avatar → profile */}
-      <RailTooltip label={user?.name || "My Profile"} show={isSidebarCollapsed}>
+      <RailTooltip label={user?.name || "My Profile"} show={collapsed}>
         <Box
           component={NextLink}
           href={userHref}
@@ -231,7 +268,7 @@ export default function Sidebar() {
             display: "flex",
             alignItems: "center",
             gap: 1.25,
-            justifyContent: isSidebarCollapsed ? "center" : "flex-start",
+            justifyContent: collapsed ? "center" : "flex-start",
             px: 1.25,
             mx: 1,
             mb: 1,
@@ -255,8 +292,8 @@ export default function Sidebar() {
             sx={{
               fontSize: 13, fontWeight: 600, color: D.nameFg,
               whiteSpace: "nowrap", overflow: "hidden",
-              opacity: isSidebarCollapsed ? 0 : 1,
-              maxWidth: isSidebarCollapsed ? 0 : 160,
+              opacity: collapsed ? 0 : 1,
+              maxWidth: collapsed ? 0 : 160,
               transition: labelTransition,
             }}
           >
@@ -268,12 +305,12 @@ export default function Sidebar() {
       <Divider sx={{ borderColor: D.border, my: 0.5, mx: 1 }} />
 
       {/* Primary navigation */}
-      <NavItem icon={Trophy}      label="My Completed Projects" href="/my-completed" active={isActive("/my-completed")} collapsed={isSidebarCollapsed} reducedMotion={reducedMotion} />
-      <NavItem icon={ShoppingBag} label="Marketplace"           href="/marketplace"  active={isActive("/marketplace")}  collapsed={isSidebarCollapsed} reducedMotion={reducedMotion} />
-      <NavItem icon={Briefcase}   label="My Portfolio"          href="/my-portfolio" active={isActive("/my-portfolio")} collapsed={isSidebarCollapsed} reducedMotion={reducedMotion} />
-      <NavItem icon={Building2}   label="Organizations"         href="/orgs"         active={isActive("/orgs")}         collapsed={isSidebarCollapsed} reducedMotion={reducedMotion} />
-      <NavItem icon={Monitor}     label="Syncro Desktop App"    href="/desktop"      active={isActive("/desktop")}      collapsed={isSidebarCollapsed} reducedMotion={reducedMotion} />
-      <NavItem icon={SettingsIcon} label="Settings"             href="/settings"     active={isActive("/settings")}     collapsed={isSidebarCollapsed} reducedMotion={reducedMotion} />
+      <NavItem icon={Trophy}      label="My Completed Projects" href="/my-completed" active={isActive("/my-completed")} collapsed={collapsed} reducedMotion={reducedMotion} />
+      <NavItem icon={ShoppingBag} label="Marketplace"           href="/marketplace"  active={isActive("/marketplace")}  collapsed={collapsed} reducedMotion={reducedMotion} />
+      <NavItem icon={Briefcase}   label="My Portfolio"          href="/my-portfolio" active={isActive("/my-portfolio")} collapsed={collapsed} reducedMotion={reducedMotion} />
+      <NavItem icon={Building2}   label="Organizations"         href="/orgs"         active={isActive("/orgs")}         collapsed={collapsed} reducedMotion={reducedMotion} />
+      <NavItem icon={Monitor}     label="Syncro Desktop App"    href="/desktop"      active={isActive("/desktop")}      collapsed={collapsed} reducedMotion={reducedMotion} />
+      <NavItem icon={SettingsIcon} label="Settings"             href="/settings"     active={isActive("/settings")}     collapsed={collapsed} reducedMotion={reducedMotion} />
 
       {/* Admin section (gated) */}
       {showAdminSection && (
@@ -284,18 +321,18 @@ export default function Sidebar() {
               fontSize: 10.5, fontWeight: 700, letterSpacing: "0.08em",
               color: D.sectionLabel, textTransform: "uppercase",
               whiteSpace: "nowrap", overflow: "hidden",
-              opacity: isSidebarCollapsed ? 0 : 1,
-              maxHeight: isSidebarCollapsed ? 0 : 20,
+              opacity: collapsed ? 0 : 1,
+              maxHeight: collapsed ? 0 : 20,
               transition: labelTransition,
             }}
           >
             Admin
           </Box>
           {isAdmin && (
-            <NavItem icon={ShieldCheck}    label="Admin Panel"          href="/admin/dashboard"    active={isActive("/admin/dashboard")}    collapsed={isSidebarCollapsed} reducedMotion={reducedMotion} />
+            <NavItem icon={ShieldCheck}    label="Admin Panel"          href="/admin/dashboard"    active={isActive("/admin/dashboard")}    collapsed={collapsed} reducedMotion={reducedMotion} />
           )}
           {isReviewer && (
-            <NavItem icon={ClipboardList}  label="Org Requests Queue"   href="/admin/org-requests" active={isActive("/admin/org-requests")} collapsed={isSidebarCollapsed} reducedMotion={reducedMotion} />
+            <NavItem icon={ClipboardList}  label="Org Requests Queue"   href="/admin/org-requests" active={isActive("/admin/org-requests")} collapsed={collapsed} reducedMotion={reducedMotion} />
           )}
         </>
       )}
@@ -305,14 +342,16 @@ export default function Sidebar() {
 
       <Divider sx={{ borderColor: D.border, my: 0.5, mx: 1 }} />
 
-      {/* Collapse / expand toggle */}
-      <NavItem
-        icon={isSidebarCollapsed ? PanelLeftOpen : PanelLeftClose}
-        label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        onClick={toggleSidebarCollapsed}
-        collapsed={isSidebarCollapsed}
-        reducedMotion={reducedMotion}
-      />
+      {/* Collapse / expand toggle — desktop/tablet only, meaningless on the mobile drawer */}
+      <Box sx={{ display: { xs: "none", sm: "block" } }}>
+        <NavItem
+          icon={isSidebarCollapsed ? PanelLeftOpen : PanelLeftClose}
+          label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          onClick={toggleSidebarCollapsed}
+          collapsed={collapsed}
+          reducedMotion={reducedMotion}
+        />
+      </Box>
 
       {/* Theme toggle */}
       {mounted && (
@@ -320,7 +359,7 @@ export default function Sidebar() {
           icon={theme === "dark" ? Sun : Moon}
           label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          collapsed={isSidebarCollapsed}
+          collapsed={collapsed}
           reducedMotion={reducedMotion}
         />
       )}
@@ -330,9 +369,10 @@ export default function Sidebar() {
         icon={LogOut}
         label="Sign out"
         onClick={() => signOut({ callbackUrl: "/login" })}
-        collapsed={isSidebarCollapsed}
+        collapsed={collapsed}
         reducedMotion={reducedMotion}
       />
-    </Box>
+      </Box>
+    </>
   );
 }

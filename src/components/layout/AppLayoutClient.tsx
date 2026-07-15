@@ -25,10 +25,12 @@ export default function AppLayoutClient({ children }: { children: React.ReactNod
           pt: `${TOP_NAV_HEIGHT}px`,   /* push content below AppBar */
         }}
       >
-        {/* Spacer that mirrors the fixed sidebar's width, animating in sync with it */}
+        {/* Spacer that mirrors the fixed sidebar's width, animating in sync with it.
+            Zero-width on mobile — the sidebar becomes an overlay drawer there instead
+            of pushing content. */}
         <Box
           sx={{
-            width: sidebarWidth,
+            width: { xs: 0, sm: sidebarWidth },
             flexShrink: 0,
             transition: "width 200ms cubic-bezier(0.4, 0, 0.2, 1)",
           }}

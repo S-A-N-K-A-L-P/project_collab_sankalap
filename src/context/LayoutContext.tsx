@@ -7,6 +7,10 @@ interface LayoutContextType {
   setIsRightPanelCollapsed: (collapsed: boolean) => void;
   isSidebarCollapsed: boolean;
   toggleSidebarCollapsed: () => void;
+  isMobileSidebarOpen: boolean;
+  openMobileSidebar: () => void;
+  closeMobileSidebar: () => void;
+  toggleMobileSidebarOpen: () => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
@@ -16,6 +20,7 @@ const SIDEBAR_COLLAPSE_STORAGE_KEY = "sankalp:sidebar-collapsed";
 export function LayoutProvider({ children }: { children: React.ReactNode }) {
   const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(SIDEBAR_COLLAPSE_STORAGE_KEY);
@@ -37,6 +42,10 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
         setIsRightPanelCollapsed,
         isSidebarCollapsed,
         toggleSidebarCollapsed,
+        isMobileSidebarOpen,
+        openMobileSidebar: () => setIsMobileSidebarOpen(true),
+        closeMobileSidebar: () => setIsMobileSidebarOpen(false),
+        toggleMobileSidebarOpen: () => setIsMobileSidebarOpen((prev) => !prev),
       }}
     >
       {children}
