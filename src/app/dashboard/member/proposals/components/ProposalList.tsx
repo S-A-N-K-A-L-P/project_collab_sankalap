@@ -10,7 +10,7 @@ type ProposalListProps = {
 
 export function ProposalList({ proposals, myVoterId, onVote, onDelete }: ProposalListProps) {
   if (proposals.length === 0) {
-    return <p className="rounded-lg border border-dashed border-gray-300 bg-white p-6 text-sm text-gray-600">No proposals found.</p>;
+    return <p className="rounded-lg border border-dashed border-border-strong bg-card p-6 text-sm text-muted-foreground">No proposals found.</p>;
   }
 
   return (

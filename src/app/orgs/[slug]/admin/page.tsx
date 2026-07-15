@@ -70,7 +70,7 @@ export default function OrgAdminDashboard() {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
         {/* Org Banner Summary */}
-        <div className="relative overflow-hidden p-6 rounded-2xl border border-border dark:border-white/10 bg-card dark:bg-white/5 backdrop-blur-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="relative overflow-hidden p-6 rounded-2xl border border-border bg-card dark:bg-white/5 backdrop-blur-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full bg-gradient-to-br from-primary/10 to-tertiary/10 dark:from-indigo-500/10 dark:to-purple-500/10 blur-2xl" />
           <div className="relative flex items-center gap-4">
             <div

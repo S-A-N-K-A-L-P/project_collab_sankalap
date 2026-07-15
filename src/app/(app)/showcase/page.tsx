@@ -49,10 +49,10 @@ export default function ShowcasePage() {
               <button
                 key={s}
                 onClick={() => setSort(s)}
-                className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-all border ${
                   sort === s
-                    ? "bg-primary text-white"
-                    : "bg-background text-muted hover:text-foreground hover:bg-card-hover border border-border"
+                    ? "bg-gradient-to-r from-primary to-primary-hover dark:from-indigo-500 dark:to-purple-500 border-transparent text-primary-foreground dark:text-white shadow-sm"
+                    : "bg-card dark:bg-white/5 border-border text-muted-foreground dark:text-white/50 hover:text-foreground dark:hover:text-white/80 hover:border-primary/40 dark:hover:border-white/20"
                 }`}
               >
                 {s === "newest" ? "Newest" : s === "featured" ? "Featured" : "Most viewed"}

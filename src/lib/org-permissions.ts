@@ -114,7 +114,7 @@ export const ORG_ROLE_LABELS: Record<OrgRole, string> = {
 };
 
 export const ORG_ROLE_COLORS: Record<OrgRole, string> = {
-  observer:    "bg-gray-500/20 text-gray-400",
+  observer:    "bg-muted-strong/40 text-muted-foreground",
   member:      "bg-blue-500/20 text-blue-400",
   contributor: "bg-cyan-500/20 text-cyan-400",
   lead:        "bg-purple-500/20 text-purple-400",

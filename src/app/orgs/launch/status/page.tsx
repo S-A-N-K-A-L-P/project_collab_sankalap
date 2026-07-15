@@ -96,7 +96,7 @@ export default function OrgLaunchStatusPage() {
 
         <div className="space-y-4">
           {requests.length === 0 ? (
-            <div className="text-center py-16 bg-card dark:bg-white/5 border border-dashed border-border dark:border-white/10 rounded-2xl">
+            <div className="text-center py-16 bg-card dark:bg-white/5 border border-dashed border-border rounded-2xl">
               <Clock className="mx-auto text-muted-foreground dark:text-white/20 mb-3" size={36} />
               <h3 className="font-medium text-foreground dark:text-white mb-1">No launch requests found</h3>
               <p className="text-xs text-muted-foreground dark:text-white/40 mb-4">You haven't submitted any organization launch requests yet.</p>
@@ -119,7 +119,7 @@ export default function OrgLaunchStatusPage() {
               return (
                 <div
                   key={req._id}
-                  className="p-5 rounded-2xl border border-border dark:border-white/10 bg-card dark:bg-white/5 backdrop-blur-sm space-y-4"
+                  className="p-5 rounded-2xl border border-border bg-card dark:bg-white/5 backdrop-blur-sm space-y-4"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>

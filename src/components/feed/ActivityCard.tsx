@@ -52,8 +52,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
 
   return (
     <div
-      className="flex items-start gap-3 p-4 bg-card border border-border rounded-xl transition-all duration-150 hover:border-border-strong hover:shadow-sm"
-      style={{ boxShadow: "0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04)" }}
+      className="flex items-start gap-3 p-4 bg-card border border-border rounded-xl transition-all duration-150 hover:border-border-strong elevation-1 hover:shadow-[var(--shadow-md)]"
     >
       <div className={`mt-0.5 w-8 h-8 rounded-lg bg-background border border-border flex items-center justify-center shrink-0 ${color}`}>
         {icon}

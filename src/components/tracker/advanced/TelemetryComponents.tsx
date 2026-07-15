@@ -79,7 +79,7 @@ export function BuildLogViewer() {
                className="flex gap-3 leading-relaxed"
             >
                <span className="text-muted font-bold">[{LOG_TIMESTAMPS[i] || "00:00:00"}]</span>
-               <span className="text-[#9ca3af]">{log}</span>
+               <span className="text-muted-foreground">{log}</span>
             </motion.div>
           ))}
           <div className="w-1.5 h-3 bg-accent animate-pulse inline-block align-middle ml-1" />

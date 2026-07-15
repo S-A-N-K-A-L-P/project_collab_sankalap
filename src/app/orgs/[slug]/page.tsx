@@ -95,7 +95,7 @@ export default function OrgPage() {
       <div className="min-h-screen relative bg-background dark:bg-[#060608]">
         {/* Floating Admin Controls for Org Admins */}
         {isAdmin && (
-          <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 p-1.5 rounded-2xl bg-card/60 dark:bg-black/60 backdrop-blur-md border border-border dark:border-white/10 shadow-2xl">
+          <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 p-1.5 rounded-2xl bg-card/60 dark:bg-black/60 backdrop-blur-md border border-border shadow-2xl">
             <a
               href={`/orgs/${slug}/admin`}
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover dark:bg-indigo-500 dark:hover:bg-indigo-400 text-primary-foreground dark:text-white font-semibold text-xs transition-all"
@@ -134,7 +134,7 @@ export default function OrgPage() {
             <div className="flex items-center gap-2">
               <a
                 href={`/orgs/${slug}/admin`}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card dark:bg-white/5 border border-border dark:border-white/10 hover:bg-muted-strong dark:hover:bg-white/10 text-foreground dark:text-white/80 font-semibold text-xs transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card dark:bg-white/5 border border-border hover:bg-muted-strong dark:hover:bg-white/10 text-foreground dark:text-white/80 font-semibold text-xs transition-all"
               >
                 <LayoutDashboard size={12} /> Admin Console
               </a>
@@ -174,7 +174,7 @@ export default function OrgPage() {
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="relative overflow-hidden p-6 rounded-2xl border border-border dark:border-white/10 bg-card dark:bg-white/5 backdrop-blur-sm space-y-4"
+              className="relative overflow-hidden p-6 rounded-2xl border border-border bg-card dark:bg-white/5 backdrop-blur-sm space-y-4"
             >
               <div className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full bg-gradient-to-br from-primary/10 to-tertiary/10 dark:from-indigo-500/10 dark:to-purple-500/10 blur-2xl" />
               <h2 className="relative text-lg font-bold text-foreground dark:text-white flex items-center gap-2">
@@ -193,7 +193,7 @@ export default function OrgPage() {
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="relative overflow-hidden p-6 rounded-2xl border border-border dark:border-white/10 bg-card dark:bg-white/5 backdrop-blur-sm space-y-4"
+              className="relative overflow-hidden p-6 rounded-2xl border border-border bg-card dark:bg-white/5 backdrop-blur-sm space-y-4"
             >
               <div className="pointer-events-none absolute -top-16 -left-16 w-40 h-40 rounded-full bg-gradient-to-br from-tertiary/10 to-primary/10 dark:from-purple-500/10 dark:to-indigo-500/10 blur-2xl" />
               <div className="relative flex items-center justify-between">
@@ -207,7 +207,7 @@ export default function OrgPage() {
               </div>
 
               {projects.length === 0 ? (
-                <div className="text-center py-12 border border-dashed border-border dark:border-white/10 rounded-xl">
+                <div className="text-center py-12 border border-dashed border-border rounded-xl">
                   <FolderOpen className="mx-auto text-muted-foreground dark:text-white/20 mb-2" size={24} />
                   <p className="text-xs text-muted-foreground dark:text-white/40">No completed projects to showcase yet</p>
                 </div>
@@ -255,7 +255,7 @@ export default function OrgPage() {
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="p-6 rounded-2xl border border-border dark:border-white/10 bg-card dark:bg-white/5 backdrop-blur-sm space-y-4"
+              className="p-6 rounded-2xl border border-border bg-card dark:bg-white/5 backdrop-blur-sm space-y-4"
             >
               <div className="flex items-center justify-between">
                 <h2 className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">

@@ -15,12 +15,12 @@ export default function CreateProposalPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">Create Proposal</h1>
-        <Link href="/dashboard/member/proposals" className="text-sm text-blue-700 hover:underline">
+        <Link href="/dashboard/member/proposals" className="text-sm text-primary hover:underline">
           Back to proposals
         </Link>
       </div>
 
-      {error ? <p className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="rounded border border-error/30 bg-error/10 p-3 text-sm text-error">{error}</p> : null}
 
       <ProposalForm
         submitting={submitting}

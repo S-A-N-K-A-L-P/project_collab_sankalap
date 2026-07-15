@@ -68,7 +68,7 @@ export default function OrgHero({ org, actions }: OrgHeroProps) {
           className="flex-1 min-w-0"
         >
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-background/60 dark:bg-white/10 text-foreground dark:text-white/70 border border-border dark:border-white/10">
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-background/60 dark:bg-white/10 text-foreground dark:text-white/70 border border-border">
               {CATEGORY_LABELS[org.category] || org.category}
             </span>
             {org.isHost && (

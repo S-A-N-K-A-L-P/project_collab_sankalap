@@ -75,7 +75,7 @@ export default function ProjectTeamPage() {
     }, [tasks]);
 
     if (loading) {
-        return <div className="rounded-2xl border border-[#1f1f23] bg-[#121214] p-6 text-sm text-[#9ca3af]">Loading team data...</div>;
+        return <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">Loading team data...</div>;
     }
 
     if (error) {
@@ -83,18 +83,18 @@ export default function ProjectTeamPage() {
     }
 
     return (
-        <div className="rounded-2xl border border-[#1f1f23] bg-[#121214] p-5">
-            <h2 className="text-lg font-semibold text-[#e5e7eb]">Team Analytics</h2>
+        <div className="rounded-2xl border border-border bg-card p-5">
+            <h2 className="text-lg font-semibold text-foreground">Team Analytics</h2>
             <div className="mt-4 space-y-2">
                 {members.map((member) => (
-                    <div key={member.id} className="rounded-lg border border-[#1f1f23] bg-[#17171a] p-3">
-                        <p className="text-sm font-medium text-[#e5e7eb]">{member.name}</p>
-                        <p className="text-xs text-[#9ca3af] mt-1">
+                    <div key={member.id} className="rounded-lg border border-border bg-muted-bg p-3">
+                        <p className="text-sm font-medium text-foreground">{member.name}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
                             Tasks: {member.total} | Completed: {member.completed} | Avg progress: {member.avgProgress}%
                         </p>
                     </div>
                 ))}
-                {members.length === 0 ? <p className="text-sm text-[#9ca3af]">No team members assigned yet.</p> : null}
+                {members.length === 0 ? <p className="text-sm text-muted-foreground">No team members assigned yet.</p> : null}
             </div>
         </div>
     );

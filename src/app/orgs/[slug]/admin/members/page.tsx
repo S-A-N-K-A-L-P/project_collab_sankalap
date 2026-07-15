@@ -201,7 +201,7 @@ export default function OrgAdminMembersPage() {
           <h3 className="text-sm font-bold text-foreground dark:text-white flex items-center gap-2">
             <ShieldCheck size={14} className="text-primary dark:text-indigo-400" /> Active Members ({members.length})
           </h3>
-          <div className="rounded-xl border border-border dark:border-white/10 bg-card dark:bg-white/5 divide-y divide-border dark:divide-white/8 overflow-hidden">
+          <div className="rounded-xl border border-border bg-card dark:bg-white/5 divide-y divide-border dark:divide-white/8 overflow-hidden">
             {members.map((m) => {
               const u = m.userId || {};
               const isOwner = m.role === "owner";
@@ -228,7 +228,7 @@ export default function OrgAdminMembersPage() {
                         value={m.role}
                         onChange={(e) => handleRoleChange(u._id, e.target.value)}
                         disabled={actioning === u._id}
-                        className="px-2 py-1.5 rounded-lg bg-card dark:bg-white/5 border border-border dark:border-white/10 text-xs text-foreground dark:text-white focus:outline-none focus:border-primary dark:focus:border-indigo-400/60"
+                        className="px-2 py-1.5 rounded-lg bg-card dark:bg-white/5 border border-border text-xs text-foreground dark:text-white focus:outline-none focus:border-primary dark:focus:border-indigo-400/60"
                       >
                         {Object.entries(ORG_ROLE_LABELS).map(([value, label]) => {
                           if (value === "owner") return null;

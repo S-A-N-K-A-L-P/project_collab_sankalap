@@ -117,7 +117,7 @@ export default function OrgAdminSettingsPage() {
 
   if (orgError || !org || !isAdmin) return null;
 
-  const inputCls = "w-full px-3 py-2 rounded-lg bg-card dark:bg-white/5 border border-border dark:border-white/10 text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 shadow-sm focus:outline-none focus:border-primary dark:focus:border-indigo-400/60 focus:ring-2 focus:ring-primary/15 dark:focus:ring-indigo-400/15 transition-all";
+  const inputCls = "w-full px-3 py-2 rounded-lg bg-card dark:bg-white/5 border border-border text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 shadow-sm focus:outline-none focus:border-primary dark:focus:border-indigo-400/60 focus:ring-2 focus:ring-primary/15 dark:focus:ring-indigo-400/15 transition-all";
   const labelCls = "block text-xs font-semibold text-muted-foreground dark:text-white/50 uppercase tracking-wider mb-1.5";
 
   return (

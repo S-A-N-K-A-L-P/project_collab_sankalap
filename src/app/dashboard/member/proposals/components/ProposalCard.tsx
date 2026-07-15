@@ -16,13 +16,13 @@ export function ProposalCard({ proposal, canManage, onVote, onDelete }: Proposal
   const createdLabel = formatIsoDate(proposal.createdAt, 'Unknown date');
 
   return (
-    <article className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+    <article className="rounded-lg border border-border bg-card p-4 shadow-sm">
       <div className="mb-3 flex items-start justify-between gap-2">
         <div>
-          <h3 className="text-base font-semibold text-gray-900">{proposal.question}</h3>
-          <p className="text-xs text-gray-500">Created {createdLabel}</p>
+          <h3 className="text-base font-semibold text-foreground">{proposal.question}</h3>
+          <p className="text-xs text-muted-foreground">Created {createdLabel}</p>
         </div>
-        <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium uppercase text-gray-700">
+        <span className="rounded-full bg-muted-strong px-2 py-1 text-xs font-medium uppercase text-foreground">
           {proposal.status}
         </span>
       </div>
@@ -40,12 +40,12 @@ export function ProposalCard({ proposal, canManage, onVote, onDelete }: Proposal
         }}
       />
 
-      <div className="mt-4 flex items-center justify-between text-xs text-gray-600">
+      <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
         <span>Total votes: {proposal.totalVotes}</span>
         {canManage ? (
           <button
             onClick={() => onDelete(proposal._id)}
-            className="rounded border border-red-300 px-2 py-1 text-red-700 hover:bg-red-50"
+            className="rounded border border-error/30 px-2 py-1 text-error hover:bg-error/10"
           >
             Delete
           </button>

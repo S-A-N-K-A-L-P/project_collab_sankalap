@@ -68,7 +68,7 @@ export default function ProjectTrackerPage() {
 
   if (loading) return (
     <div className="flex h-[80vh] items-center justify-center">
-      <Loader2 className="w-8 h-8 text-[#6366f1] animate-spin" />
+      <Loader2 className="w-8 h-8 text-primary animate-spin" />
     </div>
   );
 
@@ -154,18 +154,18 @@ export default function ProjectTrackerPage() {
                     <h3 className="text-2xl font-black text-foreground italic uppercase tracking-tighter mb-8">Active Work Board</h3>
                     <KanbanBoard columns={[
                       {
-                        id: "pending", title: "Backlog", status: "pending", accent: "#9ca3af", tasks: [
+                        id: "pending", title: "Backlog", status: "pending", accent: "var(--muted-foreground)", tasks: [
                           { _id: "1", title: "Refactor API Gateway", description: "Improve modularity of NLP querying router.", priority: "high", status: "pending", progress: 0, deadline: "2026-06-15", assignedTo: "sarah" },
                           { _id: "2", title: "Vector Asset Polish", description: "Optimize SVG assets size and layout grids.", priority: "low", status: "pending", progress: 0, deadline: "2026-06-20", assignedTo: "sarah" },
                         ]
                       },
                       {
-                        id: "in-progress", title: "In Progress", status: "in-progress", accent: "#6366f1", tasks: [
+                        id: "in-progress", title: "In Progress", status: "in-progress", accent: "var(--primary)", tasks: [
                           { _id: "3", title: "Core Query Translation Engine", description: "Establish structured query translations for NLP model.", priority: "high", status: "in-progress", progress: 50, deadline: "2026-06-10", assignedTo: "tushar" },
                         ]
                       },
                       {
-                        id: "completed", title: "Completed", status: "completed", accent: "#10b981", tasks: [
+                        id: "completed", title: "Completed", status: "completed", accent: "var(--success)", tasks: [
                           { _id: "4", title: "Establish MongoDB Cluster", description: "Perform schema definition and DB configuration.", priority: "medium", status: "completed", progress: 100, deadline: "2026-05-24", assignedTo: "marcus" },
                         ]
                       },
@@ -208,7 +208,7 @@ export default function ProjectTrackerPage() {
                     ]} /></div>
                     <TeamHeatmap />
                   </div>
-                  <h3 className="text-2xl font-black text-[#e5e7eb] italic uppercase tracking-tighter pt-8 border-t border-[#1f1f23]">Project Team</h3>
+                  <h3 className="text-2xl font-black text-foreground italic uppercase tracking-tighter pt-8 border-t border-border">Project Team</h3>
                   <ContributorList
                     members={[
                       { name: "Tushar Yadav", role: "Lead Architect", reputation: 450, rank: 1, contributions: 24 },
@@ -232,7 +232,7 @@ export default function ProjectTrackerPage() {
                     </div>
                   </div>
 
-                  <div className="pt-8 border-t border-[#1f1f23]">
+                  <div className="pt-8 border-t border-border">
                     <TaskComments />
                   </div>
                 </div>

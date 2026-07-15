@@ -1,4 +1,7 @@
+"use client";
+
 import { LucideIcon } from "lucide-react";
+import { useCardGlow, CardGlow } from "@/components/ui/card-glow";
 
 interface AdminStatCardProps {
   title: string;
@@ -15,15 +18,19 @@ export default function AdminStatCard({
   description,
   accent,
 }: AdminStatCardProps) {
+  const { onMouseMove, background } = useCardGlow();
+
   return (
     <div
-      className={`p-6 rounded-2xl border space-y-3 ${
+      onMouseMove={onMouseMove}
+      className={`group relative overflow-hidden p-6 rounded-2xl border space-y-3 transition-shadow ${
         accent
           ? "bg-accent/10 border-accent/20"
           : "bg-surface border-border-subtle"
       }`}
     >
-      <div className="flex items-center justify-between">
+      <CardGlow background={background} />
+      <div className="relative z-10 flex items-center justify-between">
         <p className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest">
           {title}
         </p>
@@ -32,14 +39,14 @@ export default function AdminStatCard({
         </div>
       </div>
       <p
-        className={`text-3xl font-bold tracking-tight ${
+        className={`relative z-10 text-3xl font-bold tracking-tight ${
           accent ? "text-accent" : "text-foreground"
         }`}
       >
         {value}
       </p>
       {description && (
-        <p className="text-[11px] text-muted font-bold uppercase tracking-wider">
+        <p className="relative z-10 text-[11px] text-muted font-bold uppercase tracking-wider">
           {description}
         </p>
       )}

@@ -4,6 +4,7 @@ import { MessageSquare, Users, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import VoteButton from "../proposal/VoteButton";
 import { formatIsoDate } from "@/lib/hydration-safe-date";
+import { useCardGlow, CardGlow } from "@/components/ui/card-glow";
 
 interface ProposalCardProps {
   proposal: {
@@ -17,25 +18,26 @@ interface ProposalCardProps {
 }
 
 const TYPE_COLOR: Record<string, string> = {
-  project:        "bg-blue-100 text-blue-700",
-  module:         "bg-indigo-100 text-indigo-700",
-  infrastructure: "bg-amber-100 text-amber-700",
-  protocol:       "bg-purple-100 text-purple-700",
+  project:        "pill-info",
+  module:         "pill-primary",
+  infrastructure: "pill-warning",
+  protocol:       "pill-research",
 };
 const STATUS_COLOR: Record<string, string> = {
-  active:   "bg-green-100 text-green-800",
-  approved: "bg-green-100 text-green-800",
-  rejected: "bg-red-100 text-red-800",
-  proposal: "bg-yellow-100 text-yellow-800",
-  pending:  "bg-yellow-100 text-yellow-800",
+  active:   "pill-success",
+  approved: "pill-success",
+  rejected: "pill-error",
+  proposal: "pill-warning",
+  pending:  "pill-warning",
 };
 
 export default function ProposalCard({ proposal, onExpand, isActive }: ProposalCardProps) {
   const [totalVotes, setTotalVotes] = useState(proposal.totalVotes || 0);
+  const { onMouseMove, background } = useCardGlow();
 
   const createdLabel = formatIsoDate(proposal.createdAt, "");
-  const typeColor    = TYPE_COLOR[proposal.type?.toLowerCase()]   ?? "bg-gray-100 text-gray-700";
-  const statusColor  = STATUS_COLOR[proposal.status?.toLowerCase()] ?? "bg-gray-100 text-gray-700";
+  const typeColor    = TYPE_COLOR[proposal.type?.toLowerCase()]   ?? "pill-neutral";
+  const statusColor  = STATUS_COLOR[proposal.status?.toLowerCase()] ?? "pill-neutral";
 
   // Strip ## markdown section headers so the preview shows clean prose
   const descPreview = (proposal.description || "")
@@ -47,30 +49,17 @@ export default function ProposalCard({ proposal, onExpand, isActive }: ProposalC
   return (
     <div
       onClick={onExpand}
-      className="bg-card rounded-xl cursor-pointer transition-all duration-200"
-      style={{
-        /* MudBlazor-style multi-layer shadow */
-        border: isActive
-          ? "2px solid #6366f1"
-          : "1.5px solid var(--border)",
-        borderLeft: isActive ? "4px solid #4f46e5" : undefined,
-        boxShadow: isActive
-          ? "0 4px 12px rgba(99,102,241,0.15), 0 2px 6px rgba(0,0,0,0.08)"
-          : "0 1px 3px rgba(0,0,0,0.08), 0 4px 8px rgba(0,0,0,0.05), 0 0 0 0.5px rgba(0,0,0,0.02)",
-      }}
-      onMouseEnter={e => {
-        if (!isActive)
-          (e.currentTarget as HTMLElement).style.boxShadow =
-            "0 4px 12px rgba(0,0,0,0.12), 0 8px 20px rgba(0,0,0,0.07), 0 0 0 0.5px rgba(0,0,0,0.03)";
-      }}
-      onMouseLeave={e => {
-        if (!isActive)
-          (e.currentTarget as HTMLElement).style.boxShadow =
-            "0 1px 3px rgba(0,0,0,0.08), 0 4px 8px rgba(0,0,0,0.05), 0 0 0 0.5px rgba(0,0,0,0.02)";
-      }}
+      onMouseMove={onMouseMove}
+      className={`group relative bg-card rounded-xl cursor-pointer transition-all duration-200 overflow-hidden ${
+        isActive
+          ? "border-2 border-primary border-l-4 border-l-primary shadow-[0_4px_12px_var(--ring)]"
+          : "border border-border elevation-2 hover:shadow-[var(--shadow-md)]"
+      }`}
     >
+      <CardGlow background={background} />
+
       {/* Card body */}
-      <div className="p-4 space-y-3">
+      <div className="relative z-10 p-4 space-y-3">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -108,7 +97,7 @@ export default function ProposalCard({ proposal, onExpand, isActive }: ProposalC
         {proposal.techStack && proposal.techStack.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {proposal.techStack.slice(0, 4).map(tag => (
-              <span key={tag} className="text-[10px] font-medium bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+              <span key={tag} className="pill-info text-[10px] font-medium px-2 py-0.5 rounded-full">
                 {tag}
               </span>
             ))}
@@ -118,7 +107,7 @@ export default function ProposalCard({ proposal, onExpand, isActive }: ProposalC
 
       {/* Action bar — separated with subtle top border + lighter bg */}
       <div
-        className="flex items-center justify-between px-4 py-2.5 rounded-b-xl"
+        className="relative z-10 flex items-center justify-between px-4 py-2.5 rounded-b-xl"
         style={{
           borderTop: "1.5px solid var(--border)",
           background: "color-mix(in srgb, var(--background) 60%, transparent)",

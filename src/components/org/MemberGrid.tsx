@@ -61,7 +61,7 @@ export default function MemberGrid({ members, maxVisible = 12, className = "" }:
       {members.length > maxVisible && (
         <button
           onClick={() => setShowAll(!showAll)}
-          className="mt-4 w-full py-2 rounded-xl border border-border dark:border-white/10 text-xs text-muted-foreground dark:text-white/50 hover:text-foreground dark:hover:text-white/80 hover:border-border dark:hover:border-white/20 transition-all"
+          className="mt-4 w-full py-2 rounded-xl border border-border text-xs text-muted-foreground dark:text-white/50 hover:text-foreground dark:hover:text-white/80 hover:border-border dark:hover:border-white/20 transition-all"
         >
           {showAll ? "Show less" : `Show ${members.length - maxVisible} more members`}
         </button>
