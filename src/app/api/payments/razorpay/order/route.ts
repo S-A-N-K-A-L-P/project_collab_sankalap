@@ -8,13 +8,23 @@ import Razorpay from "razorpay";
 const PRO_AMOUNT_PAISE = 100; // ₹1 in paise (test)
 const CURRENCY = "INR";
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+function getRazorpayClient() {
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+  if (!keyId || !keySecret) {
+    throw new Error("Razorpay is not configured");
+  }
+
+  return new Razorpay({
+    key_id: keyId,
+    key_secret: keySecret,
+  });
+}
 
 export async function POST() {
   try {
+    const razorpay = getRazorpayClient();
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -43,7 +53,7 @@ export async function POST() {
     //   { statusCode, error: { code, description, reason } }
     // NOT a standard Error — so error.message is usually undefined.
     const rzpStatus = error?.statusCode;
-    const rzpDesc   = error?.error?.description || error?.error?.reason;
+    const rzpDesc = error?.error?.description || error?.error?.reason;
 
     // Surface the REAL reason so the client alert is actionable.
     let reason = rzpDesc || error?.message || "Failed to create order";
