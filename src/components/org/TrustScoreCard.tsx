@@ -13,7 +13,7 @@ function StatItem({ icon: Icon, label, value, color = "text-foreground dark:text
   icon: any; label: string; value: string | number; color?: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-1.5 p-4 rounded-xl bg-muted-bg dark:bg-white/5 border border-border dark:border-white/10">
+    <div className="flex flex-col items-center gap-1.5 p-4 rounded-xl bg-muted-bg dark:bg-white/5 border border-border">
       <Icon size={20} className={color} />
       <span className={`text-2xl font-bold ${color}`}>{value}</span>
       <span className="text-xs text-muted-foreground dark:text-white/40 text-center leading-tight">{label}</span>
@@ -35,7 +35,7 @@ export default function TrustScoreCard({ org, className = "" }: TrustScoreCardPr
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className={`rounded-2xl border border-border dark:border-white/10 bg-card dark:bg-white/5 backdrop-blur-sm overflow-hidden ${className}`}
+      className={`rounded-2xl border border-border bg-card dark:bg-white/5 backdrop-blur-sm overflow-hidden ${className}`}
     >
       {/* Header */}
       <div className="px-6 py-4 border-b border-border dark:border-white/8 flex items-center justify-between">

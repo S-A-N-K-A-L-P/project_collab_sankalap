@@ -40,19 +40,19 @@ export default function ProposalDetailPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">Proposal Details</h1>
-        <Link href="/dashboard/member/proposals" className="text-sm text-blue-700 hover:underline">
+        <Link href="/dashboard/member/proposals" className="text-sm text-primary hover:underline">
           Back to proposals
         </Link>
       </div>
 
-      {loading ? <p className="text-sm text-gray-600">Loading proposal...</p> : null}
-      {error ? <p className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
+      {loading ? <p className="text-sm text-muted-foreground">Loading proposal...</p> : null}
+      {error ? <p className="rounded border border-error/30 bg-error/10 p-3 text-sm text-error">{error}</p> : null}
 
       {proposal ? (
         <div className="space-y-4">
-          <div className="space-y-2 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900">{proposal.question}</h2>
-            <p className="text-xs text-gray-500">Total votes: {proposal.totalVotes}</p>
+          <div className="space-y-2 rounded-lg border border-border bg-card p-4 shadow-sm">
+            <h2 className="text-lg font-semibold text-foreground">{proposal.question}</h2>
+            <p className="text-xs text-muted-foreground">Total votes: {proposal.totalVotes}</p>
             <VoteButtons
               proposal={proposal}
               busy={voting}

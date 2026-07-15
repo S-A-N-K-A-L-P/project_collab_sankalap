@@ -19,13 +19,13 @@ interface Proposal {
 }
 
 const TYPE_COLOR: Record<string, string> = {
-  project: "bg-blue-100 text-blue-800", module: "bg-indigo-100 text-indigo-800",
-  infrastructure: "bg-amber-100 text-amber-800", protocol: "bg-purple-100 text-purple-800",
+  project: "pill-info", module: "pill-primary",
+  infrastructure: "pill-warning", protocol: "pill-research",
 };
 const STATUS_COLOR: Record<string, string> = {
-  active: "bg-green-100 text-green-800", approved: "bg-green-100 text-green-800",
-  rejected: "bg-red-100 text-red-800", proposal: "bg-yellow-100 text-yellow-800",
-  pending: "bg-yellow-100 text-yellow-800",
+  active: "pill-success", approved: "pill-success",
+  rejected: "pill-error", proposal: "pill-warning",
+  pending: "pill-warning",
 };
 
 function parseDescription(desc: string) {
@@ -48,8 +48,8 @@ export default function ProposalDetailPanel({ proposal, onClose }: { proposal: P
   const createdLabel = formatIsoDate(proposal.createdAt, "");
   const isAuthor     = (session?.user as any)?.id === proposal.createdBy?._id;
   const sections     = parseDescription(proposal.description);
-  const typeColor    = TYPE_COLOR[proposal.type?.toLowerCase()]   ?? "bg-gray-100 text-gray-700";
-  const statusColor  = STATUS_COLOR[proposal.status?.toLowerCase()] ?? "bg-gray-100 text-gray-700";
+  const typeColor    = TYPE_COLOR[proposal.type?.toLowerCase()]   ?? "pill-neutral";
+  const statusColor  = STATUS_COLOR[proposal.status?.toLowerCase()] ?? "pill-neutral";
 
   const handleDelete = async () => {
     if (!confirm("Delete this proposal? This cannot be undone.")) return;
@@ -59,11 +59,8 @@ export default function ProposalDetailPanel({ proposal, onClose }: { proposal: P
 
   return (
     <div
-      className="bg-card rounded-xl overflow-hidden divide-y divide-border"
-      style={{
-        border: "1.5px solid var(--border-strong)",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)",
-      }}
+      className="bg-card rounded-xl overflow-hidden divide-y divide-border elevation-3"
+      style={{ border: "1.5px solid var(--border-strong)" }}
     >
       {/* ── Header ─────────────────────────────────────────── */}
       <div className="px-5 py-3.5 flex items-center justify-between bg-background/40">
@@ -175,7 +172,7 @@ export default function ProposalDetailPanel({ proposal, onClose }: { proposal: P
             <h4 className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Tech Stack</h4>
             <div className="flex flex-wrap gap-1.5">
               {proposal.techStack.map(tag => (
-                <span key={tag} className="text-xs font-medium bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-full">
+                <span key={tag} className="pill-info text-xs font-medium px-2.5 py-0.5 rounded-full">
                   {tag}
                 </span>
               ))}

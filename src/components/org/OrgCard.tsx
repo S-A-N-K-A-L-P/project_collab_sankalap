@@ -31,7 +31,7 @@ export default function OrgCard({ org, index = 0 }: OrgCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04, duration: 0.4 }}
       whileHover={{ y: -4 }}
-      className="group relative flex flex-col rounded-2xl border border-border dark:border-white/10
+      className="group relative flex flex-col rounded-2xl border border-border
         bg-card dark:bg-white/[0.03] shadow-sm overflow-hidden cursor-pointer transition-shadow duration-300
         hover:shadow-lg hover:border-primary/30 dark:hover:border-white/20"
     >

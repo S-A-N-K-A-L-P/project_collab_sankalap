@@ -56,7 +56,6 @@ export default function OrgsDirectoryPage() {
         {/* Page header — gradient banner */}
         <div className="relative overflow-hidden border-b border-border dark:border-white/8 sticky top-0 z-10 mb-6">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/15 via-primary/5 to-tertiary/10 dark:from-indigo-500/15 dark:via-purple-500/5 dark:to-teal-500/10" />
-          <div className="absolute inset-0 bg-background/70 dark:bg-black/30 backdrop-blur-md" />
           <div className="relative flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between px-4 sm:px-6 py-5">
             <div>
               <h1 className="text-xl font-bold flex items-center gap-2">
@@ -89,7 +88,7 @@ export default function OrgsDirectoryPage() {
               placeholder="Search organizations…"
               value={debouncedSearch}
               onChange={(e) => setDebouncedSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-card dark:bg-white/5 border border-border dark:border-white/10 text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 shadow-sm focus:outline-none focus:border-primary dark:focus:border-indigo-400/60 focus:ring-2 focus:ring-primary/15 dark:focus:ring-indigo-400/15 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-card dark:bg-white/5 border border-border text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 shadow-sm focus:outline-none focus:border-primary dark:focus:border-indigo-400/60 focus:ring-2 focus:ring-primary/15 dark:focus:ring-indigo-400/15 transition-all"
             />
           </div>
 
@@ -103,7 +102,7 @@ export default function OrgsDirectoryPage() {
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
                   category === c.value
                     ? "bg-gradient-to-r from-primary to-primary-hover dark:from-indigo-500 dark:to-purple-500 border-transparent text-primary-foreground dark:text-white shadow-sm"
-                    : "bg-card dark:bg-white/5 border-border dark:border-white/10 text-muted-foreground dark:text-white/50 hover:text-foreground dark:hover:text-white/80 hover:border-primary/40 dark:hover:border-white/20"
+                    : "bg-card dark:bg-white/5 border-border text-muted-foreground dark:text-white/50 hover:text-foreground dark:hover:text-white/80 hover:border-primary/40 dark:hover:border-white/20"
                 }`}
               >
                 {c.label}
@@ -123,7 +122,7 @@ export default function OrgsDirectoryPage() {
               key="empty"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex flex-col items-center justify-center py-20 gap-3 rounded-2xl border border-dashed border-border dark:border-white/10 bg-gradient-to-b from-muted-bg dark:from-white/[0.02] to-transparent"
+              className="flex flex-col items-center justify-center py-20 gap-3 rounded-2xl border border-dashed border-border bg-gradient-to-b from-muted-bg dark:from-white/[0.02] to-transparent"
             >
               <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-tertiary/10 dark:from-indigo-500/10 dark:to-purple-500/10">
                 <Building2 size={28} className="text-primary/50 dark:text-white/30" />
@@ -155,7 +154,7 @@ export default function OrgsDirectoryPage() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="px-4 py-2 rounded-lg text-sm bg-card dark:bg-white/5 border border-border dark:border-white/10 text-muted-foreground dark:text-white/60 hover:text-foreground dark:hover:text-white hover:border-primary/40 dark:hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className="px-4 py-2 rounded-lg text-sm bg-card dark:bg-white/5 border border-border text-muted-foreground dark:text-white/60 hover:text-foreground dark:hover:text-white hover:border-primary/40 dark:hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
               Previous
             </button>
@@ -163,7 +162,7 @@ export default function OrgsDirectoryPage() {
             <button
               onClick={() => setPage((p) => p + 1)}
               disabled={orgs.length < 24}
-              className="px-4 py-2 rounded-lg text-sm bg-card dark:bg-white/5 border border-border dark:border-white/10 text-muted-foreground dark:text-white/60 hover:text-foreground dark:hover:text-white hover:border-primary/40 dark:hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              className="px-4 py-2 rounded-lg text-sm bg-card dark:bg-white/5 border border-border text-muted-foreground dark:text-white/60 hover:text-foreground dark:hover:text-white hover:border-primary/40 dark:hover:border-white/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
             >
               Next
             </button>

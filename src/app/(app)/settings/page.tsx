@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Save, User as UserIcon, Code2, MapPin, Loader2, Github } from "lucide-react";
+import { Save, User as UserIcon, Code2, MapPin, Loader2, Github, SunMoon } from "lucide-react";
 import GitSettings from "@/components/settings/GitSettings";
+import ThemeSelector from "@/components/theme/ThemeSelector";
 
 export default function SettingsPage() {
   const { data: session, update } = useSession();
@@ -81,6 +82,18 @@ export default function SettingsPage() {
       <div className="bg-card border-l-4 border-l-primary border border-border rounded-xl p-6 shadow-sm">
         <h1 className="text-2xl font-bold text-foreground">Account Settings</h1>
         <p className="text-sm text-muted mt-1">Update your profile information and preferences.</p>
+      </div>
+
+      {/* Appearance — outside the profile form since it's saved instantly by next-themes, not submitted */}
+      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+        <div className="flex items-center gap-2 px-5 py-3.5 border-b border-border bg-background/40">
+          <SunMoon className="w-4 h-4 text-primary" />
+          <h2 className="text-sm font-semibold text-foreground">Appearance</h2>
+        </div>
+        <div className="p-5 space-y-2">
+          <label className="block text-xs font-semibold text-muted">Theme</label>
+          <ThemeSelector />
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">

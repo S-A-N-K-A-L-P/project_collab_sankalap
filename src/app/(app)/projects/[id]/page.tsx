@@ -80,10 +80,10 @@ interface ActivityLogItem {
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const COLUMNS: { id: string; title: string; status: KanbanTask["status"]; accent: string }[] = [
-  { id: "backlog",   title: "Backlog",      status: "pending",     accent: "#9ca0a8" },
-  { id: "active",    title: "In Progress",  status: "in-progress", accent: "#42A5F5" },
-  { id: "done",      title: "Completed",    status: "completed",   accent: "#4CAF50" },
-  { id: "delayed",   title: "Delayed",      status: "delayed",     accent: "#EF5350" },
+  { id: "backlog",   title: "Backlog",      status: "pending",     accent: "var(--muted-foreground)" },
+  { id: "active",    title: "In Progress",  status: "in-progress", accent: "var(--info)" },
+  { id: "done",      title: "Completed",    status: "completed",   accent: "var(--success)" },
+  { id: "delayed",   title: "Delayed",      status: "delayed",     accent: "var(--error)" },
 ];
 
 const PROJECT_STATUS_COLOR: Record<string, "success" | "info" | "warning" | "primary" | "default"> = {

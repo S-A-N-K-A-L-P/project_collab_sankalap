@@ -94,6 +94,8 @@
   --border-strong:      #d1d5db;
   --input:              #d1d5db;
   --ring:               rgba(79, 70, 229, 0.4);
+  --accent-glow:        rgba(79, 70, 229, 0.35);   /* --primary RGB, softer/persistent glow vs --ring's focus use */
+  --accent-2:           #0f766e;      /* teal-700 — mirrors --ai, the app's existing "second accent" */
 
   --radius:             0.75rem;      /* 12px — matches rounded-xl */
 
@@ -103,6 +105,18 @@
   --shadow-md:   0 4px 12px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.03);
   --shadow-lg:   0 8px 20px rgba(0,0,0,0.14), 0 16px 32px rgba(0,0,0,0.09), 0 0 0 1px rgba(0,0,0,0.03);
   --shadow-xl:   0 16px 32px rgba(0,0,0,0.16), 0 32px 56px rgba(0,0,0,0.11), 0 0 0 1px rgba(0,0,0,0.03);
+
+  /* Sidebar rail — off-white in light mode, slate in dark mode */
+  --sidebar-bg:              #ffffff;
+  --sidebar-border:          #e5e7eb;      /* gray-200 */
+  --sidebar-fg:              #6b7280;      /* gray-500 — inactive icon/label */
+  --sidebar-fg-hover:        #111827;      /* gray-900 — inactive hover */
+  --sidebar-hover-bg:        #f3f4f6;      /* gray-100 */
+  --sidebar-active-bg:       #eef2ff;      /* indigo-50 */
+  --sidebar-active-bg-hover: #e0e7ff;      /* indigo-100 */
+  --sidebar-active-fg:       #4f46e5;      /* indigo-600 */
+  --sidebar-section-label:   #9ca3af;      /* gray-400 */
+  --sidebar-name-fg:         #111827;      /* gray-900 — profile name */
 
   color-scheme: light;
 }
@@ -188,12 +202,26 @@
   --border-strong:      rgba(255,255,255,0.18);
   --input:              rgba(255,255,255,0.14);
   --ring:               rgba(129, 140, 248, 0.5);
+  --accent-glow:        rgba(129, 140, 248, 0.45);  /* --primary RGB, bumped alpha so it reads against dark bg */
+  --accent-2:           #2dd4bf;      /* teal-400 — mirrors --ai dark */
 
   --shadow-sm:          0 1px 2px 0 rgba(0,0,0,0.40);
   --shadow:             0 2px 4px -1px rgba(0,0,0,0.50), 0 4px 8px -2px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.04);
   --shadow-md:          0 4px 8px -2px rgba(0,0,0,0.55), 0 8px 16px -4px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
   --shadow-lg:          0 8px 16px -4px rgba(0,0,0,0.60), 0 16px 32px -8px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.06);
   --shadow-xl:          0 16px 32px -8px rgba(0,0,0,0.70), 0 32px 64px -16px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07);
+
+  /* Sidebar rail — off-white in light mode, slate in dark mode */
+  --sidebar-bg:              #111827;
+  --sidebar-border:          rgba(255,255,255,0.07);
+  --sidebar-fg:              #9ca3af;
+  --sidebar-fg-hover:        #e5e7eb;
+  --sidebar-hover-bg:        #1f2937;
+  --sidebar-active-bg:       rgba(99,102,241,0.22);
+  --sidebar-active-bg-hover: rgba(99,102,241,0.28);
+  --sidebar-active-fg:       #c7d2fe;
+  --sidebar-section-label:   #6b7280;
+  --sidebar-name-fg:         #e5e7eb;
 
   color-scheme: dark;
 }
@@ -263,6 +291,9 @@
   --color-error-text:           var(--error-text);
   --color-tertiary:             var(--tertiary);
   --color-tertiary-foreground:  var(--tertiary-foreground);
+
+  --color-accent-glow:          var(--accent-glow);
+  --color-accent-2:             var(--accent-2);
 
   --color-surface:              var(--card);
   --color-surface-alt:          var(--muted);
@@ -343,6 +374,7 @@ h1, h2, h3, h4, h5, h6 {
 .pill-warning { background: var(--warning-muted); color: var(--warning-text); }
 .pill-error   { background: var(--error-muted);   color: var(--error-text); }
 .pill-primary { background: var(--primary-muted); color: var(--primary); }
+.pill-research { background: var(--research-muted); color: var(--research); }
 .pill-neutral { background: var(--muted-strong);  color: var(--muted-foreground); }
 
 /* ─── Surface card helpers ────────────────────────────────────────────────── */
@@ -367,6 +399,16 @@ h1, h2, h3, h4, h5, h6 {
   border-left: 6px solid var(--primary);
 }
 
+/* Frosted/translucent surface — centralizes the blur+alpha-card recipe that
+   was previously copy-pasted ad hoc across a few components. */
+.glass-card {
+  background: color-mix(in srgb, var(--card) 70%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
 /* ─── Cleanup ─────────────────────────────────────────────────────────────── */
 
 .cyber-border, .neon-glow, .neon-text { display: none !important; }
@@ -375,6 +417,11 @@ h1, h2, h3, h4, h5, h6 {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
+}
+
+::selection {
+  background: var(--primary-muted);
+  color: var(--foreground);
 }
 
 .text-metadata {

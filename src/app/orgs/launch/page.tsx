@@ -50,7 +50,7 @@ function SlugField({ slug, setSlug, available, checking }: {
           value={slug}
           onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
           placeholder="my-org"
-          className="w-full pl-36 pr-10 py-2.5 rounded-xl bg-card dark:bg-white/5 border border-border dark:border-white/10 text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 shadow-sm focus:outline-none focus:border-primary dark:focus:border-indigo-400/60 focus:ring-2 focus:ring-primary/15 dark:focus:ring-indigo-400/15 transition-all"
+          className="w-full pl-36 pr-10 py-2.5 rounded-xl bg-card dark:bg-white/5 border border-border text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 shadow-sm focus:outline-none focus:border-primary dark:focus:border-indigo-400/60 focus:ring-2 focus:ring-primary/15 dark:focus:ring-indigo-400/15 transition-all"
         />
         <div className="absolute right-3 top-1/2 -translate-y-1/2">
           {checking ? <Loader2 size={14} className="animate-spin text-muted-foreground dark:text-white/30" /> :
@@ -160,7 +160,7 @@ export default function OrgLaunchPage() {
     return null;
   }
 
-  const inputCls = "w-full px-3 py-2.5 rounded-xl bg-card dark:bg-white/5 border border-border dark:border-white/10 text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 shadow-sm focus:outline-none focus:border-primary dark:focus:border-indigo-400/60 focus:ring-2 focus:ring-primary/15 dark:focus:ring-indigo-400/15 transition-all";
+  const inputCls = "w-full px-3 py-2.5 rounded-xl bg-card dark:bg-white/5 border border-border text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 shadow-sm focus:outline-none focus:border-primary dark:focus:border-indigo-400/60 focus:ring-2 focus:ring-primary/15 dark:focus:ring-indigo-400/15 transition-all";
   const labelCls = "block text-sm font-medium text-muted-foreground dark:text-white/70 mb-1.5";
   const errCls   = "text-xs text-error dark:text-red-400 mt-1";
 
@@ -188,7 +188,7 @@ export default function OrgLaunchPage() {
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                     i < step  ? "bg-gradient-to-br from-primary to-primary-hover dark:from-indigo-400 dark:to-purple-500 text-primary-foreground dark:text-white shadow-md" :
                     i === step ? "bg-primary/10 dark:bg-indigo-500/20 border-2 border-primary dark:border-indigo-400 text-primary dark:text-indigo-300" :
-                    "bg-card dark:bg-white/5 border border-border dark:border-white/10 text-muted-foreground dark:text-white/30"
+                    "bg-card dark:bg-white/5 border border-border text-muted-foreground dark:text-white/30"
                   }`}>
                     {i < step ? <Check size={14} /> : <Icon size={14} />}
                   </div>
@@ -250,7 +250,7 @@ export default function OrgLaunchPage() {
                         className={`p-3 rounded-xl text-left border transition-all ${
                           form.category === c.value
                             ? "border-primary dark:border-indigo-400/60 bg-gradient-to-br from-primary/10 to-tertiary/10 dark:from-indigo-500/15 dark:to-purple-500/10 text-foreground dark:text-white shadow-sm"
-                            : "border-border dark:border-white/10 bg-card dark:bg-white/5 text-muted-foreground dark:text-white/60 hover:border-primary/40 dark:hover:border-white/20"
+                            : "border-border bg-card dark:bg-white/5 text-muted-foreground dark:text-white/60 hover:border-primary/40 dark:hover:border-white/20"
                         }`}>
                         <p className="text-xs font-semibold">{c.label}</p>
                         <p className="text-[10px] text-muted-foreground dark:text-white/40 mt-0.5">{c.desc}</p>
@@ -352,7 +352,7 @@ export default function OrgLaunchPage() {
                   Review your org details before submitting. Our team will review your request and get back to you within 24–48 hours.
                 </p>
 
-                <div className="rounded-xl border border-border dark:border-white/10 bg-card dark:bg-white/5 overflow-hidden">
+                <div className="rounded-xl border border-border bg-card dark:bg-white/5 overflow-hidden">
                   {/* Preview card */}
                   <div className="relative h-28 bg-gradient-to-br from-primary/10 dark:from-indigo-900/40 to-primary/5 dark:to-purple-900/40">
                     {form.bannerImage && <img src={form.bannerImage} alt="" className="w-full h-full object-cover opacity-60" />}

@@ -192,7 +192,7 @@ export default function MyProposalsClient({ proposals }: { proposals: Proposal[]
           </div>
           <NextLink
             href="/ideas/create"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary-hover text-white rounded-lg text-sm font-semibold transition-colors shadow-sm shrink-0"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-primary to-primary-hover dark:from-indigo-500 dark:to-purple-500 text-primary-foreground dark:text-white rounded-xl text-sm font-semibold transition-all hover:brightness-110 hover:-translate-y-0.5 shadow-[0_4px_20px_rgba(79,70,229,0.35)] dark:shadow-[0_4px_24px_rgba(99,102,241,0.4)] shrink-0"
           >
             <Plus className="w-4 h-4" /> New Proposal
           </NextLink>
@@ -227,10 +227,10 @@ export default function MyProposalsClient({ proposals }: { proposals: Proposal[]
               <button
                 key={f.id}
                 onClick={() => setFilter(f.id)}
-                className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
+                className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 border ${
                   active
-                    ? "bg-primary text-white"
-                    : "bg-background text-muted hover:text-foreground hover:bg-card-hover border border-border"
+                    ? "bg-gradient-to-r from-primary to-primary-hover dark:from-indigo-500 dark:to-purple-500 border-transparent text-primary-foreground dark:text-white shadow-sm"
+                    : "bg-card dark:bg-white/5 border-border text-muted-foreground dark:text-white/50 hover:text-foreground dark:hover:text-white/80 hover:border-primary/40 dark:hover:border-white/20"
                 }`}
               >
                 {f.label}

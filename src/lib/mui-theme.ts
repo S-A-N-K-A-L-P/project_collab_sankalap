@@ -5,12 +5,18 @@ import { createTheme, alpha } from "@mui/material/styles";
 /* ============================================================================
    MUI Theme — tuned to match our shadcn/Tailwind tokens.
    Pairs with globals.css. Used by <MuiThemeProvider> in Providers.tsx.
+
+   IMPORTANT: palette values below are hand-mirrored from the CSS custom
+   properties in src/app/globals.css (:root / .dark). If you change a color
+   there, update the matching value here too — MUI can't consume var(--x)
+   directly for its alpha()/contrast math, so this file keeps its own literal
+   copies rather than reading the CSS variables at runtime.
    ========================================================================= */
 
-const PRIMARY_DARK   = "#818cf8";    // indigo-400 (brighter for dark bg)
-const PRIMARY_LIGHT  = "#4f46e5";    // indigo-600 (matches HTML reference)
-const SECONDARY      = "#ec4899";    // pink-500 (used rarely)
-const TERTIARY       = "#14b8a6";    // teal-500
+const PRIMARY_DARK    = "#818cf8";    // indigo-400 — matches --primary dark
+const PRIMARY_LIGHT   = "#4f46e5";    // indigo-600 — matches --primary light
+const SECONDARY_LIGHT = "#ec4899";    // pink-500 — matches --secondary-accent light
+const SECONDARY_DARK  = "#f472b6";    // pink-400 — matches --secondary-accent dark
 
 // ─── DARK ────────────────────────────────────────────────────────────────────
 
@@ -24,21 +30,21 @@ export const muiDarkTheme = createTheme({
       contrastText: "#ffffff",
     },
     secondary: {
-      main: SECONDARY,
-      contrastText: "#ffffff",
+      main: SECONDARY_DARK,
+      contrastText: "#0f172a",
     },
-    success: { main: "#4CAF50", contrastText: "#ffffff" },
-    info:    { main: "#42A5F5", contrastText: "#ffffff" },
-    warning: { main: "#FFA726", contrastText: "#131319" },
-    error:   { main: "#EF5350", contrastText: "#ffffff" },
+    success: { main: "#4ade80", contrastText: "#0f172a" }, // matches --success dark
+    info:    { main: "#60a5fa", contrastText: "#0f172a" }, // matches --info dark
+    warning: { main: "#fbbf24", contrastText: "#0f172a" }, // matches --warning dark
+    error:   { main: "#f87171", contrastText: "#0f172a" }, // matches --error dark
     background: {
-      default: "#131319",
-      paper:   "#20202a",
+      default: "#0f172a",   // matches --background dark (slate-900)
+      paper:   "#1e293b",   // matches --card dark (slate-800)
     },
     text: {
-      primary:   "#ececf1",
-      secondary: "#b0b3bd",
-      disabled:  "#6b6e78",
+      primary:   "#f1f5f9", // matches --foreground dark
+      secondary: "#94a3b8", // matches --muted-foreground dark
+      disabled:  "#64748b", // slate-500 — between muted-foreground and border-strong, no dedicated CSS var
     },
     divider: "rgba(255, 255, 255, 0.10)",
     action: {
@@ -143,7 +149,7 @@ export const muiLightTheme = createTheme({
       light: "#6366f1",                      // indigo-500
       contrastText: "#ffffff",
     },
-    secondary: { main: SECONDARY, contrastText: "#ffffff" },
+    secondary: { main: SECONDARY_LIGHT, contrastText: "#ffffff" },
     success:   { main: "#15803d", contrastText: "#ffffff" }, // green-700
     info:      { main: "#1d4ed8", contrastText: "#ffffff" }, // blue-700
     warning:   { main: "#b45309", contrastText: "#ffffff" }, // amber-700

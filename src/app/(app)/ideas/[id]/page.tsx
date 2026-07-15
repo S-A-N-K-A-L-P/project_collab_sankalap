@@ -90,7 +90,7 @@ export default async function IdeaDetailPage({ params }: Props) {
                                             href={url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="text-xs font-semibold text-accent hover:text-[#818cf8]"
+                                            className="text-xs font-semibold text-accent hover:text-primary-hover"
                                             download
                                         >
                                             Download
@@ -116,7 +116,7 @@ export default async function IdeaDetailPage({ params }: Props) {
                 </section>
             </article>
 
-            <div className="pt-6 border-t border-[#1f1f23]">
+            <div className="pt-6 border-t border-border">
                 <ProposalComments proposalId={id} />
             </div>
         </div>

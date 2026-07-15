@@ -64,7 +64,7 @@ export default function JoinButton({
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: -8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="absolute top-full mt-1 right-0 z-50 p-3 rounded-xl bg-card dark:bg-gray-900 border border-border dark:border-white/10 shadow-2xl min-w-40"
+            className="absolute top-full mt-1 right-0 z-50 p-3 rounded-xl bg-card dark:bg-gray-900 border border-border shadow-2xl min-w-40"
           >
             <p className="text-xs text-muted-foreground dark:text-white/60 mb-2">Leave {orgName || "this org"}?</p>
             <button

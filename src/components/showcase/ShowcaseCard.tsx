@@ -2,6 +2,7 @@
 
 import NextLink from "next/link";
 import { ExternalLink, Github, Users, IndianRupee, Star } from "lucide-react";
+import { useCardGlow, CardGlow } from "@/components/ui/card-glow";
 
 interface ShowcaseCardProps {
   project: {
@@ -28,25 +29,18 @@ export default function ShowcaseCard({ project }: ShowcaseCardProps) {
     : null;
 
   const teamCount = (project.members?.length || 0) + 1;
+  const { onMouseMove, background } = useCardGlow();
 
   return (
     <NextLink
       href={`/showcase/${project._id}`}
-      className="group bg-card border border-border rounded-xl overflow-hidden flex flex-col transition-all duration-200 hover:-translate-y-1"
-      style={{
-        boxShadow: "0 1px 3px rgba(0,0,0,0.08), 0 4px 8px rgba(0,0,0,0.05), 0 0 0 0.5px rgba(0,0,0,0.02)",
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.boxShadow =
-          "0 8px 20px rgba(0,0,0,0.14), 0 16px 32px rgba(0,0,0,0.08), 0 0 0 0.5px rgba(0,0,0,0.04)";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.boxShadow =
-          "0 1px 3px rgba(0,0,0,0.08), 0 4px 8px rgba(0,0,0,0.05), 0 0 0 0.5px rgba(0,0,0,0.02)";
-      }}
+      onMouseMove={onMouseMove}
+      className="group relative bg-card border border-border rounded-xl overflow-hidden flex flex-col transition-all duration-200 hover:-translate-y-1 elevation-2 hover:shadow-[var(--shadow-lg)]"
     >
+      <CardGlow background={background} />
+
       {/* Cover */}
-      <div className="aspect-video w-full bg-gradient-to-br from-primary/15 via-primary/5 to-background relative overflow-hidden">
+      <div className="relative z-10 aspect-video w-full bg-gradient-to-br from-primary/15 via-primary/5 to-background overflow-hidden">
         {project.coverImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={project.coverImage} alt={project.title} className="w-full h-full object-cover" />
@@ -73,7 +67,7 @@ export default function ShowcaseCard({ project }: ShowcaseCardProps) {
       </div>
 
       {/* Body */}
-      <div className="p-4 flex flex-col flex-1 gap-2">
+      <div className="relative z-10 p-4 flex flex-col flex-1 gap-2">
         <div className="flex items-start justify-between gap-2">
           <h3 className="text-sm font-bold text-foreground leading-snug group-hover:text-primary transition-colors line-clamp-2">
             {project.title}
@@ -95,7 +89,7 @@ export default function ShowcaseCard({ project }: ShowcaseCardProps) {
         {project.techStack && project.techStack.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-1">
             {project.techStack.slice(0, 3).map(t => (
-              <span key={t} className="text-[10px] font-medium bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+              <span key={t} className="pill-info text-[10px] font-medium px-2 py-0.5 rounded-full">
                 {t}
               </span>
             ))}

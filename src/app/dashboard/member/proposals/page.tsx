@@ -20,14 +20,14 @@ export default function ProposalsPage() {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-xl font-bold">Community Voting</h1>
-          <p className="text-sm text-gray-600">Browse proposals and vote once per proposal.</p>
+          <p className="text-sm text-muted-foreground">Browse proposals and vote once per proposal.</p>
         </div>
 
         <div className="flex gap-2">
-          <Link href="/dashboard/member/proposals/my" className="rounded border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50">
+          <Link href="/dashboard/member/proposals/my" className="rounded border border-border-strong px-3 py-2 text-sm hover:bg-muted-bg">
             My proposals
           </Link>
-          <Link href="/dashboard/member/proposals/create" className="rounded bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700">
+          <Link href="/dashboard/member/proposals/create" className="rounded bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-hover">
             Create proposal
           </Link>
         </div>
@@ -37,7 +37,7 @@ export default function ProposalsPage() {
         <select
           value={status}
           onChange={(event) => setStatus(event.target.value as ProposalStatus)}
-          className="rounded border border-gray-300 px-3 py-2 text-sm"
+          className="rounded border border-border-strong px-3 py-2 text-sm"
         >
           <option value="all">All</option>
           <option value="open">Open</option>
@@ -48,7 +48,7 @@ export default function ProposalsPage() {
         <select
           value={sort}
           onChange={(event) => setSort(event.target.value as ProposalSort)}
-          className="rounded border border-gray-300 px-3 py-2 text-sm"
+          className="rounded border border-border-strong px-3 py-2 text-sm"
         >
           <option value="trending">Trending</option>
           <option value="newest">Newest</option>
@@ -57,8 +57,8 @@ export default function ProposalsPage() {
         </select>
       </div>
 
-      {error ? <p className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
-      {loading ? <p className="text-sm text-gray-600">Loading proposals...</p> : null}
+      {error ? <p className="rounded border border-error/30 bg-error/10 p-3 text-sm text-error">{error}</p> : null}
+      {loading ? <p className="text-sm text-muted-foreground">Loading proposals...</p> : null}
 
       {!loading ? (
         <ProposalList

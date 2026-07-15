@@ -50,7 +50,7 @@ export default function ProjectActivityPage() {
     }, [projectId]);
 
     if (loading) {
-        return <div className="rounded-2xl border border-[#1f1f23] bg-[#121214] p-6 text-sm text-[#9ca3af]">Loading activity...</div>;
+        return <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">Loading activity...</div>;
     }
 
     if (error) {
@@ -58,18 +58,18 @@ export default function ProjectActivityPage() {
     }
 
     return (
-        <div className="rounded-2xl border border-[#1f1f23] bg-[#121214] p-5">
-            <h2 className="text-lg font-semibold text-[#e5e7eb]">Recent Activity</h2>
+        <div className="rounded-2xl border border-border bg-card p-5">
+            <h2 className="text-lg font-semibold text-foreground">Recent Activity</h2>
             <div className="mt-4 space-y-2">
                 {logs.map((log) => (
-                    <div key={log._id} className="rounded-lg border border-[#1f1f23] bg-[#17171a] p-3">
-                        <p className="text-sm text-[#e5e7eb]">{log.action}</p>
-                        <p className="text-xs text-[#9ca3af] mt-1">
+                    <div key={log._id} className="rounded-lg border border-border bg-muted-bg p-3">
+                        <p className="text-sm text-foreground">{log.action}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
                             {log.userName || "Unknown"} | {formatDateTime(log.createdAt)}
                         </p>
                     </div>
                 ))}
-                {logs.length === 0 ? <p className="text-sm text-[#9ca3af]">No activity yet.</p> : null}
+                {logs.length === 0 ? <p className="text-sm text-muted-foreground">No activity yet.</p> : null}
             </div>
         </div>
     );
