@@ -2,6 +2,8 @@ import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
 import Proposal from "@/models/Proposal";
 import Activity from "@/models/Activity";
+import Project from "@/models/Project";
+import Contribution from "@/models/Contribution";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileStatsBar from "@/components/profile/ProfileStatsBar";
 import FeedList from "@/components/feed/FeedList";
@@ -56,14 +58,32 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
     reputation: (user as any).reputation || 0,
   };
 
+  const completedProjectsCount = await Project.countDocuments({
+    $or: [{ lead: id }, { members: id }],
+    status: "completed",
+  });
+  const approvedContributionsCount = await Contribution.countDocuments({
+    userId: id,
+    status: "approved",
+  });
+  const profileViews = (user as any).profileViews || 0;
+
+  // increment views (fire-and-forget) — skip the owner's own visits
+  if (!isOwnProfile) {
+    User.updateOne({ _id: id }, { $inc: { profileViews: 1 } }).catch(() => null);
+  }
+
+  const followersCount = user.followers?.length || 0;
+  const reputation = (user as any).reputation || 0;
+  const impactScore =
+    reputation * 10 + completedProjectsCount * 25 + followersCount * 5 + approvedContributionsCount * 15;
+
   const analyticsStats = {
-    projectsBuilt: proposals.length,
-    downloads: Math.floor(Math.random() * 10000) + 500, // Mock for now
-    views: Math.floor(Math.random() * 50000) + 1000, // Mock for now
-    followers: user.followers?.length || 0,
-    contributions: Math.floor(Math.random() * 100) + 5, // Mock for now
-    stars: Math.floor(Math.random() * 2000) + 10, // Mock for now
-    impactScore: ((user as any).reputation || 0) * 10 + Math.floor(Math.random() * 500) + 2000,
+    projectsBuilt: completedProjectsCount,
+    views: profileViews,
+    followers: followersCount,
+    contributions: approvedContributionsCount,
+    impactScore,
   };
 
   return (
