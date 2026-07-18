@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Download, Eye, Users, Star, GitCommit, Activity, Target } from "lucide-react";
+import { Eye, Users, GitCommit, Activity, Target } from "lucide-react";
 import { PremiumCard } from "@/components/ui/premium-card";
 import { TypographySection, TypographySubtitle, TypographyTitle } from "@/components/ui/typography";
 import { AnimatedButton } from "@/components/ui/animated-button";
@@ -9,11 +9,9 @@ import { AnimatedButton } from "@/components/ui/animated-button";
 interface ImpactAnalyticsProps {
   stats: {
     projectsBuilt: number;
-    downloads: number;
     views: number;
     followers: number;
     contributions: number;
-    stars: number;
     impactScore: number;
   };
 }
@@ -21,11 +19,9 @@ interface ImpactAnalyticsProps {
 export default function ImpactAnalytics({ stats }: ImpactAnalyticsProps) {
   const metrics = [
     { label: "Projects Built", value: stats.projectsBuilt, icon: <Target className="text-primary" size={20} /> },
-    { label: "Downloads", value: stats.downloads.toLocaleString(), icon: <Download className="text-success" size={20} /> },
     { label: "Profile Views", value: stats.views.toLocaleString(), icon: <Eye className="text-info" size={20} /> },
     { label: "Followers", value: stats.followers.toLocaleString(), icon: <Users className="text-warning" size={20} /> },
     { label: "Contributions", value: stats.contributions.toLocaleString(), icon: <GitCommit className="text-os" size={20} /> },
-    { label: "Stars Earned", value: stats.stars.toLocaleString(), icon: <Star className="text-yellow-400" size={20} /> },
   ];
 
   return (
@@ -47,21 +43,18 @@ export default function ImpactAnalytics({ stats }: ImpactAnalyticsProps) {
               <TypographyTitle className="text-4xl text-foreground font-black tracking-tighter">
                 {stats.impactScore.toLocaleString()}
               </TypographyTitle>
-              <span className="text-success text-sm font-semibold mb-1 flex items-center">
-                ↑ Top 5%
-              </span>
             </div>
             <TypographySubtitle className="text-xs mt-1 max-w-sm">
-              Impact score is calculated based on project usage, community contributions, and active downloads.
+              Impact score is calculated based on completed projects, community contributions, and followers.
             </TypographySubtitle>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 divide-x divide-y md:divide-y-0 divide-border dark:divide-white/5">
+        <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-border dark:divide-white/5">
           {metrics.map((metric, i) => (
             <div
               key={i}
-              className={`p-5 flex flex-col gap-2 hover:bg-muted/30 transition-colors ${i >= 3 ? "border-t md:border-t-0 border-border dark:border-white/5 mt-[-1px] md:mt-0" : ""}`}
+              className={`p-5 flex flex-col gap-2 hover:bg-muted/30 transition-colors ${i >= 2 ? "border-t md:border-t-0 border-border dark:border-white/5 mt-[-1px] md:mt-0" : ""}`}
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{metric.label}</span>
