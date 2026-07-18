@@ -4,7 +4,6 @@ import Proposal from "@/models/Proposal";
 import Activity from "@/models/Activity";
 import Project from "@/models/Project";
 import Contribution from "@/models/Contribution";
-import Portfolio from "@/models/Portfolio";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileStatsBar from "@/components/profile/ProfileStatsBar";
 import FeedList from "@/components/feed/FeedList";
@@ -67,8 +66,12 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
     userId: id,
     status: "approved",
   });
-  const portfolio = await Portfolio.findOne({ userId: id }).select("views").lean();
-  const profileViews = (portfolio as any)?.views || 0;
+  const profileViews = (user as any).profileViews || 0;
+
+  // increment views (fire-and-forget) — skip the owner's own visits
+  if (!isOwnProfile) {
+    User.updateOne({ _id: id }, { $inc: { profileViews: 1 } }).catch(() => null);
+  }
 
   const followersCount = user.followers?.length || 0;
   const reputation = (user as any).reputation || 0;
