@@ -19,7 +19,7 @@ export default function OrgHero({ org, actions }: OrgHeroProps) {
   return (
     <div className="relative w-full overflow-hidden rounded-2xl">
       {/* Banner */}
-      <div className="relative h-52 md:h-72 w-full overflow-hidden bg-gradient-to-br from-primary/10 dark:from-indigo-900/40 to-primary/5 dark:to-purple-900/40">
+      <div className="relative h-44 md:h-56 w-full overflow-hidden bg-gradient-to-br from-primary/10 dark:from-indigo-900/40 to-primary/5 dark:to-purple-900/40">
         {(org.bannerImage || org.banner) ? (
           <motion.img
             src={org.bannerImage || org.banner}
@@ -50,7 +50,7 @@ export default function OrgHero({ org, actions }: OrgHeroProps) {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.4 }}
-          className="w-20 h-20 md:w-24 md:h-24 rounded-2xl border-4 border-background dark:border-white/20 overflow-hidden flex items-center justify-center text-3xl font-bold shadow-2xl flex-shrink-0"
+          className="w-16 h-16 md:w-20 md:h-20 rounded-xl border-4 border-background dark:border-white/20 overflow-hidden flex items-center justify-center text-2xl font-bold shadow-xl flex-shrink-0"
           style={{ background: org.themeColor || "#6366f1" }}
         >
           {logo ? (
@@ -77,7 +77,7 @@ export default function OrgHero({ org, actions }: OrgHeroProps) {
               </span>
             )}
           </div>
-          <h1 className="text-2xl md:text-4xl font-bold text-white leading-tight drop-shadow-sm">{org.name}</h1>
+          <h1 className="text-2xl md:text-3xl font-semibold text-white leading-tight drop-shadow-sm">{org.name}</h1>
           {org.tagline && (
             <p className="text-white/75 text-sm md:text-base mt-0.5 line-clamp-2">{org.tagline}</p>
           )}
