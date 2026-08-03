@@ -7,7 +7,7 @@ import RightPanel from "./RightPanel";
 import { useLayout } from "@/context/LayoutContext";
 import { TOP_NAV_HEIGHT, SIDEBAR_COLLAPSED_WIDTH, SIDEBAR_EXPANDED_WIDTH } from "./constants";
 
-export default function AppLayoutClient({ children }: { children: React.ReactNode }) {
+export default function AppLayoutClient({ children, wide = false, hideRightPanel = false }: { children: React.ReactNode; wide?: boolean; hideRightPanel?: boolean }) {
   const { isRightPanelCollapsed, isSidebarCollapsed } = useLayout();
   const sidebarWidth = isSidebarCollapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_EXPANDED_WIDTH;
 
@@ -53,8 +53,8 @@ export default function AppLayoutClient({ children }: { children: React.ReactNod
           <Box
             sx={{
               width: "100%",
-              maxWidth: isRightPanelCollapsed ? "1280px" : "860px",
-              p: { xs: 3, lg: 4 },
+              maxWidth: wide ? "1440px" : (isRightPanelCollapsed ? "1280px" : "860px"),
+              p: wide ? { xs: 2, md: 3, xl: 4 } : { xs: 3, lg: 4 },
               transition: "max-width 240ms cubic-bezier(0.4, 0, 0.2, 1)",
             }}
           >
@@ -65,10 +65,10 @@ export default function AppLayoutClient({ children }: { children: React.ReactNod
         {/* ── Collapsible right panel ─────────────────────── */}
         <Box
           sx={{
-            width: isRightPanelCollapsed ? 0 : 300,
-            opacity: isRightPanelCollapsed ? 0 : 1,
+            width: hideRightPanel || isRightPanelCollapsed ? 0 : 300,
+            opacity: hideRightPanel || isRightPanelCollapsed ? 0 : 1,
             overflow: "hidden",
-            pointerEvents: isRightPanelCollapsed ? "none" : "auto",
+            pointerEvents: hideRightPanel || isRightPanelCollapsed ? "none" : "auto",
             transition: "width 240ms cubic-bezier(0.4, 0, 0.2, 1), opacity 200ms",
             display: { xs: "none", xl: "block" },
             flexShrink: 0,
