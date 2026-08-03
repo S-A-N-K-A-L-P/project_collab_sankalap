@@ -68,7 +68,7 @@ export default function OrgHero({ org, actions }: OrgHeroProps) {
           className="flex-1 min-w-0"
         >
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-background/60 dark:bg-white/10 text-foreground dark:text-white/70 border border-border">
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-black/35 text-white border border-white/20 backdrop-blur-sm">
               {CATEGORY_LABELS[org.category] || org.category}
             </span>
             {org.isHost && (
@@ -77,9 +77,9 @@ export default function OrgHero({ org, actions }: OrgHeroProps) {
               </span>
             )}
           </div>
-          <h1 className="text-2xl md:text-4xl font-bold text-foreground dark:text-white leading-tight">{org.name}</h1>
+          <h1 className="text-2xl md:text-4xl font-bold text-white leading-tight drop-shadow-sm">{org.name}</h1>
           {org.tagline && (
-            <p className="text-muted-foreground dark:text-white/60 text-sm md:text-base mt-0.5 line-clamp-2">{org.tagline}</p>
+            <p className="text-white/75 text-sm md:text-base mt-0.5 line-clamp-2">{org.tagline}</p>
           )}
 
           {/* Social links */}

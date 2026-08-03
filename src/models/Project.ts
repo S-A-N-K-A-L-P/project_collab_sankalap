@@ -16,6 +16,8 @@ const ProjectSchema = new Schema(
     /* ── Existing core fields ─────────────────────────────────── */
     proposalId:   { type: Schema.Types.ObjectId, ref: "Proposal", required: true },
     orgId:        { type: Schema.Types.ObjectId, ref: "Org",      required: true },
+    seasonId:     { type: Schema.Types.ObjectId, ref: "Season" },
+    mentorIds:    [{ type: Schema.Types.ObjectId, ref: "User" }],
     title:        { type: String, required: true },
     description:  { type: String },
     status:       { type: String, enum: ["planning", "active", "completed", "archived"], default: "planning" },
@@ -27,6 +29,15 @@ const ProjectSchema = new Schema(
     techStack:    { type: [String], default: [] },
     gitRepo:      { type: Schema.Types.ObjectId, ref: "GitRepo" },
     tags:         { type: [String], default: [] },
+    seasonSubmission: {
+      status: { type: String, enum: ["not_started", "draft", "submitted", "accepted"], default: "not_started" },
+      repositoryUrl: { type: String, default: "" },
+      demoUrl: { type: String, default: "" },
+      documentationUrl: { type: String, default: "" },
+      presentationUrl: { type: String, default: "" },
+      impactStatement: { type: String, default: "" },
+      submittedAt: Date,
+    },
 
     /* ── Release artefacts (set during "mark complete") ───────── */
     completedAt:  { type: Date },
@@ -66,6 +77,7 @@ const ProjectSchema = new Schema(
 );
 
 ProjectSchema.index({ status: 1, "showcase.isPublic": 1, completedAt: -1 });
+ProjectSchema.index({ seasonId: 1, orgId: 1, status: 1 });
 ProjectSchema.index({ "marketplace.forSale": 1, completedAt: -1 });
 
 const Project = models.Project || model("Project", ProjectSchema);

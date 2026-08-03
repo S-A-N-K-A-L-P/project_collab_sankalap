@@ -1,107 +1,58 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Users, FolderOpen, ExternalLink, Crown, Building2 } from "lucide-react";
+import { ArrowUpRight, Crown, FolderOpen, ShieldCheck, Users } from "lucide-react";
 import type { IOrgPublic } from "@/types/org";
 
-const CATEGORY_COLORS: Record<string, string> = {
-  community:   "from-blue-500 to-indigo-500",
-  academic:    "from-emerald-500 to-teal-500",
-  company:     "from-orange-500 to-amber-500",
-  open_source: "from-purple-500 to-fuchsia-500",
+const CATEGORY_STYLES: Record<string, { label: string; gradient: string }> = {
+  community: { label: "Community", gradient: "from-blue-600 via-indigo-500 to-violet-500" },
+  academic: { label: "Academic", gradient: "from-emerald-600 via-teal-500 to-cyan-500" },
+  company: { label: "Company", gradient: "from-orange-600 via-amber-500 to-yellow-500" },
+  open_source: { label: "Open Source", gradient: "from-violet-600 via-purple-500 to-fuchsia-500" },
 };
 
-const CATEGORY_LABELS: Record<string, string> = {
-  community: "Community", academic: "Academic", company: "Company", open_source: "Open Source",
-};
-
-interface OrgCardProps {
-  org:   IOrgPublic;
-  index?: number;
-}
-
-export default function OrgCard({ org, index = 0 }: OrgCardProps) {
-  const colorClass = CATEGORY_COLORS[org.category] || CATEGORY_COLORS.community;
+export default function OrgCard({ org, index = 0 }: { org: IOrgPublic; index?: number }) {
+  const style = CATEGORY_STYLES[org.category] || CATEGORY_STYLES.community;
   const logo = org.logo || org.avatar || "";
+  const description = org.tagline || org.description || "Discover this organization and its projects.";
 
   return (
     <motion.a
       href={`/orgs/${org.slug}`}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04, duration: 0.4 }}
-      whileHover={{ y: -4 }}
-      className="group relative flex flex-col rounded-2xl border border-border
-        bg-card dark:bg-white/[0.03] shadow-sm overflow-hidden cursor-pointer transition-shadow duration-300
-        hover:shadow-lg hover:border-primary/30 dark:hover:border-white/20"
+      transition={{ delay: Math.min(index * 0.04, 0.2), duration: 0.3 }}
+      whileHover={{ y: -3 }}
+      className="group relative flex min-h-[290px] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:border-primary/35 hover:shadow-xl"
     >
-      {/* Banner — vivid category gradient */}
-      <div className={`relative h-24 overflow-hidden bg-gradient-to-br ${colorClass}`}>
-        {(org.bannerImage || org.banner) ? (
-          <img
-            src={org.bannerImage || org.banner}
-            alt=""
-            className="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500"
-          />
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/25 to-white/0" />
-        )}
-        {/* Bottom fade for badge legibility */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/0 to-black/30" />
-
-        {/* Category badge */}
-        <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-black/30 backdrop-blur-sm text-white border border-white/20">
-          {CATEGORY_LABELS[org.category]}
-        </span>
-
-        {/* Host org badge */}
-        {org.isHost && (
-          <span className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-yellow-400/90 text-yellow-950 shadow-sm">
-            <Crown size={9} /> Official
-          </span>
-        )}
+      <div className={`relative h-28 overflow-hidden bg-gradient-to-br ${style.gradient}`}>
+        {(org.bannerImage || org.banner) ? <img src={org.bannerImage || org.banner} alt="" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" /> : <div className="absolute inset-0 opacity-60" style={{ backgroundImage: "radial-gradient(circle at 20% 20%, rgba(255,255,255,.38), transparent 32%), radial-gradient(circle at 80% 70%, rgba(255,255,255,.2), transparent 35%)" }} />}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        <div className="absolute left-3 top-3 flex gap-2">
+          {org.isHost && <span className="inline-flex items-center gap-1 rounded-full bg-amber-300 px-2 py-1 text-[10px] font-bold text-amber-950 shadow-sm"><Crown size={10} /> Official</span>}
+        </div>
+        <span className="absolute right-3 top-3 rounded-full border border-white/20 bg-black/35 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur-sm">{style.label}</span>
       </div>
 
-      {/* Logo + Name */}
-      <div className="px-4 -mt-6 flex items-end gap-3 relative z-10">
-        <div
-          className="w-12 h-12 rounded-xl border-2 border-card dark:border-[#151b2e] overflow-hidden flex items-center justify-center text-lg font-bold flex-shrink-0 shadow-lg"
-          style={{ background: org.themeColor || "#6366f1" }}
-        >
-          {logo ? (
-            <img src={logo} alt={org.name} className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-white">{org.name[0]?.toUpperCase()}</span>
-          )}
+      <div className="relative -mt-7 flex items-end gap-3 px-4">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-4 border-card text-xl font-black text-white shadow-lg" style={{ background: org.themeColor || "#4f46e5" }}>
+          {logo ? <img src={logo} alt={org.name} className="h-full w-full object-cover" /> : org.name[0]?.toUpperCase()}
         </div>
-        <div className="pb-1 flex-1 min-w-0">
-          <h3 className="font-bold text-foreground dark:text-white text-sm truncate leading-tight group-hover:text-primary dark:group-hover:text-indigo-300 transition-colors">
-            {org.name}
-          </h3>
+        <div className="min-w-0 flex-1 pb-1">
+          <div className="flex items-center gap-1.5">
+            <h2 className="truncate text-base font-bold leading-tight text-foreground transition-colors group-hover:text-primary">{org.name}</h2>
+            {org.trustScore?.founderVerified && <ShieldCheck size={14} className="shrink-0 text-emerald-500" />}
+          </div>
+          <p className="mt-1 text-[11px] capitalize text-muted-foreground">{org.orgType?.replaceAll("_", " ")} organization</p>
         </div>
       </div>
 
-      {/* Body */}
-      <div className="px-4 pt-2 pb-4 flex flex-col gap-3 flex-1">
-        {org.tagline && (
-          <p className="text-xs text-muted-foreground dark:text-white/60 line-clamp-2 leading-relaxed">{org.tagline}</p>
-        )}
-
-        {/* Stats */}
-        <div className="flex items-center gap-3 mt-auto pt-2 border-t border-border dark:border-white/8">
-          <span className="flex items-center gap-1.5 text-xs text-muted-foreground dark:text-white/50">
-            <Users size={11} />
-            <span>{org.stats?.memberCount ?? 0}</span>
-          </span>
-          <span className="flex items-center gap-1.5 text-xs text-muted-foreground dark:text-white/50">
-            <FolderOpen size={11} />
-            <span>{org.stats?.projectCount ?? 0} projects</span>
-          </span>
-          {org.trustScore?.completionRate > 0 && (
-            <span className="ml-auto text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-              {Math.round(org.trustScore.completionRate)}% done
-            </span>
-          )}
+      <div className="flex flex-1 flex-col px-4 pb-4 pt-3">
+        <p className="line-clamp-2 min-h-10 text-sm leading-relaxed text-muted-foreground">{description}</p>
+        <div className="mt-auto flex items-center gap-4 border-t border-border pt-4 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5"><Users size={13} /><strong className="font-semibold text-foreground">{org.stats?.memberCount ?? 0}</strong> members</span>
+          <span className="flex items-center gap-1.5"><FolderOpen size={13} /><strong className="font-semibold text-foreground">{org.stats?.projectCount ?? 0}</strong> projects</span>
+          <span className="ml-auto flex h-8 w-8 items-center justify-center rounded-full bg-muted-bg text-muted-foreground transition-all group-hover:bg-primary group-hover:text-primary-foreground"><ArrowUpRight size={15} /></span>
         </div>
       </div>
     </motion.a>

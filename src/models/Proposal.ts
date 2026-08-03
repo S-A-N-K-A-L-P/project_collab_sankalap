@@ -16,6 +16,18 @@ const ProposalSchema = new Schema(
       ref: "Org",
       required: false, // Optional for global proposals, required for org-scoped ones
     },
+    seasonId: {
+      type: Schema.Types.ObjectId,
+      ref: "Season",
+      required: false,
+    },
+    mentorIds: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    problemStatement: { type: String, default: "" },
+    expectedOutcome: { type: String, default: "" },
+    requiredSkills: { type: [String], default: [] },
+    difficulty: { type: String, enum: ["beginner", "intermediate", "advanced"], default: "intermediate" },
+    applicationQuestions: { type: [String], default: [] },
+    seasonApprovalStatus: { type: String, enum: ["not_required", "pending", "approved", "rejected"], default: "not_required" },
     type: {
       type: String,
       enum: ["idea", "research", "implementation", "collaboration", "protocol", "node", "infrastructure"],
@@ -106,6 +118,9 @@ const ProposalSchema = new Schema(
     timestamps: true,
   }
 );
+
+ProposalSchema.index({ seasonId: 1, orgId: 1, status: 1 });
+ProposalSchema.index({ mentorIds: 1, seasonId: 1 });
 
 const Proposal = models.Proposal || model("Proposal", ProposalSchema);
 
