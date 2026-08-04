@@ -7,6 +7,7 @@ import {
   ShoppingBag,
   Briefcase,
   Building2,
+  CalendarRange,
   Monitor,
   Settings as SettingsIcon,
   ShieldCheck,
@@ -309,6 +310,7 @@ export default function Sidebar() {
       <NavItem icon={ShoppingBag} label="Marketplace"           href="/marketplace"  active={isActive("/marketplace")}  collapsed={collapsed} reducedMotion={reducedMotion} />
       <NavItem icon={Briefcase}   label="My Portfolio"          href="/my-portfolio" active={isActive("/my-portfolio")} collapsed={collapsed} reducedMotion={reducedMotion} />
       <NavItem icon={Building2}   label="Organizations"         href="/orgs"         active={isActive("/orgs")}         collapsed={collapsed} reducedMotion={reducedMotion} />
+      <NavItem icon={CalendarRange} label="Development Seasons" href="/seasons"      active={isActive("/seasons")}      collapsed={collapsed} reducedMotion={reducedMotion} />
       <NavItem icon={Monitor}     label="Syncro Desktop App"    href="/desktop"      active={isActive("/desktop")}      collapsed={collapsed} reducedMotion={reducedMotion} />
       <NavItem icon={SettingsIcon} label="Settings"             href="/settings"     active={isActive("/settings")}     collapsed={collapsed} reducedMotion={reducedMotion} />
 

@@ -77,7 +77,7 @@ export function isMasterAdmin(role?: string): boolean {
 
 /** Returns true for platform_moderator or master_admin */
 export function isPlatformReviewer(role?: string): boolean {
-  return role === "platform_moderator" || role === "master_admin";
+  return role === "platform_moderator" || role === "master_admin" || LEGACY_ADMIN_ROLES.includes(role || "");
 }
 
 /** Returns true for platform_moderator (review org requests, moderate content) */
