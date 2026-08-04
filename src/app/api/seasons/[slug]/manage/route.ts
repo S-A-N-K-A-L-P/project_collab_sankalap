@@ -7,16 +7,20 @@ import Season from "@/models/Season";
 import SeasonPricing from "@/models/SeasonPricing";
 import SeasonEnrollment from "@/models/SeasonEnrollment";
 import SeasonRoleAssignment from "@/models/SeasonRoleAssignment";
+import OrgMember from "@/models/OrgMember";
 import { canTransitionSeason, normalizeSeasonPricing, validateSeasonPricing, validateSeasonSchedule } from "@/lib/season-validation";
 
 async function getAuthorizedSeason(slug: string, session: any) {
   const season = await Season.findOne({ slug });
   if (!season) return { error: NextResponse.json({ message: "Season not found" }, { status: 404 }) };
   const userId = String((session.user as any).id);
-  const creator = String(season.createdBy) === userId;
+  const legacyCreator = !season.hostOrgId && String(season.createdBy) === userId;
   const platformOrganizer = isPlatformReviewer((session.user as any).role);
-  const assignment = !creator && !platformOrganizer ? await SeasonRoleAssignment.findOne({ seasonId: season._id, userId, role: "organizer", status: "active" }) : null;
-  if (!creator && !platformOrganizer && !assignment) return { error: NextResponse.json({ message: "Forbidden" }, { status: 403 }) };
+  const [assignment, hostAdmin] = !legacyCreator && !platformOrganizer ? await Promise.all([
+    SeasonRoleAssignment.findOne({ seasonId: season._id, userId, role: "organizer", status: "active" }),
+    season.hostOrgId ? OrgMember.findOne({ orgId: season.hostOrgId, userId, status: "active", role: { $in: ["owner", "admin"] } }) : null,
+  ]) : [null, null];
+  if (!legacyCreator && !platformOrganizer && !assignment && !hostAdmin) return { error: NextResponse.json({ message: "Forbidden" }, { status: 403 }) };
   return { season };
 }
 

@@ -16,7 +16,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
   try {
     const { slug } = await params;
     await dbConnect();
-    const season = await Season.findOne({ slug, status: { $ne: "draft" } }).lean();
+    const season = await Season.findOne({ slug, status: { $ne: "draft" } }).populate("hostOrgId", "name slug logo tagline").lean();
     if (!season) return NextResponse.json({ message: "Season not found" }, { status: 404 });
     const seasonId = (season as any)._id;
 

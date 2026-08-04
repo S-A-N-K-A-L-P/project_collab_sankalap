@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { CalendarRange, Loader2, Search } from "lucide-react";
 import { Plus } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { isPlatformReviewer } from "@/lib/roles";
 import AppLayoutClient from "@/components/layout/AppLayoutClient";
 import SeasonCard from "@/components/season/SeasonCard";
 import type { ISeasonPublic, SeasonStatus } from "@/types/season";
@@ -45,7 +44,7 @@ export default function SeasonsPage() {
             <div className="inline-flex items-center gap-2 text-xs font-semibold text-primary uppercase tracking-wider mb-3"><CalendarRange size={15} /> Seasons of Development</div>
             <h1 className="text-3xl md:text-4xl font-black tracking-tight">Build with organizations and mentors</h1>
             <p className="text-sm md:text-base text-muted-foreground mt-3 leading-relaxed">Join structured development seasons where organizations publish mentored proposals, contributors form teams, projects ship, and judges recognize the strongest outcomes.</p>
-            {isPlatformReviewer((session?.user as any)?.role) && <a href="/seasons/create" className="mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"><Plus size={15} /> Create season</a>}
+            {session?.user && <a href="/seasons/create" className="mt-5 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"><Plus size={15} /> Host a season</a>}
           </div>
         </section>
 
