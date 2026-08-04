@@ -2,6 +2,7 @@
 
 import PortfolioRenderer, { type PortfolioData } from "./PortfolioRenderer";
 import type { IOrgPublic, IOrgMemberPopulated } from "@/types/org";
+import EnterpriseOrgRenderer from "./EnterpriseOrgRenderer";
 
 interface OrgPortfolioRendererProps {
   org:         IOrgPublic;
@@ -18,6 +19,10 @@ export default function OrgPortfolioRenderer({
   projects,
   contained = false,
 }: OrgPortfolioRendererProps) {
+  if (portfolio?.mode === "enterprise") {
+    return <EnterpriseOrgRenderer org={org} portfolio={portfolio} members={members} projects={projects} contained={contained} />;
+  }
+
   // Map org context to PortfolioData interface
   const data: PortfolioData = {
     orgMode:          true,

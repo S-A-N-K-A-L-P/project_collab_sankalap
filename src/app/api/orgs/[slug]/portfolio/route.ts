@@ -59,7 +59,8 @@ export async function PUT(req: Request, { params }: { params: Promise<{ slug: st
 
     const body = await req.json();
     const ALLOWED = [
-      "isPublished", "themeId", "accent", "accent2", "bgOverride", "threeOverride",
+      "isPublished", "mode", "enterpriseTemplate", "navigationStyle", "enterprisePageMode", "enterprisePages", "enterpriseBrand", "enterpriseFooter",
+      "themeId", "accent", "accent2", "bgOverride", "threeOverride",
       "card", "sectionAnim", "projectCardStyle", "projectCardAnim", "sections", "seo",
     ];
 

@@ -13,6 +13,27 @@ const OrgPortfolioSchema = new Schema(
     orgId:       { type: Schema.Types.ObjectId, ref: "Org", required: true, unique: true },
     isPublished: { type: Boolean, default: false },
 
+    // Organizations can keep the existing expressive portfolio or publish a
+    // restrained, conventional company website from the same content source.
+    mode: { type: String, enum: ["immersive", "enterprise"], default: "immersive" },
+    enterpriseTemplate: { type: String, enum: ["corporate", "editorial"], default: "corporate" },
+    navigationStyle: { type: String, enum: ["horizontal", "vertical"], default: "horizontal" },
+    enterprisePageMode: { type: String, enum: ["single_page", "multi_page"], default: "single_page" },
+    enterprisePages: { type: Schema.Types.Mixed, default: () => [
+      { id: "home", label: "Home" }, { id: "about", label: "About" },
+      { id: "work", label: "Work" }, { id: "contact", label: "Contact" },
+    ] },
+    enterpriseBrand: {
+      surface: { type: String, default: "#f7f5ef" },
+      text: { type: String, default: "#172033" },
+      accent: { type: String, default: "#244a73" },
+    },
+    enterpriseFooter: {
+      summary: { type: String, default: "" },
+      copyright: { type: String, default: "" },
+      showSocialLinks: { type: Boolean, default: true },
+    },
+
     // Theme & visual config (reuses the same theme registry as user portfolios)
     themeId:       { type: String, default: "aurora" },
     accent:        { type: String, default: "" },

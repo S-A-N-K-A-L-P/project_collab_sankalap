@@ -10,7 +10,8 @@ export type SectionType =
   | "gallery" | "stats" | "quote" | "custom" | "contact"
   // Org portfolio sections (orgMode only)
   | "mission" | "team" | "projects_showcase" | "org_stats"
-  | "roadmap" | "sponsors" | "events" | "join_cta";
+  | "roadmap" | "sponsors" | "events" | "join_cta"
+  | "services" | "clients" | "news" | "locations";
 
 export interface PortfolioSection {
   id: string;
@@ -19,6 +20,7 @@ export interface PortfolioSection {
   enabled: boolean;
   order: number;
   content: any;
+  pageId?: string;
 }
 
 export const SECTION_TYPES: { type: SectionType; label: string; icon: string; desc: string; unique?: boolean; orgOnly?: boolean }[] = [
@@ -48,6 +50,10 @@ export const SECTION_TYPES: { type: SectionType; label: string; icon: string; de
   { type: "sponsors",         label: "Sponsors",         icon: "🤝", desc: "Partners & sponsor logos",         orgOnly: true },
   { type: "events",           label: "Events",           icon: "📅", desc: "Upcoming org events",              orgOnly: true },
   { type: "join_cta",         label: "Join Us",          icon: "➕", desc: "Call to action to join",           orgOnly: true },
+  { type: "services",         label: "Services",         icon: "▦", desc: "Capabilities and service offerings", orgOnly: true },
+  { type: "clients",          label: "Clients",          icon: "◎", desc: "Client and partner logo wall",       orgOnly: true },
+  { type: "news",             label: "News",             icon: "◫", desc: "Company updates and announcements",  orgOnly: true },
+  { type: "locations",        label: "Locations",        icon: "⌖", desc: "Offices and contact locations",      orgOnly: true },
 ];
 
 export function defaultContentFor(type: SectionType): any {
@@ -77,6 +83,10 @@ export function defaultContentFor(type: SectionType): any {
     case "sponsors":         return { items: [{ name: "", logo: "", url: "" }] };
     case "events":           return { items: [{ date: "", title: "", description: "", url: "" }] };
     case "join_cta":         return { buttonText: "Join Us", benefits: [] as string[], showMemberCount: true };
+    case "services":         return { items: [{ title: "", description: "", image: "", url: "" }] };
+    case "clients":          return { items: [{ name: "", logo: "", url: "" }] };
+    case "news":             return { items: [{ date: "", title: "", summary: "", image: "", url: "" }] };
+    case "locations":        return { items: [{ name: "", address: "", email: "", phone: "", image: "" }] };
     default:                 return {};
   }
 }
@@ -91,7 +101,8 @@ export function defaultTitleFor(type: SectionType): string {
     // Org sections
     mission: "Our Mission", team: "Our Team", projects_showcase: "Our Projects",
     org_stats: "By the Numbers", roadmap: "Roadmap", sponsors: "Partners & Sponsors",
-    events: "Upcoming Events", join_cta: "Join Us",
+    events: "Upcoming Events", join_cta: "Join Us", services: "What We Do",
+    clients: "Our Clients", news: "News & Insights", locations: "Our Locations",
   };
   return map[type] ?? "Section";
 }
@@ -121,6 +132,8 @@ export const STARTER_TEMPLATES: { id: string; label: string; types: SectionType[
   { id: "org_standard", label: "Organization",  isOrg: true, types: ["hero", "mission", "team", "projects_showcase", "org_stats", "roadmap", "join_cta", "contact"] },
   { id: "org_minimal",  label: "Org Minimal",   isOrg: true, types: ["hero", "mission", "team", "join_cta"] },
   { id: "org_showcase", label: "Org Showcase",  isOrg: true, types: ["hero", "mission", "projects_showcase", "gallery", "team", "org_stats", "testimonials", "contact"] },
+  { id: "enterprise_compact", label: "Compact Company", isOrg: true, types: ["hero", "mission", "services", "clients", "projects_showcase", "contact"] },
+  { id: "enterprise_corporate", label: "Corporate Website", isOrg: true, types: ["hero", "mission", "services", "projects_showcase", "clients", "team", "news", "locations", "contact"] },
 ];
 
 export function sectionsFromTypes(types: SectionType[]): PortfolioSection[] {
