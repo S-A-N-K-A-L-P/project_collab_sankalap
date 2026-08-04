@@ -25,6 +25,10 @@ const SeasonSchema = new Schema({
   slug: { type: String, required: true, unique: true, lowercase: true, trim: true, match: /^[a-z0-9-]{3,60}$/ },
   tagline: { type: String, default: "", maxlength: 180 },
   description: { type: String, required: true },
+  visibility: { type: String, enum: ["public", "private", "invite_only"], default: "public" },
+  hostOrgId: { type: Schema.Types.ObjectId, ref: "Org" },
+  timezone: { type: String, default: "Asia/Kolkata" },
+  durationWeeks: { type: Number, default: 8, min: 1, max: 52 },
   status: {
     type: String,
     enum: ["draft", "registration", "proposal_submission", "applications", "building", "submission", "judging", "completed", "archived"],
@@ -39,6 +43,9 @@ const SeasonSchema = new Schema({
     maxApplicationsPerParticipant: { type: Number, default: 3, min: 1 },
     requireOrgApproval: { type: Boolean, default: true },
     requireSeasonApproval: { type: Boolean, default: false },
+    participantCapacity: { type: Number, default: 100, min: 1 },
+    allowMultipleProjects: { type: Boolean, default: false },
+    minimumWeeklyHours: { type: Number, default: 5, min: 0, max: 168 },
   },
   rubric: { type: [RubricCriterionSchema], default: [] },
   stats: {

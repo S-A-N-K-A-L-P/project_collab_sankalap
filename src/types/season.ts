@@ -12,6 +12,8 @@ export type SeasonStatus =
 export type SeasonRole = "organizer" | "org_admin" | "mentor" | "judge";
 
 export type SeasonOrganizationStatus = "invited" | "applied" | "active" | "declined" | "withdrawn";
+export type SeasonPricingMode = "free" | "one_time" | "monthly";
+export type SeasonPayerType = "participant" | "organization" | "either";
 
 export interface ISeasonTimeline {
   registrationOpens?: string;
@@ -39,6 +41,9 @@ export interface ISeasonPublic {
   slug: string;
   tagline: string;
   description: string;
+  visibility: "public" | "private" | "invite_only";
+  timezone: string;
+  durationWeeks: number;
   status: SeasonStatus;
   bannerImage: string;
   themeColor: string;
@@ -49,6 +54,9 @@ export interface ISeasonPublic {
     maxApplicationsPerParticipant: number;
     requireOrgApproval: boolean;
     requireSeasonApproval: boolean;
+    participantCapacity: number;
+    allowMultipleProjects: boolean;
+    minimumWeeklyHours: number;
   };
   rubric: ISeasonRubricCriterion[];
   stats: {
@@ -60,6 +68,23 @@ export interface ISeasonPublic {
   };
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ISeasonPricing {
+  mode: SeasonPricingMode;
+  payerType: SeasonPayerType;
+  currency: string;
+  amount: number;
+  joiningFee: number;
+  billingCycleCount: number;
+  trialDays: number;
+  gracePeriodDays: number;
+  paymentTiming: "before_application" | "after_acceptance";
+  taxMode: "inclusive" | "exclusive";
+  refundPolicy: "none" | "before_building" | "manual_review";
+  displayPublicly: boolean;
+  scholarshipsEnabled: boolean;
+  couponsEnabled: boolean;
 }
 
 export const SEASON_STATUS_LABELS: Record<SeasonStatus, string> = {

@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import dbConnect from "@/lib/mongodb";
 import User from "@/models/User";
+import { captureSeasonPayment } from "@/lib/season-payments";
 
 /**
  * Razorpay server-to-server webhook — the source of truth for payments.
@@ -45,6 +46,13 @@ export async function POST(req: NextRequest) {
       const payment = event.payload?.payment?.entity;
       const userId = payment?.notes?.userId;
       const paymentId = payment?.id;
+
+      if (payment?.notes?.paymentType === "season" && payment?.order_id) {
+        await dbConnect();
+        await captureSeasonPayment(payment.order_id, paymentId);
+        console.log(`[RAZORPAY_WEBHOOK] season payment ${paymentId} captured`);
+        return NextResponse.json({ received: true });
+      }
 
       if (userId) {
         await dbConnect();
