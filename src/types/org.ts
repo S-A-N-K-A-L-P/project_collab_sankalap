@@ -65,6 +65,7 @@ export interface IOrgPublic {
   orgType:    OrgType;
   category:   OrgCategory;
   charter:    string;
+  missionVideoId?: string;
   roadmap:    string;
   tagline:    string;
   website:    string;

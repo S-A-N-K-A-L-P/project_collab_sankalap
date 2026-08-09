@@ -128,6 +128,7 @@ const OrgSchema = new Schema(
 
     /* ── Content (for launch request + public page) ───────────── */
     charter:  { type: String, default: "" },   // mission statement / why this org exists
+    missionVideoId: { type: String, trim: true },
     roadmap:  { type: String, default: "" },   // initial roadmap (markdown)
     tagline:  { type: String, default: "" },
     website:  { type: String, default: "" },

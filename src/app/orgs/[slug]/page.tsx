@@ -11,6 +11,7 @@ import OrgHero from "@/components/org/OrgHero";
 import JoinButton from "@/components/org/JoinButton";
 import AppLayoutClient from "@/components/layout/AppLayoutClient";
 import { ORG_ROLE_LABELS } from "@/lib/org-permissions";
+import { buildYouTubeEmbedUrl } from "@/lib/youtube";
 
 export default function OrgPage() {
   const { slug } = useParams() as { slug: string };
@@ -65,6 +66,22 @@ export default function OrgPage() {
             <Section icon={<Shield size={16} />} title="Mission">
               <p className="text-sm leading-6 text-muted-foreground whitespace-pre-wrap">{org.charter || "The organization has not published its mission statement yet."}</p>
             </Section>
+
+            {org.missionVideoId && (
+              <Section icon={<LayoutDashboard size={16} />} title="Mission video">
+                <div className="relative overflow-hidden rounded-xl border border-border bg-black/10" style={{ aspectRatio: "16 / 9" }}>
+                  <iframe
+                    title={`${org.name} mission video`}
+                    src={buildYouTubeEmbedUrl(org.missionVideoId)}
+                    className="absolute inset-0 h-full w-full"
+                    loading="lazy"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    referrerPolicy="strict-origin-when-cross-origin"
+                  />
+                </div>
+              </Section>
+            )}
 
             <Section id="projects" icon={<FolderKanban size={16} />} title="Projects" meta={`${projects.length} total`}>
               {projects.length ? <div className="divide-y divide-border">{projects.slice(0, 6).map((project) => <a key={project._id} href={`/projects/${project._id}`} className="flex items-center gap-4 py-3 first:pt-0 last:pb-0 group"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted-bg text-muted-foreground"><FolderOpen size={17} /></div><div className="min-w-0 flex-1"><h3 className="truncate text-sm font-semibold group-hover:text-primary">{project.title}</h3><p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">{project.description || "No description provided"}</p></div><span className="rounded-md border border-border px-2 py-1 text-[10px] font-medium capitalize text-muted-foreground">{project.status}</span></a>)}</div> : <CompactEmpty icon={<FolderOpen size={18} />} title="No projects yet" detail="Projects launched by this organization will appear here." />}

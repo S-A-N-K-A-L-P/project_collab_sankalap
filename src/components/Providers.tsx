@@ -8,6 +8,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { LayoutProvider } from "@/context/LayoutContext";
 import { muiDarkTheme, muiLightTheme } from "@/lib/mui-theme";
 import { useEffect, useState } from "react";
+import { Toaster } from "@/components/ui/toaster";
 
 // React 19 / Next 15 next-themes warning suppression
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
@@ -50,6 +51,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <MuiBridge>
           <LayoutProvider>
             <SessionProvider>{children}</SessionProvider>
+            <Toaster />
           </LayoutProvider>
         </MuiBridge>
       </AppRouterCacheProvider>

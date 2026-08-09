@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { ArrowLeft, Loader2, AlertCircle, Save, Check } from "lucide-react";
 import { useOrg } from "@/context/OrgContext";
 import { useRouter } from "next/navigation";
 import ImageUploader from "@/components/ui/ImageUploader";
 import AppLayoutClient from "@/components/layout/AppLayoutClient";
+import { toast } from "@/hooks/use-toast";
+import { extractYouTubeVideoId, formatYouTubeEditableUrl, getYouTubeThumbnailUrl } from "@/lib/youtube";
 
 export default function OrgAdminSettingsPage() {
   const { org, loading: loadingOrg, error: orgError, isAdmin, refresh } = useOrg();
@@ -21,6 +22,7 @@ export default function OrgAdminSettingsPage() {
     description: "",
     tagline: "",
     charter: "",
+    missionVideoUrl: "",
     roadmap: "",
     website: "",
     email: "",
@@ -52,6 +54,7 @@ export default function OrgAdminSettingsPage() {
         description: org.description || "",
         tagline: org.tagline || "",
         charter: org.charter || "",
+        missionVideoUrl: org.missionVideoId ? formatYouTubeEditableUrl(org.missionVideoId) : "",
         roadmap: org.roadmap || "",
         website: org.website || "",
         email: org.email || "",
@@ -70,6 +73,9 @@ export default function OrgAdminSettingsPage() {
   }, [loadingOrg, org, isAdmin]);
 
   const handleChange = (field: string, val: any) => {
+    if (field === "missionVideoUrl") {
+      setError(null);
+    }
     setForm((prev) => ({ ...prev, [field]: val }));
   };
 
@@ -86,6 +92,21 @@ export default function OrgAdminSettingsPage() {
     setSuccess(false);
     setError(null);
 
+    const missionVideoValue = form.missionVideoUrl.trim();
+    if (missionVideoValue) {
+      const missionVideoId = extractYouTubeVideoId(missionVideoValue);
+      if (!missionVideoId) {
+        setSaving(false);
+        setError("Mission video must be a valid YouTube link.");
+        toast({
+          variant: "destructive",
+          title: "Invalid YouTube link",
+          description: "Paste a youtube.com/watch, youtu.be, or youtube.com/embed URL.",
+        });
+        return;
+      }
+    }
+
     try {
       const res = await fetch(`/api/orgs/${org?.slug}`, {
         method: "PATCH",
@@ -94,14 +115,24 @@ export default function OrgAdminSettingsPage() {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || "Failed to update settings");
+        const data = await res.json().catch(() => ({}));
+        const message = data.message || "Failed to update settings";
+        throw new Error(message);
       }
 
       setSuccess(true);
+      toast({
+        title: "Settings saved",
+        description: "Organization settings were updated successfully.",
+      });
       await refresh();
     } catch (err: any) {
       setError(err.message);
+      toast({
+        variant: "destructive",
+        title: "Failed to save settings",
+        description: err.message,
+      });
     } finally {
       setSaving(false);
     }
@@ -119,6 +150,7 @@ export default function OrgAdminSettingsPage() {
 
   const inputCls = "w-full px-3 py-2 rounded-lg bg-card dark:bg-white/5 border border-border text-sm text-foreground dark:text-white placeholder-muted-foreground dark:placeholder-white/30 shadow-sm focus:outline-none focus:border-primary dark:focus:border-indigo-400/60 focus:ring-2 focus:ring-primary/15 dark:focus:ring-indigo-400/15 transition-all";
   const labelCls = "block text-xs font-semibold text-muted-foreground dark:text-white/50 uppercase tracking-wider mb-1.5";
+  const missionVideoId = extractYouTubeVideoId(form.missionVideoUrl);
 
   return (
     <AppLayoutClient>
@@ -138,7 +170,7 @@ export default function OrgAdminSettingsPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
             <div className="p-4 rounded-xl bg-error-muted dark:bg-red-500/10 border border-error dark:border-red-400/20 flex items-start gap-2">
-              <AlertCircle className="text-error dark:text-red-400 mt-0.5 flex-shrink-0" size={16} />
+              <AlertCircle className="text-error dark:text-red-400 mt-0.5 shrink-0" size={16} />
               <p className="text-sm text-error-text dark:text-red-300">{error}</p>
             </div>
           )}
@@ -195,6 +227,42 @@ export default function OrgAdminSettingsPage() {
                   rows={4}
                   className={`${inputCls} resize-none`}
                 />
+              </div>
+
+              <div>
+                <label className={labelCls}>Mission video</label>
+                <input
+                  type="url"
+                  value={form.missionVideoUrl}
+                  onChange={(e) => handleChange("missionVideoUrl", e.target.value)}
+                  placeholder="https://youtu.be/VIDEO_ID"
+                  className={inputCls}
+                />
+                <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground dark:text-white/40">
+                  Paste an unlisted YouTube video link. The video is hosted by YouTube and is visible to anyone who can view this organization's page.
+                </p>
+                {form.missionVideoUrl.trim() && !missionVideoId && (
+                  <p className="mt-1.5 text-[11px] text-error dark:text-red-400">Enter a valid YouTube watch, short, or embed URL.</p>
+                )}
+                {missionVideoId && (
+                  <div className="mt-3 overflow-hidden rounded-xl border border-border dark:border-white/8 bg-card dark:bg-white/5">
+                    <div className="relative aspect-video bg-black/10">
+                      <img
+                        src={getYouTubeThumbnailUrl(missionVideoId)}
+                        alt="Mission video preview"
+                        loading="lazy"
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
+                      <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-3">
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase tracking-wider text-white/80">Preview</p>
+                          <p className="text-xs text-white/70">{formatYouTubeEditableUrl(missionVideoId)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -297,7 +365,7 @@ export default function OrgAdminSettingsPage() {
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-hover dark:from-indigo-500 dark:to-purple-500 text-primary-foreground dark:text-white font-semibold text-sm transition-all hover:brightness-110 shadow-sm disabled:opacity-60"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-linear-to-r from-primary to-primary-hover dark:from-indigo-500 dark:to-purple-500 text-primary-foreground dark:text-white font-semibold text-sm transition-all hover:brightness-110 shadow-sm disabled:opacity-60"
             >
               {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
               {saving ? "Saving..." : "Save Settings"}

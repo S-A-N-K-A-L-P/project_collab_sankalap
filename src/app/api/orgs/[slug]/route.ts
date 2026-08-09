@@ -5,9 +5,8 @@ import dbConnect from "@/lib/mongodb";
 import Org from "@/models/Org";
 import OrgMember from "@/models/OrgMember";
 import Project from "@/models/Project";
-import User from "@/models/User";
 import { canManageOrg, isPlatformAdminOverride } from "@/lib/org-permissions";
-import { isPlatformReviewer } from "@/lib/roles";
+import { extractYouTubeVideoId } from "@/lib/youtube";
 
 /** GET /api/orgs/[slug] — public org profile */
 export async function GET(req: Request, { params }: { params: Promise<{ slug: string }> }) {
@@ -79,6 +78,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ slug: 
     }
 
     const body = await req.json();
+    const missionVideoInput = typeof body.missionVideoUrl === "string"
+      ? body.missionVideoUrl
+      : typeof body.missionVideoId === "string"
+        ? body.missionVideoId
+        : undefined;
+
     const ALLOWED_FIELDS = [
       "name", "description", "tagline", "charter", "roadmap",
       "website", "email", "socialLinks", "logo", "bannerImage",
@@ -87,12 +92,34 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ slug: 
       "votingRightsRule", "portfolioEnabled",
     ];
 
-    const update: Record<string, any> = {};
+    const setUpdate: Record<string, any> = {};
+    const unsetUpdate: Record<string, any> = {};
     for (const field of ALLOWED_FIELDS) {
-      if (body[field] !== undefined) update[field] = body[field];
+      if (body[field] !== undefined) setUpdate[field] = body[field];
     }
 
-    const updated = await Org.findByIdAndUpdate(org._id, { $set: update }, { new: true, runValidators: true }).lean();
+    if (body.missionVideoUrl !== undefined || body.missionVideoId !== undefined) {
+      const rawInput = typeof missionVideoInput === "string" ? missionVideoInput.trim() : "";
+      if (!rawInput) {
+        unsetUpdate.missionVideoId = 1;
+      } else {
+        const missionVideoId = extractYouTubeVideoId(rawInput);
+        if (!missionVideoId) {
+          return NextResponse.json({ message: "Invalid YouTube URL" }, { status: 400 });
+        }
+        setUpdate.missionVideoId = missionVideoId;
+      }
+    }
+
+    const update: Record<string, any> = {};
+    if (Object.keys(setUpdate).length) update.$set = setUpdate;
+    if (Object.keys(unsetUpdate).length) update.$unset = unsetUpdate;
+
+    if (!Object.keys(update).length) {
+      return NextResponse.json(JSON.parse(JSON.stringify(org)));
+    }
+
+    const updated = await Org.findByIdAndUpdate(org._id, update, { new: true, runValidators: true }).lean();
 
     return NextResponse.json(JSON.parse(JSON.stringify(updated)));
   } catch (error: any) {
