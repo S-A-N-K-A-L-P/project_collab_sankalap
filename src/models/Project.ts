@@ -11,6 +11,21 @@ const ReleaseSchema = new Schema(
   { _id: false }
 );
 
+const TeamMemberConfigSchema = new Schema(
+  {
+    userId:         { type: Schema.Types.ObjectId, ref: "User", required: true },
+    projectRole:    {
+      type: String,
+      enum: ["lead", "architect", "backend", "frontend", "mobile", "sre", "qa", "contributor"],
+      default: "contributor",
+    },
+    ownedPaths:     { type: [String], default: [] },
+    maxActiveTasks: { type: Number, default: 5 },
+    addedAt:        { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
 const ProjectSchema = new Schema(
   {
     /* ── Existing core fields ─────────────────────────────────── */
@@ -23,6 +38,7 @@ const ProjectSchema = new Schema(
     status:       { type: String, enum: ["planning", "active", "completed", "archived"], default: "planning" },
     lead:         { type: Schema.Types.ObjectId, ref: "User", required: true },
     members:      [{ type: Schema.Types.ObjectId, ref: "User" }],
+    teamRoster:   { type: [TeamMemberConfigSchema], default: [] },
     verifiedBy:   { type: Schema.Types.ObjectId, ref: "User" },
     progress:     { type: Number, default: 0, min: 0, max: 100 },
     githubRepo:   { type: String },

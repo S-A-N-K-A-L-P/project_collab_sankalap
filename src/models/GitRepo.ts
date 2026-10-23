@@ -33,6 +33,14 @@ const GitRepoSchema = new Schema(
       type: String,
       default: "main",
     },
+    branches: {
+      type: [String],
+      default: ["main"],
+    },
+    fileTree: {
+      type: [String],
+      default: [],
+    },
     syncStatus: {
       type: String,
       enum: ["idle", "syncing", "failed", "verified"],

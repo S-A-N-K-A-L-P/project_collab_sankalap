@@ -44,6 +44,67 @@ const TaskSchema = new Schema(
             type: Date,
             required: true,
         },
+        /* ── Git Task Distribution & Scope Fields ─────────────────── */
+        repoUrl: {
+            type: String,
+            default: "",
+        },
+        baseBranch: {
+            type: String,
+            default: "main",
+        },
+        targetBranch: {
+            type: String,
+            default: "",
+        },
+        assignedFiles: {
+            type: [String],
+            default: [],
+        },
+        allowedGlobs: {
+            type: [String],
+            default: [],
+        },
+        readOnlyFiles: {
+            type: [String],
+            default: [],
+        },
+        fileLockMode: {
+            type: String,
+            enum: ["advisory", "strict", "exclusive"],
+            default: "strict",
+        },
+        assignedBy: {
+            type: String,
+            default: "",
+        },
+        assignedByName: {
+            type: String,
+            default: "",
+        },
+        /* ── Receiver Execution & Verification Telemetry ──────────── */
+        acceptedAt: {
+            type: Date,
+        },
+        latestCommitSha: {
+            type: String,
+            default: "",
+        },
+        commitCount: {
+            type: Number,
+            default: 0,
+        },
+        pullRequestUrl: {
+            type: String,
+            default: "",
+        },
+        verificationGate: {
+            buildPassed:     { type: Boolean, default: false },
+            testsPassed:     { type: Boolean, default: false },
+            sastPassed:      { type: Boolean, default: false },
+            contractsPassed: { type: Boolean, default: false },
+            verifiedAt:      { type: Date },
+        },
     },
     { timestamps: true }
 );

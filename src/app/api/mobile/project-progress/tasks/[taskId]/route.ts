@@ -1,14 +1,60 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { getMobileSession } from "@/lib/mobileAuth";
 import dbConnect from "@/lib/mongodb";
-import { canUpdateProgress } from "@/lib/projectProgressPermissions";
+import { canManageTasks, canUpdateProgress } from "@/lib/projectProgressPermissions";
 import ActivityLog from "@/models/ActivityLog";
+import Project from "@/models/Project";
 import Task from "@/models/Task";
 
 type PatchTaskBody = {
     status?: "pending" | "in-progress" | "completed" | "delayed";
     progress?: number;
+    /* Receiver Git & Verification telemetry */
+    latestCommitSha?: string;
+    commitCount?: number;
+    pullRequestUrl?: string;
+    verificationGate?: {
+        buildPassed?: boolean;
+        testsPassed?: boolean;
+        sastPassed?: boolean;
+        contractsPassed?: boolean;
+    };
+    /* Lead / Dispatcher updates */
+    title?: string;
+    description?: string;
+    assignedTo?: string;
+    assignedToName?: string;
+    priority?: "low" | "medium" | "high";
+    deadline?: string;
+    repoUrl?: string;
+    baseBranch?: string;
+    targetBranch?: string;
+    assignedFiles?: string[];
+    allowedGlobs?: string[];
+    readOnlyFiles?: string[];
+    fileLockMode?: "advisory" | "strict" | "exclusive";
 };
+
+async function resolveSession(request: Request) {
+    try {
+        const mobile = getMobileSession(request);
+        if (mobile?.id) return mobile;
+    } catch {
+        // fallback to web session
+    }
+    const web = await getServerSession(authOptions);
+    if (web?.user && (web.user as any).id) {
+        return {
+            id: (web.user as any).id,
+            role: (web.user as any).role || "user",
+            name: web.user.name || "",
+            email: web.user.email || "",
+        };
+    }
+    throw new Error("Missing or invalid token");
+}
 
 export async function PATCH(
     request: Request,
@@ -16,18 +62,9 @@ export async function PATCH(
 ) {
     try {
         const { taskId } = await params;
-        const session = getMobileSession(request);
-
-        if (!canUpdateProgress(session.role)) {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
+        const session = await resolveSession(request);
 
         const body = (await request.json()) as PatchTaskBody;
-        const { status, progress } = body;
-
-        if (status === undefined && progress === undefined) {
-            return NextResponse.json({ error: "No updates provided" }, { status: 400 });
-        }
 
         await dbConnect();
 
@@ -36,28 +73,122 @@ export async function PATCH(
             return NextResponse.json({ error: "Task not found" }, { status: 404 });
         }
 
-        if (session.role === "sankalp_member" && task.assignedTo !== session.id) {
+        const project = await Project.findById(task.projectId).select("lead").lean() as any;
+        const isLeadOrAdmin =
+            canManageTasks(session.role) ||
+            (project?.lead && project.lead.toString() === session.id);
+        const isAssignee = task.assignedTo === session.id;
+
+        if (!isLeadOrAdmin && !isAssignee && !canUpdateProgress(session.role)) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
-        if (status !== undefined) task.status = status;
-        if (progress !== undefined) {
-            task.progress = Math.max(0, Math.min(100, progress));
+        if (!isLeadOrAdmin && !isAssignee) {
+            return NextResponse.json({ error: "Forbidden: Task is assigned to another developer" }, { status: 403 });
+        }
+
+        // Receiver & Status updates
+        if (body.status !== undefined) {
+            if (body.status === "in-progress" && !task.acceptedAt) {
+                task.acceptedAt = new Date();
+            }
+            task.status = body.status;
+        }
+        if (body.progress !== undefined) {
+            task.progress = Math.max(0, Math.min(100, body.progress));
             if (task.progress >= 100 && task.status !== "completed") {
                 task.status = "completed";
             }
         }
+        if (body.latestCommitSha !== undefined) task.latestCommitSha = body.latestCommitSha;
+        if (body.commitCount !== undefined) task.commitCount = body.commitCount;
+        if (body.pullRequestUrl !== undefined) task.pullRequestUrl = body.pullRequestUrl;
+        if (body.verificationGate) {
+            task.verificationGate = {
+                buildPassed: body.verificationGate.buildPassed ?? task.verificationGate?.buildPassed ?? false,
+                testsPassed: body.verificationGate.testsPassed ?? task.verificationGate?.testsPassed ?? false,
+                sastPassed: body.verificationGate.sastPassed ?? task.verificationGate?.sastPassed ?? false,
+                contractsPassed: body.verificationGate.contractsPassed ?? task.verificationGate?.contractsPassed ?? false,
+                verifiedAt: new Date(),
+            };
+        }
+
+        // Lead / Admin scope & metadata updates
+        if (isLeadOrAdmin) {
+            if (body.title !== undefined) task.title = body.title;
+            if (body.description !== undefined) task.description = body.description;
+            if (body.assignedTo !== undefined) task.assignedTo = body.assignedTo;
+            if (body.assignedToName !== undefined) task.assignedToName = body.assignedToName;
+            if (body.priority !== undefined) task.priority = body.priority;
+            if (body.deadline !== undefined) task.deadline = new Date(body.deadline);
+            if (body.repoUrl !== undefined) task.repoUrl = body.repoUrl;
+            if (body.baseBranch !== undefined) task.baseBranch = body.baseBranch;
+            if (body.targetBranch !== undefined) task.targetBranch = body.targetBranch;
+            if (Array.isArray(body.assignedFiles)) {
+                task.assignedFiles = Array.from(new Set(body.assignedFiles.map((f) => f.replace(/\\/g, "/").trim()).filter(Boolean)));
+            }
+            if (Array.isArray(body.allowedGlobs)) {
+                task.allowedGlobs = Array.from(new Set(body.allowedGlobs.map((g) => g.replace(/\\/g, "/").trim()).filter(Boolean)));
+            }
+            if (Array.isArray(body.readOnlyFiles)) {
+                task.readOnlyFiles = Array.from(new Set(body.readOnlyFiles.map((f) => f.replace(/\\/g, "/").trim()).filter(Boolean)));
+            }
+            if (body.fileLockMode !== undefined) {
+                task.fileLockMode = body.fileLockMode;
+            }
+        }
+
         await task.save();
 
         await ActivityLog.create({
             projectId: task.projectId,
             userId: session.id,
             userName: session.email ?? session.name ?? "",
-            action: `Updated task "${task.title}"`,
-            metadata: { taskId, status, progress },
+            action: `Updated task "${task.title}" (${task.status}, ${task.progress}%)`,
+            metadata: {
+                taskId,
+                status: task.status,
+                progress: task.progress,
+                latestCommitSha: task.latestCommitSha,
+            },
         });
 
         return NextResponse.json({ task });
+    } catch (error: any) {
+        if (error.message?.includes("Missing") || error.message?.includes("jwt")) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+}
+
+export async function DELETE(
+    request: Request,
+    { params }: { params: Promise<{ taskId: string }> }
+) {
+    try {
+        const { taskId } = await params;
+        const session = await resolveSession(request);
+
+        await dbConnect();
+
+        const task = await Task.findById(taskId);
+        if (!task) {
+            return NextResponse.json({ error: "Task not found" }, { status: 404 });
+        }
+
+        const project = await Project.findById(task.projectId).select("lead").lean() as any;
+        const isLeadOrAdmin =
+            canManageTasks(session.role) ||
+            (project?.lead && project.lead.toString() === session.id);
+
+        if (!isLeadOrAdmin) {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
+
+        await Task.findByIdAndDelete(taskId);
+
+        return NextResponse.json({ message: "Task deleted" });
     } catch (error: any) {
         if (error.message?.includes("Missing") || error.message?.includes("jwt")) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
