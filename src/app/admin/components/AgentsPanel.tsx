@@ -10,7 +10,7 @@ interface Device {
 interface MemberAgents { userId: string; name: string; email: string; online: boolean; devices: Device[] }
 interface Job {
   id: string; type: string; taskId: string; title: string; targetUserName: string;
-  status: string; stalled: boolean; claimedByName: string; attempts: number; maxAttempts: number;
+  status: string; stalled: boolean; deviceOnline?: boolean; claimedByName: string; attempts: number; maxAttempts: number;
   note: string; error: string; result: any; createdAt: string; finishedAt?: string;
 }
 
@@ -131,7 +131,7 @@ export default function AgentsPanel({ projectId }: { projectId: string }) {
                   )}
                 </div>
                 <span className={`text-[9px] font-mono font-bold uppercase px-2 py-1 rounded-lg ${j.stalled ? "bg-yellow-500/10 text-yellow-400" : STATUS_CLS[j.status] || ""}`}>
-                  {j.stalled ? "stalled (PC went quiet)" : j.status}
+                  {j.stalled ? (j.deviceOnline === false ? "stalled (PC offline)" : "stalled (PC went quiet)") : j.status}
                 </span>
                 {j.type === "setup-task" && j.taskId && ["failed", "cancelled", "done"].includes(j.status) && (
                   <button disabled={busy === j.taskId} onClick={() => resend(j.taskId)}

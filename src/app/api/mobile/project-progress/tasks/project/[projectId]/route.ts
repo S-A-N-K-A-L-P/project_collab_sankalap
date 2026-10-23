@@ -5,6 +5,7 @@ import { getMobileSession } from "@/lib/mobileAuth";
 import dbConnect from "@/lib/mongodb";
 import Task from "@/models/Task";
 import Project from "@/models/Project";
+import { lockPaths } from "@/lib/gitTaskScope";
 
 export async function GET(
     request: Request,
@@ -43,8 +44,7 @@ export async function GET(
 
         for (const t of tasks) {
             if (t.status === "completed") continue;
-            const assignedFiles: string[] = Array.isArray(t.assignedFiles) ? t.assignedFiles : [];
-            for (const fp of assignedFiles) {
+            for (const fp of lockPaths(t)) {
                 fileLocks.push({
                     filePath: fp,
                     taskId: t._id.toString(),

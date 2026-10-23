@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import {
   Activity, AlertTriangle, CheckCircle2, Clock, Cpu, GitMerge, GitPullRequest, ListChecks, MonitorSmartphone, ShieldCheck,
 } from "lucide-react";
-import { ago, boardColumn, cardCls, clock, gateSummary, labelCls, type CRData, type CRTask } from "./pipeline";
+import { ago, boardColumn, cardCls, clock, gateSummary, isTaskDone, labelCls, type CRData, type CRTask } from "./pipeline";
 import { Avatar, Empty, Kpi, LiveDot, PipelineLane, Pill } from "./ui";
 
 interface Attention { tone: "bad" | "warn" | "good"; text: string; taskId?: string }
@@ -17,7 +17,7 @@ function attentionItems(data: CRData, nowMs: number): Attention[] {
     if (pr?.state === "open" && t.verification === "stale") out.push({ tone: "bad", text: `PR #${pr.number} "${t.title}": new commits since Syncro verified it`, taskId: t._id });
     if (g.anyFailed) out.push({ tone: "bad", text: `"${t.title}": a verification gate failed`, taskId: t._id });
     if (t.setupJob?.status === "failed") out.push({ tone: "bad", text: `Agent setup failed for "${t.title}": ${t.setupJob.error}`, taskId: t._id });
-    if (t.setupJob?.stalled) out.push({ tone: "warn", text: `${t.setupJob.claimedByName || "A PC"} went quiet while setting up "${t.title}"`, taskId: t._id });
+    if (t.setupJob?.stalled) out.push({ tone: "warn", text: `${t.setupJob.claimedByName || "A PC"} ${t.setupJob.deviceOnline === false ? "is offline" : "went quiet"} while setting up "${t.title}"`, taskId: t._id });
     if (pr?.state === "open" && pr.reviewDecision === "changes_requested") out.push({ tone: "warn", text: `PR #${pr.number}: changes requested`, taskId: t._id });
     if (pr?.lastSyncError) out.push({ tone: "warn", text: `PR #${pr.number}: ${pr.lastSyncError}`, taskId: t._id });
     if (pr?.state === "open" && t.mergeGate?.allowed) out.push({ tone: "good", text: `PR #${pr.number} "${t.title}" is ready to merge`, taskId: t._id });
@@ -36,9 +36,9 @@ export default function ControlRoom({ data, updatedAt, onOpenTask }: { data: CRD
 
   const k = useMemo(() => {
     const tasks = data.tasks;
-    const done = tasks.filter((t) => t.status === "completed" || t.pullRequest?.state === "merged").length;
+    const done = tasks.filter((t) => isTaskDone(t, nowMs)).length;
     const devicesOnline = data.members.filter((m) => m.online).length;
-    const running = data.jobs.filter((j) => ["claimed", "running"].includes(j.status)).length;
+    const running = data.jobs.filter((j) => ["claimed", "running"].includes(j.status) && !j.stalled).length;
     const scheduled = data.jobs.filter((j) => j.status === "queued" && (j.waitingOn.length || new Date(j.runAt).getTime() > nowMs));
     const nextJob = scheduled.filter((j) => !j.waitingOn.length).sort((a, b) => +new Date(a.runAt) - +new Date(b.runAt))[0];
     const openPrs = tasks.filter((t) => t.pullRequest?.state === "open");

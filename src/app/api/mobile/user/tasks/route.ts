@@ -4,6 +4,8 @@ import { getMobileSession } from "@/lib/mobileAuth";
 import dbConnect from "@/lib/mongodb";
 import Task from "@/models/Task";
 import Project from "@/models/Project";
+import { lockPaths } from "@/lib/gitTaskScope";
+import { evaluateMergeGate } from "@/lib/githubPullRequests";
 
 export async function GET(req: Request) {
   try {
@@ -29,7 +31,7 @@ export async function GET(req: Request) {
         status: { $in: ["pending", "in-progress", "delayed"] },
         assignedTo: { $ne: session.id },
       })
-        .select("_id projectId title assignedTo assignedToName assignedFiles fileLockMode targetBranch")
+        .select("_id projectId title assignedTo assignedToName assignedFiles allowedGlobs fileLockMode targetBranch")
         .lean() as Promise<any[]>,
     ]);
 
@@ -58,8 +60,7 @@ export async function GET(req: Request) {
       const pid = st.projectId;
       if (!locksByProject.has(pid)) locksByProject.set(pid, []);
       const list = locksByProject.get(pid)!;
-      const files: string[] = Array.isArray(st.assignedFiles) ? st.assignedFiles : [];
-      for (const fp of files) {
+      for (const fp of lockPaths(st)) {
         list.push({
           filePath: fp,
           taskId: st._id.toString(),
@@ -101,6 +102,22 @@ export async function GET(req: Request) {
         latestCommitSha: t.latestCommitSha || "",
         commitCount: t.commitCount ?? 0,
         pullRequestUrl: t.pullRequestUrl || "",
+        // PR as last synced from GitHub, plus the same merge-gate verdict the admin sees.
+        pullRequest: t.pullRequest?.number
+          ? {
+              number: t.pullRequest.number,
+              url: t.pullRequest.url || "",
+              state: t.pullRequest.state || "",
+              draft: !!t.pullRequest.draft,
+              headSha: t.pullRequest.headSha || "",
+              reviewDecision: t.pullRequest.reviewDecision || "",
+              approvals: t.pullRequest.approvals || 0,
+              changesRequested: t.pullRequest.changesRequested || 0,
+              lastSyncedAt: t.pullRequest.lastSyncedAt || null,
+              lastSyncError: t.pullRequest.lastSyncError || "",
+            }
+          : null,
+        mergeGate: t.pullRequest?.number ? evaluateMergeGate(t) : null,
         // Sent as stored; a task that was never verified has no gate (shown as "Not verified").
         verificationGate: t.verificationGate || null,
         teammateLockedFiles: locksByProject.get(t.projectId) || [],

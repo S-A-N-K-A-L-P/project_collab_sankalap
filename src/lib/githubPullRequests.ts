@@ -46,6 +46,10 @@ export interface PullRequestSnapshot {
   approvals: number;
   changesRequested: number;
   checks: PullRequestCheck[];
+  /** Files the pull request changes. Absent when GitHub could not be asked. */
+  changedFiles?: string[];
+  changedFilesError?: string;
+  scopeCheck?: { checked: boolean; blocking: boolean; reasons: string[]; warnings: string[] };
   lastSyncedAt: Date;
   lastSyncError: string;
 }
@@ -496,6 +500,40 @@ export async function createOrSyncPullRequest(
   return syncPullRequest(project, ref, pr.number, opts.userToken);
 }
 
+/** Every file a pull request adds, edits, renames, or deletes (both sides of a rename). */
+export async function listPullRequestFiles(
+  project: any,
+  ref: RepoRef,
+  prNumber: number,
+  userToken?: string | null
+): Promise<string[]> {
+  const files: string[] = [];
+  const seen = new Set<string>();
+  const add = (name: unknown) => {
+    const n = String(name || "").replace(/\\/g, "/").trim();
+    if (!n) return;
+    const key = n.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    files.push(n);
+  };
+  for (let page = 1; page <= 10; page++) {
+    const batch = await ghFetch(
+      project,
+      `/repos/${ref.owner}/${ref.repo}/pulls/${prNumber}/files?per_page=100&page=${page}`,
+      {},
+      { userToken, requireWrite: false }
+    );
+    if (!Array.isArray(batch) || batch.length === 0) break;
+    for (const f of batch) {
+      add(f?.filename);
+      add(f?.previous_filename);
+    }
+    if (batch.length < 100) break;
+  }
+  return files;
+}
+
 /** Fetch PR + latest reviews + check-runs for its head SHA and condense into a PullRequestSnapshot. */
 export async function syncPullRequest(
   project: any,
@@ -542,6 +580,14 @@ export async function syncPullRequest(
 
   const state: PullRequestSnapshot["state"] = pr.merged ? "merged" : pr.state === "closed" ? "closed" : "open";
 
+  let changedFiles: string[] | undefined;
+  let changedFilesError = "";
+  try {
+    changedFiles = await listPullRequestFiles(project, ref, prNumber, userToken);
+  } catch (error: any) {
+    changedFilesError = String(error?.message || error).slice(0, 300);
+  }
+
   return {
     number: pr.number,
     title: pr.title || "",
@@ -558,6 +604,8 @@ export async function syncPullRequest(
     approvals,
     changesRequested,
     checks,
+    changedFiles,
+    changedFilesError,
     lastSyncedAt: new Date(),
     lastSyncError: "",
   };
@@ -617,11 +665,12 @@ export async function mergePullRequest(
  * Both Syncro's own verification gate AND GitHub's mergeability/checks must pass,
  * and the verified commit must still be the PR head (no unverified commits pushed after).
  */
-export function evaluateMergeGate(task: any): { allowed: boolean; reasons: string[] } {
+export function evaluateMergeGate(task: any): { allowed: boolean; reasons: string[]; warnings: string[] } {
   const reasons: string[] = [];
+  const warnings: string[] = [];
   const pr: PullRequestSnapshot | undefined = task?.pullRequest;
-  if (!pr || !pr.number) return { allowed: false, reasons: ["No pull request is open for this task."] };
-  if (pr.state !== "open") return { allowed: false, reasons: [`Pull request #${pr.number} is ${pr.state}.`] };
+  if (!pr || !pr.number) return { allowed: false, reasons: ["No pull request is open for this task."], warnings };
+  if (pr.state !== "open") return { allowed: false, reasons: [`Pull request #${pr.number} is ${pr.state}.`], warnings };
   if (pr.draft) reasons.push("Pull request is still marked as a draft.");
   if (pr.mergeable === false || pr.mergeableState === "dirty") {
     reasons.push("Pull request has merge conflicts with the base branch.");
@@ -646,6 +695,9 @@ export function evaluateMergeGate(task: any): { allowed: boolean; reasons: strin
   if (pr.changesRequested > 0) {
     reasons.push(`${pr.changesRequested} reviewer(s) requested changes.`);
   }
+  if ((pr.approvals || 0) < 1) {
+    reasons.push("A GitHub approval is required before this can merge.");
+  }
 
   const failingChecks = (pr.checks || []).filter(
     (c) => c.status === "completed" && ["failure", "timed_out", "cancelled", "action_required"].includes(c.conclusion)
@@ -658,7 +710,51 @@ export function evaluateMergeGate(task: any): { allowed: boolean; reasons: strin
     reasons.push(`${pendingChecks.length} GitHub check(s) are still running.`);
   }
 
-  return { allowed: reasons.length === 0, reasons };
+  const scope = pr.scopeCheck;
+  if (!scope?.checked) {
+    reasons.push("This pull request's files have not been checked against the task scope. Refresh it and try again.");
+  } else if (scope.blocking) {
+    const list = Array.isArray(scope.reasons) ? scope.reasons.filter(Boolean) : [];
+    reasons.push(...(list.length > 0 ? list : ["This pull request changes files outside the task scope."]));
+  } else if (Array.isArray(scope.warnings)) {
+    warnings.push(...scope.warnings.filter(Boolean));
+  }
+
+  return { allowed: reasons.length === 0, reasons, warnings };
+}
+
+/**
+ * Task completion follows GitHub. A merged pull request completes the task.
+ * An open or closed pull request never leaves the task completed.
+ */
+export function applyGithubTaskState(task: any): string {
+  const pr = task?.pullRequest;
+  if (!pr?.number) return "";
+  if (pr.state === "merged") {
+    task.status = "completed";
+    task.progress = 100;
+    return `Pull request #${pr.number} is merged on GitHub. The task is completed.`;
+  }
+  if (task.status === "completed") {
+    task.status = "in-progress";
+    if (typeof task.progress === "number" && task.progress >= 100) task.progress = 90;
+    return `Pull request #${pr.number} is ${pr.state} on GitHub, so the task is in progress again.`;
+  }
+  return `Pull request #${pr.number} is ${pr.state} on GitHub.`;
+}
+
+/** Drop a pull request GitHub does not have, and undo a completion that depended on it. */
+export function forgetMissingPullRequest(task: any): string {
+  const n = task?.pullRequest?.number;
+  task.pullRequest = undefined;
+  task.pullRequestUrl = "";
+  if (task.status === "completed") {
+    task.status = "in-progress";
+    if (typeof task.progress === "number" && task.progress >= 100) task.progress = 90;
+  }
+  return n
+    ? `GitHub has no pull request #${n}. The saved pull request was removed.`
+    : "The saved pull request was removed.";
 }
 
 /** Verify a GitHub X-Hub-Signature-256 header against GITHUB_WEBHOOK_SECRET in constant time. */

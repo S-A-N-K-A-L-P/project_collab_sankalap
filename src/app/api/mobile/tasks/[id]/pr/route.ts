@@ -5,6 +5,7 @@ import dbConnect from "@/lib/mongodb";
 import ActivityLog from "@/models/ActivityLog";
 import Project from "@/models/Project";
 import Task from "@/models/Task";
+import { annotatePullRequestScope } from "@/lib/gitTaskScope";
 import {
   createOrSyncPullRequest,
   extractUserGithubToken,
@@ -73,6 +74,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       const snap = await syncPullRequest(project, ref, task.pullRequest.number, userToken);
       task.pullRequest = snap;
       task.pullRequestUrl = snap.url;
+      await annotatePullRequestScope(task);
       await task.save();
       return NextResponse.json({ pullRequest: snap, existing: true });
     }
@@ -89,6 +91,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     task.pullRequest = snap;
     task.pullRequestUrl = snap.url;
+    await annotatePullRequestScope(task);
     await task.save();
 
     await ActivityLog.create({

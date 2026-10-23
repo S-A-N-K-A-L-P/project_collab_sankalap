@@ -53,7 +53,10 @@ function TaskCard({ t, nowMs, onOpen }: { t: CRTask; nowMs: number; onOpen: () =
         </p>
       )}
       {job && ["claimed", "running"].includes(job.status) && (
-        <p className="text-[10px] text-sky-500 flex items-center gap-1 truncate"><MonitorSmartphone className="w-3 h-3" />{job.claimedByName || "PC"}: {job.note || job.status}</p>
+        <p className={`text-[10px] flex items-center gap-1 truncate ${job.stalled ? "text-amber-500" : "text-sky-500"}`}>
+          <MonitorSmartphone className="w-3 h-3" />
+          {job.stalled ? (job.deviceOnline === false ? "PC is offline" : "PC went quiet") : `${job.claimedByName || "PC"}: ${job.note || job.status}`}
+        </p>
       )}
       <p className="text-[10px] font-mono text-muted truncate" title={current.detail}>▸ {current.label}{current.detail ? `: ${current.detail}` : ""}</p>
     </button>

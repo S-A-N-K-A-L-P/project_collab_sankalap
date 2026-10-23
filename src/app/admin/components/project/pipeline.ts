@@ -43,7 +43,7 @@ export interface CRJob {
   id: string; type: string; taskId: string; title: string;
   targetUserId: string; targetUserName: string;
   status: "queued" | "claimed" | "running" | "done" | "failed" | "cancelled";
-  stalled: boolean; runAt: string; waitingOn: Dependency[];
+  stalled: boolean; deviceOnline: boolean; runAt: string; waitingOn: Dependency[];
   claimedBy: string; claimedByName: string; attempts: number; maxAttempts: number;
   note: string; error: string; result: JobResult | null; createdAt: string; createdByName?: string; finishedAt?: string;
 }
@@ -66,7 +66,7 @@ export interface CRTask {
   latestCommitSha: string; commitCount: number; verificationGate: Gate;
   pullRequestUrl: string; pullRequest: PRSnapshot | null;
   verification: "fresh" | "stale" | "unknown" | null;
-  mergeGate: { allowed: boolean; reasons: string[] } | null;
+  mergeGate: { allowed: boolean; reasons: string[]; warnings?: string[] } | null;
   setupJob: CRJob | null;
 }
 export interface CRDevice {
@@ -124,7 +124,7 @@ export function useControlRoom(projectId: string, { enabled = true, intervalMs =
 }
 
 // ── Pull request actions (admin) ──
-export type PrAction = "approve" | "request_changes" | "merge" | "refresh";
+export type PrAction = "approve" | "request_changes" | "merge" | "refresh" | "reconcile";
 export async function prAction(projectId: string, taskId: string, action: PrAction, message?: string) {
   const res = await fetch(`/api/admin/projects/${projectId}/pull-requests`, {
     method: "POST",
@@ -212,18 +212,19 @@ export function laneSteps(t: CRTask, nowMs: number): Step[] {
     else if (new Date(job.runAt).getTime() > nowMs) steps[1] = { ...steps[1], state: "wait", detail: `starts ${clock(job.runAt)}` };
     else steps[1] = { ...steps[1], state: "active", detail: "waiting for a PC" };
   } else if (job.status === "claimed" || job.status === "running") {
-    steps[1] = { ...steps[1], state: job.stalled ? "fail" : "active", detail: job.stalled ? "PC went quiet" : job.note || `on ${job.claimedByName || "PC"}` };
+    const quiet = job.deviceOnline === false ? "PC is offline" : "PC went quiet";
+    steps[1] = { ...steps[1], state: job.stalled ? "fail" : "active", detail: job.stalled ? quiet : job.note || `on ${job.claimedByName || "PC"}` };
   } else if (job.status === "done") {
     steps[1] = { ...steps[1], state: "done", detail: `${job.result?.deviceName || job.claimedByName || "PC"} @ ${shortSha(job.result?.headSha)}` };
   } else if (job.status === "failed") {
     steps[1] = { ...steps[1], state: "fail", detail: job.error || "setup failed" };
   } else {
-    steps[1] = { ...steps[1], state: t.status !== "pending" ? "done" : "todo", detail: "cancelled" };
+    steps[1] = { ...steps[1], state: "fail", detail: "cancelled" };
   }
 
-  // Coding
+  // Coding follows setup. Commits count even when setup failed, so a cancelled job cannot look finished.
   if (gate.verified || pr) steps[2] = { ...steps[2], state: "done", detail: `${t.commitCount || 0} commit(s)` };
-  else if (steps[1].state === "done") steps[2] = { ...steps[2], state: "active", detail: t.commitCount ? `${t.commitCount} commit(s)` : `${t.progress}%` };
+  else if ((t.commitCount || 0) > 0 || steps[1].state === "done") steps[2] = { ...steps[2], state: "active", detail: t.commitCount ? `${t.commitCount} commit(s)` : `${t.progress}%` };
 
   // Verified
   if (gate.anyFailed) {
@@ -245,6 +246,8 @@ export function laneSteps(t: CRTask, nowMs: number): Step[] {
       steps[6] = { ...steps[6], state: "fail", detail: "closed unmerged" };
     } else if (t.verification === "stale") {
       steps[5] = { ...steps[5], state: "fail", detail: "new commits since verify" };
+    } else if ((t.mergeGate?.reasons || []).some((r) => /outside the scope|locked by|read-only for task|changed files from GitHub/i.test(r))) {
+      steps[5] = { ...steps[5], state: "fail", detail: "outside task scope" };
     } else if (pr.reviewDecision === "changes_requested") {
       steps[5] = { ...steps[5], state: "fail", detail: "changes requested" };
     } else if (t.mergeGate?.allowed) {
@@ -254,6 +257,21 @@ export function laneSteps(t: CRTask, nowMs: number): Step[] {
       const pending = (pr.checks || []).filter((c) => c.status !== "completed").length;
       steps[5] = { ...steps[5], state: "active", detail: pending ? `${pending} check(s) running` : pr.approvals ? `${pr.approvals} approval(s)` : "awaiting review" };
     }
+  }
+  return alignSteps(steps, gate.proved);
+}
+
+/** A later stage means the earlier blank steps already happened. A failed or waiting step stays as it is. */
+function alignSteps(steps: Step[], gateProved: boolean): Step[] {
+  let reached = 0;
+  for (let i = 0; i < steps.length; i++) if (steps[i].state !== "todo") reached = i;
+  for (let i = 0; i < reached; i++) {
+    if (steps[i].state !== "todo") continue;
+    if (i === 3 && !gateProved) {
+      steps[i] = { ...steps[i], state: "done", detail: "not recorded" };
+      continue;
+    }
+    steps[i] = { ...steps[i], state: "done", detail: steps[i].detail || "done" };
   }
   return steps;
 }
@@ -271,13 +289,19 @@ export const BOARD_COLUMNS: { id: BoardColumn; label: string; hint: string }[] =
 
 export function boardColumn(t: CRTask, nowMs: number): BoardColumn {
   const steps = laneSteps(t, nowMs);
-  if (steps[6].state === "done" || (t.status === "completed" && !t.pullRequest)) return "merged";
+  if (steps[6].state === "done") return "merged";
+  if (t.status === "completed" && !t.pullRequest) return "merged";
   if (steps.some((s) => s.state === "fail")) return "blocked";
-  const first = steps.findIndex((s) => s.state !== "done");
-  if (first === 1) return steps[1].state === "wait" ? "scheduled" : "setup";
-  if (first === 2 || first === 3) return "progress";
-  if (first === 4) return "verified";
-  return "review";
+  if (t.pullRequest) return "review";
+  if (steps[3].state === "done" && steps[3].detail !== "not recorded") return "verified";
+  if (steps[1].state === "wait") return "scheduled";
+  if (steps[2].state === "active" || steps[2].state === "done") return "progress";
+  return "setup";
+}
+
+/** Finished means GitHub merged it, or it was completed with no pull request. An open PR is not done. */
+export function isTaskDone(t: CRTask, nowMs: number): boolean {
+  return boardColumn(t, nowMs) === "merged";
 }
 
 export const STEP_DOT: Record<StepState, string> = {
