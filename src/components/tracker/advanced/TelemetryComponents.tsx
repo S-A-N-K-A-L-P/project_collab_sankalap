@@ -115,11 +115,11 @@ export function GitHubSyncCard({ repo }: { repo: any }) {
        <div className="pt-4 border-t border-border-subtle grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-1">
              <span className="text-[9px] font-mono font-bold text-muted uppercase">Status</span>
-             <span className="text-[11px] font-black text-emerald-500 uppercase tracking-widest italic">{repo?.syncStatus || "DISCONNECTED"}</span>
+             <span className={`text-[11px] font-black uppercase tracking-widest italic ${repo?.syncStatus === "verified" ? "text-emerald-500" : repo?.syncStatus === "failed" ? "text-red-400" : "text-muted"}`} title={repo?.syncError || ""}>{repo?.syncStatus || "DISCONNECTED"}</span>
           </div>
           <div className="flex flex-col gap-1">
-             <span className="text-[9px] font-mono font-bold text-muted uppercase">Audit SHA</span>
-             <span className="text-[11px] font-mono font-bold text-muted uppercase tracking-tighter">ABC1DE2...</span>
+             <span className="text-[9px] font-mono font-bold text-muted uppercase">Latest commit</span>
+             <span className="text-[11px] font-mono font-bold text-muted tracking-tighter">{repo?.commits?.[0]?.sha ? repo.commits[0].sha.slice(0, 7) : "—"}</span>
           </div>
        </div>
     </div>

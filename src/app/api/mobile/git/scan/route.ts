@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import GitRepo from "@/models/GitRepo";
 import { getMobileSession } from "@/lib/mobileAuth";
+import { applySnapshot, fetchRepoSnapshot } from "@/lib/github";
 
+// POST /api/mobile/git/scan — refresh a linked repo's stats from the GitHub API (no simulated numbers).
 export async function POST(req: Request) {
   try {
     getMobileSession(req); // Validate Bearer token
@@ -14,35 +16,13 @@ export async function POST(req: Request) {
     const repo = await GitRepo.findById(repoId);
     if (!repo) return NextResponse.json({ message: "Repo not found" }, { status: 404 });
 
-    repo.syncStatus = "syncing";
-    repo.lastSyncAt = new Date();
+    applySnapshot(repo, await fetchRepoSnapshot({ owner: repo.owner, repo: repo.repoName }));
     await repo.save();
 
-    // Simulate Octokit scan (replace with real octokit in production)
-    setTimeout(async () => {
-      try {
-        await dbConnect();
-        const updatedRepo = await GitRepo.findById(repoId);
-        if (updatedRepo) {
-          updatedRepo.syncStatus = "verified";
-          updatedRepo.stats = {
-            commits: Math.floor(Math.random() * 500),
-            stars: Math.floor(Math.random() * 100),
-            forks: Math.floor(Math.random() * 50),
-            issues: Math.floor(Math.random() * 20),
-          };
-          updatedRepo.commits = [
-            { sha: "abc1", message: "Tactical UI Expansion", author: "pixel-head", date: new Date(), url: "#" },
-            { sha: "def2", message: "Initial Sync Hook", author: "pixel-head", date: new Date(), url: "#" },
-          ];
-          await updatedRepo.save();
-        }
-      } catch (err) {
-        console.error("Async scan error", err);
-      }
-    }, 2000);
-
-    return NextResponse.json({ message: "Scan initiated", repo });
+    return NextResponse.json(
+      { message: repo.syncStatus === "verified" ? "Scan complete" : `Scan failed: ${repo.syncError}`, repo },
+      { status: repo.syncStatus === "verified" ? 200 : 502 }
+    );
   } catch (error: any) {
     if (error.message?.includes("Missing") || error.message?.includes("jwt")) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });

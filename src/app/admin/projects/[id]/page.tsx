@@ -6,6 +6,10 @@ import Link from "next/link";
 import AdminShell from "@/app/admin/components/AdminShell";
 import StatusBadge from "@/app/admin/components/StatusBadge";
 import {
+  CollisionList, EMPTY_SCOPE, GateChips, RosterEditor, ScopeSummary, TaskScopeEditor, TaskScopeFields,
+  type Collision, type TaskScope, type VerificationGate,
+} from "@/app/admin/components/GitTaskScope";
+import {
   ArrowLeft, Loader2, Check, X, Plus, Trash2, UserPlus,
   Github, ShieldCheck, CalendarDays, AlertCircle,
 } from "lucide-react";
@@ -17,6 +21,9 @@ interface Task {
   assignedTo: string; assignedToName: string;
   status: "pending"|"in-progress"|"completed"|"delayed";
   priority: "low"|"medium"|"high"; progress: number; deadline: string;
+  baseBranch?: string; targetBranch?: string; fileLockMode?: TaskScope["fileLockMode"];
+  assignedFiles?: string[]; allowedGlobs?: string[]; readOnlyFiles?: string[];
+  latestCommitSha?: string; pullRequestUrl?: string; verificationGate?: VerificationGate;
 }
 interface Project {
   _id: string; title: string; description?: string;
@@ -464,6 +471,9 @@ function TeamTab({ project, onRefresh }: { project: Project; onRefresh: () => vo
           Searches all platform members. The lead is already in the team.
         </p>
       </div>
+      <div className="xl:col-span-2">
+        <RosterEditor projectId={project._id} refreshKey={project.members.length} />
+      </div>
     </div>
   );
 }
@@ -483,26 +493,34 @@ function TasksTab({ projectId, members, tasks, onRefresh }: {
   const [saving, setSaving]     = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [err, setErr]           = useState("");
+  const [scope, setScope]       = useState<TaskScope>(EMPTY_SCOPE);
+  const [blocked, setBlocked]   = useState<Collision[]>([]);
+  const [editing, setEditing]   = useState<string | null>(null);
 
   const completed = tasks.filter((t) => t.status === "completed").length;
 
-  const createTask = async () => {
+  const resetForm = () => { setForm(EMPTY_TASK); setScope(EMPTY_SCOPE); setBlocked([]); };
+
+  const createTask = async (force = false) => {
     if (!form.title || !form.assignedTo || !form.deadline) {
       setErr("Title, assignee, and deadline are required."); return;
     }
-    setSaving(true); setErr("");
+    setSaving(true); setErr(""); setBlocked([]);
     try {
       const res = await fetch(`/api/admin/projects/${projectId}/tasks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, ...scope, forceAssign: force }),
       });
+      const d = await res.json().catch(() => ({}));
       if (res.ok) {
-        setForm(EMPTY_TASK);
+        resetForm();
         setShowForm(false);
         onRefresh();
+      } else if (res.status === 409) {
+        setBlocked(d.collisions ?? []);
+        setErr(d.error ?? "Git file lock conflict");
       } else {
-        const d = await res.json();
         setErr(d.error ?? "Failed to create task");
       }
     } finally {
@@ -542,7 +560,7 @@ function TasksTab({ projectId, members, tasks, onRefresh }: {
           )}
         </p>
         <button
-          onClick={() => { setShowForm((v) => !v); setErr(""); }}
+          onClick={() => { setShowForm((v) => !v); setErr(""); setBlocked([]); }}
           className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider px-3 py-2 rounded-xl bg-accent text-white hover:bg-accent/90 transition-colors"
         >
           <Plus className="w-3.5 h-3.5" />
@@ -630,13 +648,30 @@ function TasksTab({ projectId, members, tasks, onRefresh }: {
               </div>
             </div>
           </div>
-          <button
-            disabled={saving}
-            onClick={createTask}
-            className="w-full py-3 rounded-xl bg-accent text-white text-[12px] font-bold uppercase tracking-wider hover:bg-accent/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : "Create & Assign Task"}
-          </button>
+          <div className="pt-2 border-t border-border-subtle">
+            <p className="text-[10px] font-mono font-bold text-accent uppercase tracking-widest mb-3">Git scope (what this member may change)</p>
+            <TaskScopeFields projectId={projectId} scope={scope} onChange={setScope} assignedTo={form.assignedTo || undefined} />
+          </div>
+          {blocked.length > 0 && <CollisionList collisions={blocked} />}
+          <div className="flex gap-2">
+            <button
+              disabled={saving}
+              onClick={() => createTask(false)}
+              className="flex-1 py-3 rounded-xl bg-accent text-white text-[12px] font-bold uppercase tracking-wider hover:bg-accent/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : "Create & Assign Task"}
+            </button>
+            {blocked.some((c) => c.blocking) && (
+              <button
+                disabled={saving}
+                onClick={() => createTask(true)}
+                title="Assign even though another member's active task already claims these files"
+                className="px-4 py-3 rounded-xl bg-red-500/10 text-red-400 text-[12px] font-bold uppercase tracking-wider hover:bg-red-500/20 disabled:opacity-50"
+              >
+                Force assign
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -662,6 +697,8 @@ function TasksTab({ projectId, members, tasks, onRefresh }: {
                   <CalendarDays className="w-3 h-3" />
                   <span>{new Date(task.deadline).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}</span>
                 </div>
+                <ScopeSummary task={task} />
+                <GateChips gate={task.verificationGate} />
                 {/* Progress bar */}
                 <div className="flex items-center gap-2 pt-0.5">
                   <div className="flex-1 h-1 rounded-full bg-border-subtle overflow-hidden">
@@ -696,6 +733,12 @@ function TasksTab({ projectId, members, tasks, onRefresh }: {
                   className="w-20 py-1 px-2 bg-background border border-border-subtle rounded-lg text-[11px] font-mono text-center text-foreground outline-none focus:border-accent/50"
                 />
                 <button
+                  onClick={() => setEditing(editing === task._id ? null : task._id)}
+                  className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg bg-accent/10 text-accent hover:bg-accent/20"
+                >
+                  {editing === task._id ? "Close scope" : "Edit scope"}
+                </button>
+                <button
                   disabled={deleting === task._id}
                   onClick={() => deleteTask(task._id)}
                   className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-red-500/10 text-muted hover:text-red-400 transition-all disabled:opacity-50"
@@ -703,6 +746,14 @@ function TasksTab({ projectId, members, tasks, onRefresh }: {
                   {deleting === task._id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                 </button>
               </div>
+              {editing === task._id && (
+                <TaskScopeEditor
+                  projectId={projectId}
+                  task={task}
+                  onCancel={() => setEditing(null)}
+                  onSaved={() => { setEditing(null); onRefresh(); }}
+                />
+              )}
             </div>
           ))}
         </div>

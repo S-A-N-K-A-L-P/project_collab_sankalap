@@ -227,7 +227,7 @@ export default function ProjectTrackerPage() {
                       <BuildLogViewer />
                     </div>
                     <div className="space-y-8">
-                      <GitHubSyncCard repo={{ repoName: "artsy-v2-core", owner: "pixel-collective", syncStatus: "syncing", defaultBranch: "main" }} />
+                      <GitHubSyncCard repo={null} />
                       <ActivityPulse />
                     </div>
                   </div>

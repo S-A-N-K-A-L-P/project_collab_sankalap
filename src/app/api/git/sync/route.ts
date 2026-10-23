@@ -4,56 +4,30 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import GitRepo from "@/models/GitRepo";
 import Project from "@/models/Project";
+import { applySnapshot, fetchRepoSnapshot, parseGithubUrl } from "@/lib/github";
 
+// POST /api/git/sync — link a GitHub repo to a project and pull real stats from the GitHub API.
 export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
         if (!session) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
         const { projectId, repoUrl } = await req.json();
-
-        // Parse owner and repo name from URL (e.g. github.com/owner/repo)
-        const match = repoUrl.match(/github\.com\/([^/]+)\/([^/.]+)/);
-        if (!match) return NextResponse.json({ message: "Invalid GitHub URL" }, { status: 400 });
-
-        const [, owner, repoName] = match;
+        const ref = parseGithubUrl(repoUrl);
+        if (!ref) return NextResponse.json({ message: "Invalid GitHub URL" }, { status: 400 });
 
         await dbConnect();
 
-        // 1. Initial Repo Record
         const gitRepo = await GitRepo.findOneAndUpdate(
             { projectId },
-            {
-                repoUrl,
-                owner,
-                repoName,
-                syncStatus: "syncing",
-                lastSyncAt: new Date()
-            },
+            { repoUrl, owner: ref.owner, repoName: ref.repo, syncStatus: "syncing", lastSyncAt: new Date() },
             { upsert: true, new: true }
         );
+        await Project.findByIdAndUpdate(projectId, { githubRepo: repoUrl, gitRepo: gitRepo._id });
 
-        // 2. Mock Fetch GitHub Data (Real implementation would use octokit)
-        // We'll simulate a successful sync for now to allow UI development
-        setTimeout(async () => {
-            await GitRepo.findByIdAndUpdate(gitRepo._id, {
-                syncStatus: "verified",
-                stats: {
-                    commits: 124,
-                    stars: 12,
-                    forks: 3,
-                    issues: 5
-                },
-                commits: [
-                    { sha: "abc1", message: "Initial obsidian core", author: "Tushar G.", date: new Date() },
-                    { sha: "def2", message: "Added signaling API", author: "Tushar G.", date: new Date(Date.now() - 3600000) },
-                    { sha: "ghi3", message: "Refined telemetry sync", author: "Sarah C.", date: new Date(Date.now() - 7200000) },
-                ]
-            });
-
-            // Update Project repo link
-            await Project.findByIdAndUpdate(projectId, { githubRepo: repoUrl });
-        }, 1000);
+        // Fetch before responding: serverless functions don't keep running after the response.
+        applySnapshot(gitRepo, await fetchRepoSnapshot(ref));
+        await gitRepo.save();
 
         return NextResponse.json(gitRepo);
     } catch (error: any) {

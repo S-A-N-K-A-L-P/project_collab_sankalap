@@ -49,6 +49,11 @@ const GitRepoSchema = new Schema(
     lastSyncAt: {
       type: Date,
     },
+    /** Why the last GitHub sync failed (empty when it worked). */
+    syncError: {
+      type: String,
+      default: "",
+    },
     stats: {
       commits: { type: Number, default: 0 },
       stars: { type: Number, default: 0 },

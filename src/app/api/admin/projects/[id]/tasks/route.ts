@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import Task from "@/models/Task";
 import Project from "@/models/Project";
+import ActivityLog from "@/models/ActivityLog";
+import { cleanPathList, collisionError, defaultTargetBranch, findScopeCollisions } from "@/lib/gitTaskScope";
 
 function isAdmin(s: any) {
   return s && ["sankalp_associate", "platform_moderator", "master_admin"].includes(s.user?.role);
@@ -51,7 +53,24 @@ export async function POST(
       allowedGlobs,
       readOnlyFiles,
       fileLockMode,
+      forceAssign,
+      dryRun,
     } = await req.json();
+
+    // dryRun: only report collisions for the proposed scope (used by the form before saving).
+    if (dryRun) {
+      await dbConnect();
+      const collisions = assignedTo
+        ? await findScopeCollisions({
+            projectId: id,
+            assignedTo,
+            assignedFiles: cleanPathList(assignedFiles),
+            allowedGlobs: cleanPathList(allowedGlobs),
+            fileLockMode,
+          })
+        : [];
+      return NextResponse.json({ collisions });
+    }
 
     if (!title || !assignedTo || !deadline) {
       return NextResponse.json(
@@ -64,15 +83,20 @@ export async function POST(
 
     const project = await Project.findById(id).select("githubRepo").lean() as any;
 
-    const cleanAssignedFiles = Array.isArray(assignedFiles)
-      ? Array.from(new Set(assignedFiles.map((f: string) => f.replace(/\\/g, "/").trim()).filter(Boolean)))
-      : [];
-    const cleanAllowedGlobs = Array.isArray(allowedGlobs)
-      ? Array.from(new Set(allowedGlobs.map((g: string) => g.replace(/\\/g, "/").trim()).filter(Boolean)))
-      : [];
-    const cleanReadOnlyFiles = Array.isArray(readOnlyFiles)
-      ? Array.from(new Set(readOnlyFiles.map((f: string) => f.replace(/\\/g, "/").trim()).filter(Boolean)))
-      : [];
+    const cleanAssignedFiles = cleanPathList(assignedFiles);
+    const cleanAllowedGlobs = cleanPathList(allowedGlobs);
+    const cleanReadOnlyFiles = cleanPathList(readOnlyFiles);
+
+    const collisions = await findScopeCollisions({
+      projectId: id,
+      assignedTo,
+      assignedFiles: cleanAssignedFiles,
+      allowedGlobs: cleanAllowedGlobs,
+      fileLockMode,
+    });
+    if (collisions.some((c) => c.blocking) && !forceAssign) {
+      return NextResponse.json(collisionError(collisions), { status: 409 });
+    }
 
     const task = await Task.create({
       projectId: id,
@@ -86,7 +110,7 @@ export async function POST(
       progress: 0,
       repoUrl: (repoUrl || project?.githubRepo || "").trim(),
       baseBranch: baseBranch || "main",
-      targetBranch: targetBranch || "",
+      targetBranch: (targetBranch || "").trim() || defaultTargetBranch(assignedToName || assignedTo, title),
       assignedFiles: cleanAssignedFiles,
       allowedGlobs: cleanAllowedGlobs,
       readOnlyFiles: cleanReadOnlyFiles,
@@ -95,7 +119,16 @@ export async function POST(
       assignedByName: session?.user?.name || session?.user?.email || "Admin",
     });
 
-    return NextResponse.json(task, { status: 201 });
+    await ActivityLog.create({
+      projectId: id,
+      userId: (session?.user as any)?.id || "",
+      userName: session?.user?.email || session?.user?.name || "",
+      action: `Assigned Git task "${title}" (${cleanAssignedFiles.length} files on ${task.targetBranch}) to ${assignedToName || assignedTo}` +
+        (collisions.length ? ` — ${collisions.length} lock warning(s)${forceAssign ? ", forced" : ""}` : ""),
+      metadata: { taskId: task._id.toString(), assignedTo, assignedFiles: cleanAssignedFiles, targetBranch: task.targetBranch, forced: !!forceAssign },
+    });
+
+    return NextResponse.json({ task, warnings: collisions }, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

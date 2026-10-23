@@ -64,12 +64,9 @@ export default function GitSettings({ userId }: { userId: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ repoId }),
       });
-      if (res.ok) {
-        // Optimistic update
-        setRepos(repos.map(r => r._id === repoId ? { ...r, syncStatus: "syncing" } : r));
-        // Refresh after some time
-        setTimeout(fetchRepos, 3000);
-      }
+      const data = await res.json().catch(() => ({}));
+      if (data?.repo) setRepos((prev) => prev.map(r => r._id === repoId ? data.repo : r));
+      if (!res.ok) alert(data?.message || "Scan failed");
     } catch (err) {
       console.error(err);
     }
@@ -135,7 +132,10 @@ export default function GitSettings({ userId }: { userId: string }) {
                       {repo.syncStatus === 'verified' && <CheckCircle2 className="w-2.5 h-2.5" />}
                       {repo.syncStatus}
                     </span>
-                    <span className="text-[8px] font-mono font-bold text-muted uppercase">Signal Strength: 100%</span>
+                    <span className="text-[8px] font-mono font-bold text-muted uppercase" title={repo.syncError || ""}>
+                      {repo.syncStatus === "failed" ? (repo.syncError || "sync failed")
+                        : repo.lastSyncAt ? `synced ${new Date(repo.lastSyncAt).toLocaleString()}` : "never synced"}
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

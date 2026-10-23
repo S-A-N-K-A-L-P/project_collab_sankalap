@@ -10,6 +10,7 @@ import Task from "@/models/Task";
 import User from "@/models/User";
 import OrgMember from "@/models/OrgMember";
 import ActivityLog from "@/models/ActivityLog";
+import { applyRosterChanges, validateRosterChanges } from "@/lib/teamRoster";
 
 async function resolveCaller(req: Request): Promise<{ id: string; role: string; name: string } | null> {
   try {
@@ -177,79 +178,14 @@ export async function PATCH(
       githubRepo?: string;
     } = body;
 
+    const invalid = validateRosterChanges({ add, remove, memberUpdates });
+    if (invalid) return NextResponse.json({ error: invalid }, { status: 400 });
+
     if (githubRepo !== undefined) {
       project.githubRepo = githubRepo;
     }
 
-    const currentMemberIds = new Set<string>((project.members || []).map((m: any) => m.toString()));
-    if (Array.isArray(add)) {
-      for (const uid of add) {
-        if (uid) currentMemberIds.add(uid);
-      }
-    }
-    if (Array.isArray(remove)) {
-      for (const uid of remove) {
-        // Never remove project lead
-        if (project.lead?.toString() !== uid) {
-          currentMemberIds.delete(uid);
-        }
-      }
-    }
-    project.members = Array.from(currentMemberIds) as any;
-
-    // Update teamRoster entries
-    const rosterList: any[] = Array.isArray(project.teamRoster) ? [...project.teamRoster] : [];
-    const rosterByUser = new Map<string, any>();
-    for (const item of rosterList) {
-      if (item.userId) rosterByUser.set(item.userId.toString(), item);
-    }
-
-    if (Array.isArray(add)) {
-      for (const uid of add) {
-        if (uid && !rosterByUser.has(uid)) {
-          rosterByUser.set(uid, {
-            userId: uid,
-            projectRole: "contributor",
-            ownedPaths: [],
-            maxActiveTasks: 5,
-            addedAt: new Date(),
-          });
-        }
-      }
-    }
-
-    if (Array.isArray(remove)) {
-      for (const uid of remove) {
-        if (project.lead?.toString() !== uid) {
-          rosterByUser.delete(uid);
-        }
-      }
-    }
-
-    if (Array.isArray(memberUpdates)) {
-      for (const upd of memberUpdates) {
-        if (!upd?.userId) continue;
-        const existing = rosterByUser.get(upd.userId) || {
-          userId: upd.userId,
-          projectRole: "contributor",
-          ownedPaths: [],
-          maxActiveTasks: 5,
-          addedAt: new Date(),
-        };
-        if (upd.projectRole) existing.projectRole = upd.projectRole;
-        if (Array.isArray(upd.ownedPaths)) {
-          existing.ownedPaths = upd.ownedPaths.map((p) => p.replace(/\\/g, "/").trim()).filter(Boolean);
-        }
-        if (typeof upd.maxActiveTasks === "number") {
-          existing.maxActiveTasks = Math.max(1, Math.min(50, upd.maxActiveTasks));
-        }
-        rosterByUser.set(upd.userId, existing);
-        currentMemberIds.add(upd.userId);
-      }
-      project.members = Array.from(currentMemberIds) as any;
-    }
-
-    project.teamRoster = Array.from(rosterByUser.values()) as any;
+    applyRosterChanges(project, { add, remove, memberUpdates });
     await project.save();
 
     await ActivityLog.create({

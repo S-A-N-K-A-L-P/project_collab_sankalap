@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import Task from "@/models/Task";
+import { cleanPathList, collisionError, findScopeCollisions } from "@/lib/gitTaskScope";
 
 function isAdmin(s: any) {
   return s && ["sankalp_associate", "master_admin"].includes(s.user?.role);
@@ -18,7 +19,8 @@ export async function PATCH(
 
     const { id, taskId } = await params;
     const body = await req.json();
-    const { title, description, assignedTo, assignedToName, status, priority, deadline, progress } = body;
+    const { title, description, assignedTo, assignedToName, status, priority, deadline, progress,
+            baseBranch, targetBranch, assignedFiles, allowedGlobs, readOnlyFiles, fileLockMode, forceAssign } = body;
 
     await dbConnect();
 
@@ -31,6 +33,33 @@ export async function PATCH(
     if (priority !== undefined) updates.priority = priority;
     if (deadline !== undefined) updates.deadline = new Date(deadline);
     if (progress !== undefined) updates.progress = Math.max(0, Math.min(100, progress));
+    if (baseBranch !== undefined) updates.baseBranch = String(baseBranch).trim() || "main";
+    if (targetBranch !== undefined) updates.targetBranch = String(targetBranch).trim();
+    if (Array.isArray(assignedFiles)) updates.assignedFiles = cleanPathList(assignedFiles);
+    if (Array.isArray(allowedGlobs)) updates.allowedGlobs = cleanPathList(allowedGlobs);
+    if (Array.isArray(readOnlyFiles)) updates.readOnlyFiles = cleanPathList(readOnlyFiles);
+    if (fileLockMode !== undefined) {
+      if (!["advisory", "strict", "exclusive"].includes(fileLockMode))
+        return NextResponse.json({ error: "fileLockMode must be advisory, strict or exclusive" }, { status: 400 });
+      updates.fileLockMode = fileLockMode;
+    }
+
+    const scopeChanged = Array.isArray(assignedFiles) || Array.isArray(allowedGlobs) || assignedTo !== undefined || fileLockMode !== undefined;
+    if (scopeChanged) {
+      const current = (await Task.findOne({ _id: taskId, projectId: id }).lean()) as any;
+      if (!current) return NextResponse.json({ error: "Task not found" }, { status: 404 });
+      const collisions = await findScopeCollisions({
+        projectId: id,
+        assignedTo: (updates.assignedTo as string) ?? current.assignedTo,
+        assignedFiles: (updates.assignedFiles as string[]) ?? current.assignedFiles ?? [],
+        allowedGlobs: (updates.allowedGlobs as string[]) ?? current.allowedGlobs ?? [],
+        fileLockMode: (updates.fileLockMode as string) ?? current.fileLockMode,
+        excludeTaskId: taskId,
+      });
+      if (collisions.some((c) => c.blocking) && !forceAssign) {
+        return NextResponse.json(collisionError(collisions), { status: 409 });
+      }
+    }
 
     const updated = await Task.findOneAndUpdate(
       { _id: taskId, projectId: id },

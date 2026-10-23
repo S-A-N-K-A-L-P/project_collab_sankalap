@@ -103,6 +103,11 @@ const TaskSchema = new Schema(
             testsPassed:     { type: Boolean, default: false },
             sastPassed:      { type: Boolean, default: false },
             contractsPassed: { type: Boolean, default: false },
+            /* "passed" | "failed: …" | "not run: …" — empty = never verified */
+            buildStatus:     { type: String, default: "" },
+            testsStatus:     { type: String, default: "" },
+            sastStatus:      { type: String, default: "" },
+            contractsStatus: { type: String, default: "" },
             verifiedAt:      { type: Date },
         },
     },

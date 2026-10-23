@@ -3,7 +3,9 @@ import dbConnect from "@/lib/mongodb";
 import GitRepo from "@/models/GitRepo";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { applySnapshot, fetchRepoSnapshot } from "@/lib/github";
 
+// POST /api/git/scan — refresh a linked repo's stats from the GitHub API (no simulated numbers).
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -16,37 +18,13 @@ export async function POST(req: Request) {
     const repo = await GitRepo.findById(repoId);
     if (!repo) return NextResponse.json({ message: "Repo not found" }, { status: 404 });
 
-    // Update status to syncing
-    repo.syncStatus = "syncing";
-    repo.lastSyncAt = new Date();
+    applySnapshot(repo, await fetchRepoSnapshot({ owner: repo.owner, repo: repo.repoName }));
     await repo.save();
 
-    // Simulate Octokit scan
-    // In real app: const stats = await octokit.rest.repos.get({ owner: repo.owner, repo: repo.repoName });
-    setTimeout(async () => {
-      try {
-        await dbConnect();
-        const updatedRepo = await GitRepo.findById(repoId);
-        if (updatedRepo) {
-          updatedRepo.syncStatus = "verified";
-          updatedRepo.stats = {
-            commits: Math.floor(Math.random() * 500),
-            stars: Math.floor(Math.random() * 100),
-            forks: Math.floor(Math.random() * 50),
-            issues: Math.floor(Math.random() * 20),
-          };
-          updatedRepo.commits = [
-            { sha: "abc1", message: "Tactical UI Expansion", author: "pixel-head", date: new Date(), url: "#" },
-            { sha: "def2", message: "Initial Sync Hook", author: "pixel-head", date: new Date(), url: "#" },
-          ];
-          await updatedRepo.save();
-        }
-      } catch (err) {
-        console.error("Async scan error", err);
-      }
-    }, 2000);
-
-    return NextResponse.json({ message: "Scan initiated", repo });
+    return NextResponse.json(
+      { message: repo.syncStatus === "verified" ? "Scan complete" : `Scan failed: ${repo.syncError}`, repo },
+      { status: repo.syncStatus === "verified" ? 200 : 502 }
+    );
   } catch (error) {
     return NextResponse.json({ message: "Scan failed" }, { status: 500 });
   }

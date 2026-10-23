@@ -8,6 +8,7 @@ import ActivityLog from "@/models/ActivityLog";
 import Project from "@/models/Project";
 import OrgMember from "@/models/OrgMember";
 import Task from "@/models/Task";
+import { cleanPathList, collisionError, defaultTargetBranch, findScopeCollisions } from "@/lib/gitTaskScope";
 
 type CreateTaskBody = {
     projectId?: string;
@@ -47,13 +48,6 @@ async function resolveSession(request: Request) {
     throw new Error("Missing or invalid token");
 }
 
-function slugify(input: string): string {
-    return input
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-        .slice(0, 28) || "task";
-}
 
 export async function POST(request: Request) {
     try {
@@ -103,64 +97,24 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Forbidden: Only Project Leads or Admins can distribute tasks" }, { status: 403 });
         }
 
-        const cleanAssignedFiles = Array.isArray(assignedFiles)
-            ? Array.from(new Set(assignedFiles.map((f) => f.replace(/\\/g, "/").trim()).filter(Boolean)))
-            : [];
-        const cleanAllowedGlobs = Array.isArray(allowedGlobs)
-            ? Array.from(new Set(allowedGlobs.map((g) => g.replace(/\\/g, "/").trim()).filter(Boolean)))
-            : [];
-        const cleanReadOnlyFiles = Array.isArray(readOnlyFiles)
-            ? Array.from(new Set(readOnlyFiles.map((f) => f.replace(/\\/g, "/").trim()).filter(Boolean)))
-            : [];
+        const cleanAssignedFiles = cleanPathList(assignedFiles);
+        const cleanAllowedGlobs = cleanPathList(allowedGlobs);
+        const cleanReadOnlyFiles = cleanPathList(readOnlyFiles);
 
-        // Check for Git File-Lock Collisions with other active tasks in the same project
-        const collisions: Array<{
-            filePath: string;
-            taskId: string;
-            taskTitle: string;
-            assignedTo: string;
-            assignedToName: string;
-            fileLockMode: string;
-        }> = [];
-
-        if (cleanAssignedFiles.length > 0) {
-            const activeOtherTasks = await Task.find({
-                projectId,
-                status: { $in: ["pending", "in-progress", "delayed"] },
-                assignedTo: { $ne: assignedTo },
-            }).lean() as any[];
-
-            const fileSet = new Set(cleanAssignedFiles.map((f) => f.toLowerCase()));
-            for (const other of activeOtherTasks) {
-                const otherFiles: string[] = Array.isArray(other.assignedFiles) ? other.assignedFiles : [];
-                for (const ofile of otherFiles) {
-                    if (fileSet.has(ofile.toLowerCase())) {
-                        collisions.push({
-                            filePath: ofile,
-                            taskId: other._id.toString(),
-                            taskTitle: other.title,
-                            assignedTo: other.assignedTo,
-                            assignedToName: other.assignedToName || other.assignedTo,
-                            fileLockMode: other.fileLockMode || "strict",
-                        });
-                    }
-                }
-            }
-        }
-
-        if (collisions.length > 0 && !forceAssign && (fileLockMode || "strict") !== "advisory") {
-            return NextResponse.json(
-                {
-                    error: `Git file lock conflict: ${collisions.length} file(s) are already assigned to another active task.`,
-                    collisions,
-                },
-                { status: 409 }
-            );
+        // Files (and glob scopes) already claimed by another member's active task.
+        const collisions = await findScopeCollisions({
+            projectId,
+            assignedTo,
+            assignedFiles: cleanAssignedFiles,
+            allowedGlobs: cleanAllowedGlobs,
+            fileLockMode,
+        });
+        if (collisions.some((c) => c.blocking) && !forceAssign) {
+            return NextResponse.json(collisionError(collisions), { status: 409 });
         }
 
         const computedTargetBranch =
-            (targetBranch || "").trim() ||
-            `task/${slugify(assignedToName || assignedTo)}-${slugify(title)}`;
+            (targetBranch || "").trim() || defaultTargetBranch(assignedToName || assignedTo, title);
 
         const task = await Task.create({
             projectId,

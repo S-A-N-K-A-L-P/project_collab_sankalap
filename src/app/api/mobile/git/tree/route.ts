@@ -29,6 +29,9 @@ async function resolveCaller(req: Request) {
 // GET /api/mobile/git/tree?projectId=... — Returns tracked fileTree, branches, and active file locks
 export async function GET(req: Request) {
   try {
+    const caller = await resolveCaller(req);
+    if (!caller) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const { searchParams } = new URL(req.url);
     const projectId = searchParams.get("projectId");
     if (!projectId) {

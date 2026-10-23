@@ -7,6 +7,7 @@ import { canManageTasks, canUpdateProgress } from "@/lib/projectProgressPermissi
 import ActivityLog from "@/models/ActivityLog";
 import Project from "@/models/Project";
 import Task from "@/models/Task";
+import { cleanPathList, collisionError, findScopeCollisions } from "@/lib/gitTaskScope";
 
 type PatchTaskBody = {
     status?: "pending" | "in-progress" | "completed" | "delayed";
@@ -20,6 +21,11 @@ type PatchTaskBody = {
         testsPassed?: boolean;
         sastPassed?: boolean;
         contractsPassed?: boolean;
+        /* "passed" | "failed: …" | "not run: …" — sent by Syncro Desktop */
+        buildStatus?: string;
+        testsStatus?: string;
+        sastStatus?: string;
+        contractsStatus?: string;
     };
     /* Lead / Dispatcher updates */
     title?: string;
@@ -35,6 +41,7 @@ type PatchTaskBody = {
     allowedGlobs?: string[];
     readOnlyFiles?: string[];
     fileLockMode?: "advisory" | "strict" | "exclusive";
+    forceAssign?: boolean;
 };
 
 async function resolveSession(request: Request) {
@@ -104,11 +111,18 @@ export async function PATCH(
         if (body.commitCount !== undefined) task.commitCount = body.commitCount;
         if (body.pullRequestUrl !== undefined) task.pullRequestUrl = body.pullRequestUrl;
         if (body.verificationGate) {
+            const g = body.verificationGate;
+            const prev = task.verificationGate || {};
+            const str = (v: unknown, old: unknown) => (typeof v === "string" ? v.slice(0, 200) : (old as string) || "");
             task.verificationGate = {
-                buildPassed: body.verificationGate.buildPassed ?? task.verificationGate?.buildPassed ?? false,
-                testsPassed: body.verificationGate.testsPassed ?? task.verificationGate?.testsPassed ?? false,
-                sastPassed: body.verificationGate.sastPassed ?? task.verificationGate?.sastPassed ?? false,
-                contractsPassed: body.verificationGate.contractsPassed ?? task.verificationGate?.contractsPassed ?? false,
+                buildPassed: g.buildPassed ?? prev.buildPassed ?? false,
+                testsPassed: g.testsPassed ?? prev.testsPassed ?? false,
+                sastPassed: g.sastPassed ?? prev.sastPassed ?? false,
+                contractsPassed: g.contractsPassed ?? prev.contractsPassed ?? false,
+                buildStatus: str(g.buildStatus, prev.buildStatus),
+                testsStatus: str(g.testsStatus, prev.testsStatus),
+                sastStatus: str(g.sastStatus, prev.sastStatus),
+                contractsStatus: str(g.contractsStatus, prev.contractsStatus),
                 verifiedAt: new Date(),
             };
         }
@@ -124,17 +138,26 @@ export async function PATCH(
             if (body.repoUrl !== undefined) task.repoUrl = body.repoUrl;
             if (body.baseBranch !== undefined) task.baseBranch = body.baseBranch;
             if (body.targetBranch !== undefined) task.targetBranch = body.targetBranch;
-            if (Array.isArray(body.assignedFiles)) {
-                task.assignedFiles = Array.from(new Set(body.assignedFiles.map((f) => f.replace(/\\/g, "/").trim()).filter(Boolean)));
-            }
-            if (Array.isArray(body.allowedGlobs)) {
-                task.allowedGlobs = Array.from(new Set(body.allowedGlobs.map((g) => g.replace(/\\/g, "/").trim()).filter(Boolean)));
-            }
-            if (Array.isArray(body.readOnlyFiles)) {
-                task.readOnlyFiles = Array.from(new Set(body.readOnlyFiles.map((f) => f.replace(/\\/g, "/").trim()).filter(Boolean)));
-            }
-            if (body.fileLockMode !== undefined) {
-                task.fileLockMode = body.fileLockMode;
+            if (Array.isArray(body.assignedFiles)) task.assignedFiles = cleanPathList(body.assignedFiles);
+            if (Array.isArray(body.allowedGlobs)) task.allowedGlobs = cleanPathList(body.allowedGlobs);
+            if (Array.isArray(body.readOnlyFiles)) task.readOnlyFiles = cleanPathList(body.readOnlyFiles);
+            if (body.fileLockMode !== undefined) task.fileLockMode = body.fileLockMode;
+
+            // Re-check locks when the scope or the assignee changed.
+            const scopeChanged = Array.isArray(body.assignedFiles) || Array.isArray(body.allowedGlobs)
+                || body.assignedTo !== undefined || body.fileLockMode !== undefined;
+            if (scopeChanged) {
+                const collisions = await findScopeCollisions({
+                    projectId: task.projectId,
+                    assignedTo: task.assignedTo,
+                    assignedFiles: task.assignedFiles || [],
+                    allowedGlobs: task.allowedGlobs || [],
+                    fileLockMode: task.fileLockMode,
+                    excludeTaskId: String(task._id),
+                });
+                if (collisions.some((c) => c.blocking) && !body.forceAssign) {
+                    return NextResponse.json(collisionError(collisions), { status: 409 });
+                }
             }
         }
 
