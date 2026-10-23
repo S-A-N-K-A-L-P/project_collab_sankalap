@@ -55,7 +55,7 @@ export async function POST(
       readOnlyFiles,
       fileLockMode,
       forceAssign,
-      dryRun,
+      dryRun, startAt, dependsOn, dependencyRule,
     } = await req.json();
 
     // dryRun: only report collisions for the proposed scope (used by the form before saving).
@@ -115,7 +115,7 @@ export async function POST(
       assignedFiles: cleanAssignedFiles,
       allowedGlobs: cleanAllowedGlobs,
       readOnlyFiles: cleanReadOnlyFiles,
-      fileLockMode: fileLockMode || "strict",
+      fileLockMode: fileLockMode || "strict", startAt: startAt ? new Date(startAt) : undefined, dependsOn: Array.isArray(dependsOn) ? dependsOn.map(String).filter(Boolean) : [], dependencyRule: dependencyRule === "merged" ? "merged" : "completed",
       assignedBy: (session?.user as any)?.id || "",
       assignedByName: session?.user?.name || session?.user?.email || "Admin",
     });

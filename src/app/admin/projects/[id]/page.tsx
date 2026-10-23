@@ -10,6 +10,13 @@ import {
   type Collision, type TaskScope, type VerificationGate,
 } from "@/app/admin/components/GitTaskScope";
 import AgentsPanel from "@/app/admin/components/AgentsPanel";
+import PullRequestsPanel from "@/app/admin/components/PullRequestsPanel";
+import ControlRoom from "@/app/admin/components/project/ControlRoom";
+import TaskBoard from "@/app/admin/components/project/TaskBoard";
+import TaskDrawer from "@/app/admin/components/project/TaskDrawer";
+import Scheduler, { Timeline } from "@/app/admin/components/project/Scheduler";
+import TeamCards from "@/app/admin/components/project/TeamCards";
+import { useControlRoom } from "@/app/admin/components/project/pipeline";
 import {
   ArrowLeft, Loader2, Check, X, Plus, Trash2, UserPlus,
   Github, ShieldCheck, CalendarDays, AlertCircle,
@@ -29,6 +36,7 @@ interface Task {
 interface Project {
   _id: string; title: string; description?: string;
   status: string; progress: number; githubRepo?: string;
+  githubInstallationId?: string;
   techStack: string[]; lead?: Member; members: Member[];
   orgId?: { name: string }; proposalId?: { _id: string; title: string };
   verifiedBy?: Member; createdAt: string;
@@ -59,12 +67,21 @@ function MemberAvatar({ m, size = "sm" }: { m: Member; size?: "sm"|"md" }) {
 }
 
 // ── Main page ──────────────────────────────────────────────────
+type ProjectTab = "control"|"tasks"|"team"|"scheduler"|"agents"|"pull-requests"|"settings";
+const TAB_LABELS: Record<ProjectTab, string> = {
+  control: "Control Room", tasks: "Tasks", team: "Team", scheduler: "Scheduler",
+  agents: "Agents", "pull-requests": "Pull Requests", settings: "Settings",
+};
 export default function AdminProjectDetailPage() {
   const { id }  = useParams<{ id: string }>();
   const [project, setProject]   = useState<Project | null>(null);
   const [tasks, setTasks]       = useState<Task[]>([]);
   const [loading, setLoading]   = useState(true);
-  const [tab, setTab]           = useState<"overview"|"team"|"tasks"|"agents">("overview");
+  const [tab, setTab]           = useState<ProjectTab>("control");
+  const [taskView, setTaskView] = useState<"board"|"list"|"timeline">("board");
+  const [openTask, setOpenTask] = useState<string | null>(null);
+  const [assignPreset, setAssignPreset] = useState<{ userId: string; n: number } | null>(null);
+  const live = useControlRoom(id, { enabled: ["control", "tasks", "team", "scheduler"].includes(tab) || !!openTask });
 
   const loadProject = useCallback(async () => {
     setLoading(true);
@@ -146,7 +163,7 @@ export default function AdminProjectDetailPage() {
 
         {/* Tabs */}
         <div className="flex gap-1 border-b border-border-subtle pb-0 overflow-x-auto">
-          {(["overview", "team", "tasks", "agents"] as const).map((t) => (
+          {(Object.keys(TAB_LABELS) as ProjectTab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -156,7 +173,7 @@ export default function AdminProjectDetailPage() {
                   : "text-muted border-transparent hover:text-foreground"
               }`}
             >
-              {t}
+              {TAB_LABELS[t]}
               {t === "team"  && <span className="ml-1.5 text-[10px] font-mono">({project.members.length})</span>}
               {t === "tasks" && tasks.length > 0 && <span className="ml-1.5 text-[10px] font-mono">({tasks.length})</span>}
             </button>
@@ -164,22 +181,65 @@ export default function AdminProjectDetailPage() {
         </div>
 
         {/* ── Overview tab ─────────────────────────────────────────── */}
-        {tab === "overview" && (
+        {tab === "settings" && (
           <OverviewTab project={project} onRefresh={loadProject} />
         )}
 
         {/* ── Team tab ─────────────────────────────────────────────── */}
         {tab === "team" && (
-          <TeamTab project={project} onRefresh={loadProject} />
+          <div className="space-y-5">
+            {live.data && <TeamCards data={live.data} onAssign={(userId) => { setAssignPreset({ userId, n: Date.now() }); setTaskView("list"); setTab("tasks"); }} />}
+            <TeamTab project={project} onRefresh={() => { loadProject(); live.reload(); }} />
+          </div>
         )}
 
         {/* ── Tasks tab ────────────────────────────────────────────── */}
         {tab === "tasks" && (
-          <TasksTab projectId={id} members={project.members} tasks={tasks} onRefresh={loadTasks} />
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="inline-flex rounded-xl border border-border-subtle bg-surface p-0.5">
+                {(["board", "list", "timeline"] as const).map((v) => (
+                  <button key={v} onClick={() => setTaskView(v)}
+                    className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider ${taskView === v ? "bg-accent text-white" : "text-muted hover:text-foreground"}`}>
+                    {v}
+                  </button>
+                ))}
+              </div>
+              {taskView !== "list" && (
+                <button onClick={() => setTaskView("list")} className="ml-auto flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider px-3 py-2 rounded-xl bg-accent text-white hover:bg-accent/90">
+                  <Plus className="w-3.5 h-3.5" /> New Task
+                </button>
+              )}
+            </div>
+            {taskView === "board" && (live.data ? <TaskBoard data={live.data} onOpenTask={setOpenTask} /> : <LiveLoading error={live.error} />)}
+            {taskView === "timeline" && (live.data ? <Timeline data={live.data} onOpenTask={setOpenTask} /> : <LiveLoading error={live.error} />)}
+            {taskView === "list" && (
+              <TasksTab projectId={id} members={project.members} tasks={tasks} preset={assignPreset}
+                onRefresh={() => { loadTasks(); live.reload(); }} onOpen={setOpenTask} />
+            )}
+          </div>
         )}
 
         {/* ── Agents tab: members' Syncro Desktop PCs and their jobs ── */}
+        {/* ── Control Room: live pipeline across every task ── */}
+        {tab === "control" && (live.data
+          ? <ControlRoom data={live.data} updatedAt={live.updatedAt} onOpenTask={setOpenTask} />
+          : <LiveLoading error={live.error} />)}
+
+        {/* ── Scheduler: timeline + agent job queue ── */}
+        {tab === "scheduler" && (live.data
+          ? <Scheduler data={live.data} projectId={id} onChanged={live.reload} onOpenTask={setOpenTask} />
+          : <LiveLoading error={live.error} />)}
+
         {tab === "agents" && <AgentsPanel projectId={id} />}
+
+        {/* ── Pull requests tab: GitHub review, checks and gated merge ── */}
+        {tab === "pull-requests" && <PullRequestsPanel projectId={id} repo={project.githubRepo} installationId={project.githubInstallationId} />}
+
+        {openTask && live.data && (
+          <TaskDrawer projectId={id} taskId={openTask} data={live.data} onClose={() => setOpenTask(null)}
+            onChanged={() => { live.reload(); if (tab === "tasks") loadTasks(); }} />
+        )}
       </div>
     </AdminShell>
   );
@@ -485,12 +545,26 @@ function TeamTab({ project, onRefresh }: { project: Project; onRefresh: () => vo
 // ══════════════════════════════════════════════════════════════
 // TASKS TAB
 // ══════════════════════════════════════════════════════════════
-const EMPTY_TASK: { title: string; description: string; assignedTo: string; assignedToName: string; priority: "low" | "medium" | "high"; deadline: string } = {
+function LiveLoading({ error }: { error?: string }) {
+  return (
+    <div className="flex h-48 items-center justify-center">
+      {error ? <p className="text-[12px] text-red-500">{error}</p> : <Loader2 className="w-6 h-6 animate-spin text-accent" />}
+    </div>
+  );
+}
+
+type NewTaskForm = {
+  title: string; description: string; assignedTo: string; assignedToName: string; priority: "low" | "medium" | "high"; deadline: string;
+  startAt: string; dependsOn: string[]; dependencyRule: "completed" | "merged";
+};
+const EMPTY_TASK: NewTaskForm = {
   title: "", description: "", assignedTo: "", assignedToName: "", priority: "medium", deadline: "",
+  startAt: "", dependsOn: [], dependencyRule: "completed",
 };
 
-function TasksTab({ projectId, members, tasks, onRefresh }: {
+function TasksTab({ projectId, members, tasks, onRefresh, onOpen, preset }: {
   projectId: string; members: Member[]; tasks: Task[]; onRefresh: () => void;
+  onOpen?: (taskId: string) => void; preset?: { userId: string; n: number } | null;
 }) {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm]         = useState(EMPTY_TASK);
@@ -500,6 +574,14 @@ function TasksTab({ projectId, members, tasks, onRefresh }: {
   const [scope, setScope]       = useState<TaskScope>(EMPTY_SCOPE);
   const [blocked, setBlocked]   = useState<Collision[]>([]);
   const [editing, setEditing]   = useState<string | null>(null);
+
+  // "Assign task" on a team card opens the form with that member preselected.
+  useEffect(() => {
+    if (!preset) return;
+    const m = members.find((x) => x._id === preset.userId);
+    setForm((f) => ({ ...f, assignedTo: preset.userId, assignedToName: m?.name ?? "" }));
+    setShowForm(true);
+  }, [preset, members]);
 
   const completed = tasks.filter((t) => t.status === "completed").length;
 
@@ -514,7 +596,7 @@ function TasksTab({ projectId, members, tasks, onRefresh }: {
       const res = await fetch(`/api/admin/projects/${projectId}/tasks`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, ...scope, forceAssign: force }),
+        body: JSON.stringify({ ...form, startAt: form.startAt ? new Date(form.startAt).toISOString() : undefined, ...scope, forceAssign: force }),
       });
       const d = await res.json().catch(() => ({}));
       if (res.ok) {
@@ -656,6 +738,45 @@ function TasksTab({ projectId, members, tasks, onRefresh }: {
             <p className="text-[10px] font-mono font-bold text-accent uppercase tracking-widest mb-3">Git scope (what this member may change)</p>
             <TaskScopeFields projectId={projectId} scope={scope} onChange={setScope} assignedTo={form.assignedTo || undefined} />
           </div>
+          <div className="pt-2 border-t border-border-subtle space-y-3">
+            <p className="text-[10px] font-mono font-bold text-accent uppercase tracking-widest">Schedule (when the member&apos;s agent starts this task)</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest">Start at</label>
+                <input type="datetime-local" value={form.startAt} onChange={(e) => setForm((f) => ({ ...f, startAt: e.target.value }))}
+                  className="w-full px-4 py-2.5 bg-background border border-border-subtle rounded-xl text-[13px] text-foreground outline-none focus:border-accent/50" />
+                <p className="text-[10px] text-muted">Empty = the agent sets it up right away.</p>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest">Dependency is met when</label>
+                <div className="flex gap-2">
+                  {(["completed", "merged"] as const).map((r) => (
+                    <button key={r} type="button" onClick={() => setForm((f) => ({ ...f, dependencyRule: r }))}
+                      className={`flex-1 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-wider ${form.dependencyRule === r ? "bg-accent text-white" : "bg-background text-muted border border-border-subtle"}`}>
+                      {r === "completed" ? "Task completed" : "PR merged"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {tasks.length > 0 && (
+                <div className="md:col-span-2 space-y-1.5">
+                  <label className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest">Start after ({form.dependsOn.length} selected)</label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {tasks.map((t) => {
+                      const on = form.dependsOn.includes(t._id);
+                      return (
+                        <button key={t._id} type="button"
+                          onClick={() => setForm((f) => ({ ...f, dependsOn: on ? f.dependsOn.filter((x) => x !== t._id) : [...f.dependsOn, t._id] }))}
+                          className={`text-[11px] px-2.5 py-1 rounded-lg border ${on ? "border-accent bg-accent/10 text-accent font-bold" : "border-border-subtle text-muted hover:text-foreground"}`}>
+                          {t.title} <span className="font-mono text-[9px]">· {t.assignedToName}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
           {blocked.length > 0 && <CollisionList collisions={blocked} />}
           <div className="flex gap-2">
             <button
@@ -691,7 +812,7 @@ function TasksTab({ projectId, members, tasks, onRefresh }: {
               className="bg-surface border border-border-subtle rounded-xl p-4 flex flex-wrap gap-4 items-start group">
               {/* Left: info */}
               <div className="flex-1 min-w-[180px] space-y-1.5">
-                <p className="text-[13px] font-bold text-foreground leading-snug">{task.title}</p>
+                <button onClick={() => onOpen?.(task._id)} className="text-left text-[13px] font-bold text-foreground leading-snug hover:text-accent">{task.title}</button>
                 {task.description && (
                   <p className="text-[11px] text-muted leading-relaxed line-clamp-2">{task.description}</p>
                 )}

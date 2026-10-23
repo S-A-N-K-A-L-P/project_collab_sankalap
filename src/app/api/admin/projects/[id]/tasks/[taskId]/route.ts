@@ -22,12 +22,15 @@ export async function PATCH(
     const { id, taskId } = await params;
     const body = await req.json();
     const { title, description, assignedTo, assignedToName, status, priority, deadline, progress,
-            baseBranch, targetBranch, assignedFiles, allowedGlobs, readOnlyFiles, fileLockMode, forceAssign } = body;
+            baseBranch, targetBranch, assignedFiles, allowedGlobs, readOnlyFiles, fileLockMode, forceAssign, startAt, dependsOn, dependencyRule } = body;
 
     await dbConnect();
 
     const updates: Record<string, unknown> = {};
     if (title !== undefined) updates.title = title;
+    if (startAt !== undefined) updates.startAt = startAt ? new Date(startAt) : null;
+    if (Array.isArray(dependsOn)) updates.dependsOn = dependsOn.map(String).filter((x: string) => x && x !== taskId);
+    if (dependencyRule !== undefined) updates.dependencyRule = dependencyRule === "merged" ? "merged" : "completed";
     if (description !== undefined) updates.description = description;
     if (assignedTo !== undefined) updates.assignedTo = assignedTo;
     if (assignedToName !== undefined) updates.assignedToName = assignedToName;
@@ -72,7 +75,7 @@ export async function PATCH(
     if (!updated) return NextResponse.json({ error: "Task not found" }, { status: 404 });
 
     // New assignee or a different branch: the old setup job is stale, queue a fresh one.
-    if (assignedTo !== undefined || targetBranch !== undefined || baseBranch !== undefined) {
+    if ((assignedTo !== undefined || targetBranch !== undefined || baseBranch !== undefined || startAt !== undefined || Array.isArray(dependsOn) || dependencyRule !== undefined) && updated.status !== "completed") {
       const p = (await Project.findById(id).select("title").lean()) as any;
       await enqueueSetupTask(updated, { projectTitle: p?.title || "", byId: (session?.user as any)?.id || "", byName: session?.user?.name || "" });
     }

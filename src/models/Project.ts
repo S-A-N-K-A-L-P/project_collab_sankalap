@@ -42,6 +42,11 @@ const ProjectSchema = new Schema(
     verifiedBy:   { type: Schema.Types.ObjectId, ref: "User" },
     progress:     { type: Number, default: 0, min: 0, max: 100 },
     githubRepo:   { type: String },
+    /* GitHub App installation allowed to operate on this project's repository.
+       The app private key remains in server environment variables. */
+    githubInstallationId: { type: String, default: "" },
+    /* Last time a signed GitHub webhook for this project arrived (freshness indicator). */
+    githubLastWebhookAt: { type: Date },
     techStack:    { type: [String], default: [] },
     gitRepo:      { type: Schema.Types.ObjectId, ref: "GitRepo" },
     tags:         { type: [String], default: [] },

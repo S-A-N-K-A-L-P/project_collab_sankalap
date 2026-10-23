@@ -50,7 +50,7 @@ export async function PATCH(
     if (!isAdmin(session)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { id } = await params;
-    const { status, lead, progress, githubRepo, verify } = await req.json();
+    const { status, lead, progress, githubRepo, githubInstallationId, verify } = await req.json();
 
     await dbConnect();
 
@@ -59,6 +59,7 @@ export async function PATCH(
     if (lead) updates.lead = lead;
     if (progress !== undefined) updates.progress = progress;
     if (githubRepo !== undefined) updates.githubRepo = githubRepo;
+    if (githubInstallationId !== undefined) updates.githubInstallationId = String(githubInstallationId).trim();
     if (verify) updates.verifiedBy = (session!.user as any).id;
 
     const updated = await Project.findByIdAndUpdate(id, { $set: updates }, { new: true })

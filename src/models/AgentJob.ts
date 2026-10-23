@@ -20,6 +20,12 @@ const AgentJobSchema = new Schema(
     targetDeviceId: { type: String, default: "" },
     payload: { type: Schema.Types.Mixed, default: {} },
 
+    /** Not claimable before this time (scheduled jobs). */
+    runAt: { type: Date, default: Date.now, index: true },
+    /** Not claimable until every listed task meets dependencyRule. */
+    dependsOnTaskIds: { type: [String], default: [] },
+    dependencyRule: { type: String, enum: ["completed", "merged"], default: "completed" },
+
     /** queued → claimed → running → done | failed; cancelled when superseded. */
     status: {
       type: String,

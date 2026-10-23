@@ -1,4 +1,4 @@
-import mongoose, { Schema, model, models } from "mongoose";
+import { Schema, model, models } from "mongoose";
 
 const TaskSchema = new Schema(
     {
@@ -44,6 +44,11 @@ const TaskSchema = new Schema(
             type: Date,
             required: true,
         },
+        /* ── Scheduling: agent jobs for this task wait for startAt and dependsOn ── */
+        startAt: { type: Date },
+        dependsOn: { type: [String], default: [] },
+        /* "completed": dependency completed or its PR merged; "merged": its PR merged. */
+        dependencyRule: { type: String, enum: ["completed", "merged"], default: "completed" },
         /* ── Git Task Distribution & Scope Fields ─────────────────── */
         repoUrl: {
             type: String,
@@ -97,6 +102,27 @@ const TaskSchema = new Schema(
         pullRequestUrl: {
             type: String,
             default: "",
+        },
+        pullRequest: {
+            number:         { type: Number },
+            url:            { type: String, default: "" },
+            repoFullName:   { type: String, default: "" },
+            state:          { type: String, enum: ["", "open", "closed", "merged"], default: "" },
+            draft:          { type: Boolean, default: false },
+            mergeable:      { type: Boolean, default: null },
+            mergeableState: { type: String, default: "unknown" },
+            headSha:        { type: String, default: "" },
+            reviewDecision: { type: String, enum: ["", "approved", "changes_requested", "review_required"], default: "" },
+            approvals:      { type: Number, default: 0 },
+            changesRequested: { type: Number, default: 0 },
+            checks: [{
+                name:       { type: String, default: "" },
+                status:     { type: String, default: "" },
+                conclusion: { type: String, default: "" },
+                url:        { type: String, default: "" },
+            }],
+            lastSyncError: { type: String, default: "" },
+            lastSyncedAt: { type: Date },
         },
         verificationGate: {
             buildPassed:     { type: Boolean, default: false },
