@@ -12,7 +12,14 @@ import AgentJob from "@/models/AgentJob";
 import ActivityLog from "@/models/ActivityLog";
 import User from "@/models/User";
 import { dependencyMet, isOnline } from "@/lib/agentJobs";
-import { evaluateMergeGate, projectRepo, syncPullRequest, verificationFreshness } from "@/lib/githubPullRequests";
+import {
+  evaluateMergeGate,
+  extractUserGithubToken,
+  parseGithubRepo,
+  projectRepo,
+  syncPullRequest,
+  verificationFreshness,
+} from "@/lib/githubPullRequests";
 
 /** Open PRs older than this are refreshed from GitHub on read (keeps the board live without a webhook). */
 const PR_STALE_MS = 60_000;
@@ -39,27 +46,46 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       .lean()) as any;
     if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
-    const githubConfigured = !!(project.githubInstallationId || process.env.GITHUB_TOKEN);
+    const userToken = extractUserGithubToken(_req);
+    const hasRepo = !!parseGithubRepo(project.githubRepo);
+    const githubConfigured = !!(project.githubInstallationId || process.env.GITHUB_TOKEN || userToken || hasRepo);
 
-    // ── Refresh a few stale open PRs from GitHub (best effort) ──
-    if (githubConfigured) {
+    // ── Refresh a few stale PRs from GitHub (works tokenless on public repos or with userToken) ──
+    if (hasRepo) {
       const stale = await Task.find({
         projectId: id,
         "pullRequest.number": { $exists: true },
-        "pullRequest.state": "open",
-        $or: [{ "pullRequest.lastSyncedAt": { $exists: false } }, { "pullRequest.lastSyncedAt": { $lt: new Date(Date.now() - PR_STALE_MS) } }],
+        $or: [
+          { "pullRequest.lastSyncedAt": { $exists: false } },
+          { "pullRequest.lastSyncedAt": { $lt: new Date(Date.now() - PR_STALE_MS) } },
+        ],
       }).limit(PR_SYNC_PER_REQUEST);
-      await Promise.all(stale.map(async (task: any) => {
-        try {
-          const ref = projectRepo(project, task.repoUrl);
-          task.pullRequest = await syncPullRequest(project, ref, task.pullRequest.number);
-          task.pullRequestUrl = task.pullRequest.url;
-        } catch (e: any) {
-          task.pullRequest.lastSyncError = String(e?.message || e).slice(0, 300);
-          task.pullRequest.lastSyncedAt = new Date();
-        }
-        await task.save();
-      }));
+
+      await Promise.all(
+        stale.map(async (task: any) => {
+          try {
+            const ref = projectRepo(project, task.repoUrl);
+            task.pullRequest = await syncPullRequest(project, ref, task.pullRequest.number, userToken);
+            task.pullRequestUrl = task.pullRequest.url;
+            if (task.pullRequest.state === "merged" && task.status !== "completed") {
+              task.status = "completed";
+              task.progress = 100;
+            }
+            await task.save();
+          } catch (e: any) {
+            const msg = String(e?.message || e);
+            if (msg.includes("(404)")) {
+              task.pullRequest = undefined;
+              task.pullRequestUrl = "";
+              await task.save();
+            } else {
+              task.pullRequest.lastSyncError = msg.slice(0, 300);
+              task.pullRequest.lastSyncedAt = new Date();
+              await task.save();
+            }
+          }
+        })
+      );
     }
 
     const people: any[] = [...(project.members || [])];
@@ -161,7 +187,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         githubRepo: project.githubRepo || "", githubInstallationId: project.githubInstallationId || "",
         githubLastWebhookAt: project.githubLastWebhookAt || null,
         githubConfigured,
-        githubMode: project.githubInstallationId ? "app" : process.env.GITHUB_TOKEN ? "token" : "none",
+        githubMode: project.githubInstallationId
+          ? "app"
+          : (userToken || process.env.GITHUB_TOKEN)
+          ? "token"
+          : hasRepo
+          ? "public"
+          : "none",
       },
       tasks: taskViews,
       members,

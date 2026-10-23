@@ -1,222 +1,680 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- GitHub REST payloads and hydrated Mongoose task documents are runtime-shaped. */
+/* eslint-disable @typescript-eslint/no-explicit-any -- GitHub REST payloads and Mongoose lean docs are runtime-shaped here. */
 import crypto from "crypto";
-import { parseGithubUrl, type RepoRef } from "@/lib/github";
+import fs from "fs";
+import path from "path";
 
-const API = "https://api.github.com";
-const API_VERSION = "2022-11-28";
+const GH_API = "https://api.github.com";
 
-type ProjectGithubConfig = {
-  githubRepo?: string;
-  githubInstallationId?: string | number;
-};
+/**
+ * Down-scoped GitHub App installation permissions (ported from shv-codes/zero-ops-autosre/backend/delivery/github_auth.py).
+ */
+export const REQUIRED_PERMISSIONS = {
+  contents: "write",        // push the fix branch
+  pull_requests: "write",   // open the PR, mark it ready, comment, label
+  checks: "read",           // read CI check runs
+  statuses: "read",         // read commit statuses
+  metadata: "read",         // mandatory for every GitHub App
+} as const;
 
-export type PullRequestCheck = {
+export const RENEW_BEFORE_SECONDS = 300; // 5 minutes before expiry
+
+export interface RepoRef {
+  owner: string;
+  repo: string;
+}
+
+export interface PullRequestCheck {
   name: string;
   status: string;
   conclusion: string;
   url: string;
-};
+}
 
-export type PullRequestSnapshot = {
+export interface PullRequestSnapshot {
   number: number;
+  title?: string;
   url: string;
-  repoFullName: string;
   state: "open" | "closed" | "merged";
   draft: boolean;
   mergeable: boolean | null;
   mergeableState: string;
   headSha: string;
-  reviewDecision: "" | "approved" | "changes_requested" | "review_required";
+  headBranch: string;
+  baseBranch: string;
+  authorLogin?: string;
+  reviewDecision: "approved" | "changes_requested" | "review_required" | "";
   approvals: number;
   changesRequested: number;
   checks: PullRequestCheck[];
   lastSyncedAt: Date;
-};
-
-const tokenCache = new Map<string, { token: string; expiresAt: number }>();
-
-function base64url(value: string | Buffer) {
-  return Buffer.from(value).toString("base64url");
+  lastSyncError: string;
 }
 
-function appJwt() {
-  const appId = process.env.GITHUB_APP_ID;
-  const privateKey = process.env.GITHUB_APP_PRIVATE_KEY?.replace(/\\n/g, "\n");
-  if (!appId || !privateKey) {
-    throw new Error("GitHub App is not configured (GITHUB_APP_ID and GITHUB_APP_PRIVATE_KEY are required).");
+export interface GitHubAppDescription {
+  mode: "app";
+  app_slug: string;
+  app_name: string;
+  bot_login: string;
+  install_url: string;
+}
+
+export interface GitHubStatus {
+  provider: "local" | "github";
+  repo: string;
+  auth_mode: "app" | "token" | "public" | "none";
+  connected: boolean;
+  installation_id: number | null;
+  account: string;
+  app: GitHubAppDescription | null;
+  token_expires_in_seconds: number | null;
+  error: string | null;
+}
+
+export class GitHubAuthError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "GitHubAuthError";
   }
-  const now = Math.floor(Date.now() / 1000);
-  const header = base64url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
-  const payload = base64url(JSON.stringify({ iat: now - 60, exp: now + 9 * 60, iss: appId }));
-  const input = `${header}.${payload}`;
-  const signature = crypto.createSign("RSA-SHA256").update(input).sign(privateKey);
-  return `${input}.${base64url(signature)}`;
 }
 
-async function installationToken(installationId: string) {
-  const cached = tokenCache.get(installationId);
-  if (cached && cached.expiresAt > Date.now() + 60_000) return cached.token;
-  const res = await fetch(`${API}/app/installations/${encodeURIComponent(installationId)}/access_tokens`, {
-    method: "POST",
-    headers: githubHeaders(appJwt()),
-    cache: "no-store",
-  });
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok || !body.token) throw new Error(githubError(res.status, body));
-  const expiresAt = body.expires_at ? Date.parse(body.expires_at) : Date.now() + 50 * 60_000;
-  tokenCache.set(installationId, { token: body.token, expiresAt });
-  return body.token as string;
+/** Accepts https://github.com/owner/repo(.git), git@github.com:owner/repo.git, or owner/repo. */
+export function parseGithubRepo(raw?: string | null): RepoRef | null {
+  const s = (raw || "").trim().replace(/\.git$/i, "").replace(/\/+$/, "");
+  if (!s) return null;
+  const urlMatch = s.match(/github\.com[/:]([^/\s]+)\/([^/\s]+)/i);
+  if (urlMatch) return { owner: urlMatch[1], repo: urlMatch[2] };
+  const shortMatch = s.match(/^([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+)$/);
+  if (shortMatch) return { owner: shortMatch[1], repo: shortMatch[2] };
+  return null;
 }
 
-function githubHeaders(token?: string) {
-  return {
-    Accept: "application/vnd.github+json",
-    "User-Agent": "Syncro-Platform",
-    "X-GitHub-Api-Version": API_VERSION,
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
-
-function githubError(status: number, body: any) {
-  const detail = typeof body?.message === "string" ? `: ${body.message}` : "";
-  if (status === 401) return `GitHub rejected the configured credential${detail}`;
-  if (status === 403) return `GitHub App lacks permission for this operation${detail}`;
-  if (status === 404) return `GitHub repository, branch, or pull request was not found${detail}`;
-  if (status === 422) return `GitHub rejected the request${detail}`;
-  return `GitHub API error ${status}${detail}`;
-}
-
-async function tokenFor(project: ProjectGithubConfig, installationOverride?: string | number) {
-  const installationId = String(installationOverride || project.githubInstallationId || "").trim();
-  if (installationId) return installationToken(installationId);
-  if (process.env.GITHUB_TOKEN) return process.env.GITHUB_TOKEN;
-  throw new Error("No GitHub installation is connected to this project.");
-}
-
-async function request<T>(project: ProjectGithubConfig, path: string, init: RequestInit = {}, installationOverride?: string | number): Promise<T> {
-  const token = await tokenFor(project, installationOverride);
-  const res = await fetch(`${API}${path}`, {
-    ...init,
-    headers: { ...githubHeaders(token), ...(init.headers || {}) },
-    cache: "no-store",
-  });
-  const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(githubError(res.status, body));
-  return body as T;
-}
-
-export function projectRepo(project: ProjectGithubConfig, taskRepoUrl?: string): RepoRef {
-  const ref = parseGithubUrl(taskRepoUrl || project.githubRepo || "");
-  if (!ref) throw new Error("This task does not have a valid GitHub repository URL.");
+export function projectRepo(project: any, fallbackUrl?: string): RepoRef {
+  const ref = parseGithubRepo(project?.githubRepo) || parseGithubRepo(fallbackUrl);
+  if (!ref) throw new Error("Project has no valid GitHub repository URL configured.");
   return ref;
 }
 
-function pathFor(ref: RepoRef, suffix: string) {
-  return `/repos/${encodeURIComponent(ref.owner)}/${encodeURIComponent(ref.repo)}${suffix}`;
+/**
+ * Load the GitHub App private key from `GITHUB_APP_PRIVATE_KEY` (PEM string)
+ * or `GITHUB_APP_PRIVATE_KEY_PATH` (file path, e.g. `secrets/github-app.pem`),
+ * matching shv-codes/zero-ops-autosre/backend/delivery/github_auth.py.
+ */
+export function loadAppPrivateKey(): string {
+  const inline = (process.env.GITHUB_APP_PRIVATE_KEY || "").replace(/\\n/g, "\n").trim();
+  if (inline) {
+    if (!inline.includes("PRIVATE KEY")) {
+      throw new GitHubAuthError("GITHUB_APP_PRIVATE_KEY does not look like a PEM private key");
+    }
+    return inline;
+  }
+  const keyPath = (process.env.GITHUB_APP_PRIVATE_KEY_PATH || "").trim();
+  if (keyPath) {
+    const resolved = path.isAbsolute(keyPath) ? keyPath : path.resolve(process.cwd(), keyPath);
+    if (!fs.existsSync(resolved)) {
+      throw new GitHubAuthError(`GitHub App private key not found at ${resolved}`);
+    }
+    const text = fs.readFileSync(resolved, "utf-8");
+    if (!text.includes("PRIVATE KEY")) {
+      throw new GitHubAuthError(`${resolved} does not look like a PEM private key`);
+    }
+    return text;
+  }
+  return "";
 }
 
-export async function createPullRequest(project: ProjectGithubConfig, ref: RepoRef, input: { title: string; body: string; head: string; base: string }) {
-  return request<any>(project, pathFor(ref, "/pulls"), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...input, maintainer_can_modify: true }),
+/** Create a short-lived RS256 JWT for the Syncro / AutoSRE GitHub App (valid 9 minutes). */
+function createAppJwt(appId: string, privateKeyPem: string): string {
+  const now = Math.floor(Date.now() / 1000);
+  const b64 = (obj: object) => Buffer.from(JSON.stringify(obj)).toString("base64url");
+  const unsigned = `${b64({ alg: "RS256", typ: "JWT" })}.${b64({ iat: now - 60, exp: now + 540, iss: appId })}`;
+  const sig = crypto.createSign("RSA-SHA256").update(unsigned).sign(privateKeyPem, "base64url");
+  return `${unsigned}.${sig}`;
+}
+
+const tokenCache = new Map<string, { token: string; expiresAt: number }>();
+let cachedAppInfo: { id: string; slug: string; name: string; html_url: string } | null = null;
+let cachedBotIdentity: { name: string; email: string } | null = null;
+
+async function appJwtFetch(pathOrUrl: string, init: RequestInit = {}): Promise<any> {
+  const appId = process.env.GITHUB_APP_ID;
+  const key = loadAppPrivateKey();
+  if (!appId || !key) {
+    throw new GitHubAuthError("GitHub App ID and private key are required (see docs/GITHUB_APP_SETUP.md)");
+  }
+  const jwt = createAppJwt(appId, key);
+  const url = pathOrUrl.startsWith("http") ? pathOrUrl : `${GH_API}${pathOrUrl}`;
+  const res = await fetch(url, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+      "User-Agent": "Syncro-AutoSRE-GitHub-App",
+      ...(init.headers || {}),
+    },
+    cache: "no-store",
   });
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok) {
+    throw new GitHubAuthError(data?.message || `GitHub App API ${res.status}`);
+  }
+  return data;
 }
 
-export async function findOpenPullRequest(project: ProjectGithubConfig, ref: RepoRef, head: string, base: string) {
-  const pulls = await request<any[]>(project, pathFor(ref, `/pulls?state=open&head=${encodeURIComponent(`${ref.owner}:${head}`)}&base=${encodeURIComponent(base)}`));
-  return pulls[0] || null;
+/**
+ * Ported from AppCredentials.app_info() & describe() in shv-codes/zero-ops-autosre/backend/delivery/github_auth.py.
+ */
+export async function getAppInfo(): Promise<{ id: string; slug: string; name: string; html_url: string }> {
+  if (cachedAppInfo) return cachedAppInfo;
+  try {
+    const app = await appJwtFetch("/app");
+    cachedAppInfo = {
+      id: String(app.id),
+      slug: app.slug,
+      name: app.name,
+      html_url: app.html_url,
+    };
+    return cachedAppInfo;
+  } catch (exc: any) {
+    throw new GitHubAuthError(`GitHub rejected the App credentials (check App ID and private key): ${exc.message || exc}`);
+  }
 }
 
-export async function syncPullRequest(project: ProjectGithubConfig, ref: RepoRef, number: number, installationOverride?: string | number): Promise<PullRequestSnapshot> {
-  const pr = await request<any>(project, pathFor(ref, `/pulls/${number}`), {}, installationOverride);
-  const sha = pr.head?.sha || "";
-  const [checksBody, reviews] = await Promise.all([
-    sha ? request<any>(project, pathFor(ref, `/commits/${encodeURIComponent(sha)}/check-runs?per_page=100`), {}, installationOverride).catch(() => ({ check_runs: [] })) : { check_runs: [] },
-    request<any[]>(project, pathFor(ref, `/pulls/${number}/reviews?per_page=100`), {}, installationOverride).catch(() => []),
+export async function describeGithubApp(): Promise<GitHubAppDescription> {
+  const info = await getAppInfo();
+  return {
+    mode: "app",
+    app_slug: info.slug,
+    app_name: info.name,
+    bot_login: `${info.slug}[bot]`,
+    install_url: `https://github.com/apps/${info.slug}/installations/new`,
+  };
+}
+
+/**
+ * Ported from AppCredentials.installation_id() in shv-codes/zero-ops-autosre/backend/delivery/github_auth.py.
+ * Discovers the installation ID directly from the repository when not explicitly saved yet.
+ */
+export async function discoverInstallationId(ref: RepoRef): Promise<number> {
+  try {
+    const inst = await appJwtFetch(`/repos/${ref.owner}/${ref.repo}/installation`);
+    return Number(inst.id);
+  } catch (exc: any) {
+    throw new GitHubAuthError(
+      `the GitHub App is not installed on ${ref.owner}/${ref.repo}; click 'Connect GitHub' and pick that repository (${exc.message || exc})`
+    );
+  }
+}
+
+/**
+ * Ported from AppCredentials.verify_installation() in shv-codes/zero-ops-autosre/backend/delivery/github_auth.py.
+ * Checks an installation_id from the callback belongs to THIS GitHub App.
+ */
+export async function verifyAppInstallation(installationId: number | string): Promise<{
+  installation_id: number;
+  account: string;
+  repository_selection: string;
+}> {
+  const appId = String(process.env.GITHUB_APP_ID || "");
+  let inst: any;
+  try {
+    inst = await appJwtFetch(`/app/installations/${Number(installationId)}`);
+  } catch (exc: any) {
+    throw new GitHubAuthError(`installation ${installationId} not found for this App: ${exc.message || exc}`);
+  }
+  if (String(inst.app_id) !== appId) {
+    throw new GitHubAuthError("installation belongs to a different GitHub App");
+  }
+  return {
+    installation_id: Number(inst.id),
+    account: inst.account?.login || "",
+    repository_selection: inst.repository_selection || "",
+  };
+}
+
+/**
+ * Ported from AppCredentials.identity() in shv-codes/zero-ops-autosre/backend/delivery/github_auth.py.
+ * Commits are authored by `<slug>[bot]`.
+ */
+export async function getBotCommitIdentity(): Promise<{ name: string; email: string } | null> {
+  if (!process.env.GITHUB_APP_ID) return null;
+  if (cachedBotIdentity) return cachedBotIdentity;
+  try {
+    const info = await getAppInfo();
+    const login = `${info.slug}[bot]`;
+    let email = `${login}@users.noreply.github.com`;
+    try {
+      const uRes = await fetch(`${GH_API}/users/${encodeURIComponent(login)}`, {
+        headers: { Accept: "application/vnd.github+json", "User-Agent": "Syncro-AutoSRE-GitHub-App" },
+      });
+      if (uRes.ok) {
+        const u = await uRes.json();
+        if (u?.id) email = `${u.id}+${login}@users.noreply.github.com`;
+      }
+    } catch {
+      // use default noreply email
+    }
+    cachedBotIdentity = { name: login, email };
+    return cachedBotIdentity;
+  } catch {
+    return null;
+  }
+}
+
+export function getTokenExpiresInSeconds(installationId?: string | number | null): number | null {
+  if (!installationId) return null;
+  const cached = tokenCache.get(String(installationId));
+  if (!cached) return null;
+  return Math.max(0, Math.round((cached.expiresAt - Date.now()) / 1000));
+}
+
+/**
+ * Resolve a short-lived GitHub token for a project:
+ *   1. User-supplied token (`X-GitHub-Token` header from browser session or Desktop Git Credential Manager)
+ *   2. GitHub App installation token (`AppCredentials` from shv-codes/zero-ops-autosre: JWT -> 1-hour installation token,
+ *      down-scoped to REQUIRED_PERMISSIONS, cached & renewed 5 min before expiry; installation auto-discovered from repo)
+ *   3. Server `GITHUB_TOKEN` (TokenCredentials fallback)
+ *   4. Empty string `""` for public repo read-only `GET` requests when `requireWrite` is false
+ */
+export async function getInstallationToken(
+  project?: any,
+  userToken?: string | null,
+  requireWrite = false,
+  repoOverride?: RepoRef | null
+): Promise<string> {
+  if (userToken && userToken.trim()) {
+    return userToken.trim();
+  }
+
+  const appId = process.env.GITHUB_APP_ID;
+  let privateKey = "";
+  try {
+    privateKey = loadAppPrivateKey();
+  } catch (err) {
+    if (requireWrite && !process.env.GITHUB_TOKEN) throw err;
+  }
+
+  if (appId && privateKey) {
+    let installationId = String(project?.githubInstallationId || process.env.GITHUB_APP_INSTALLATION_ID || "").trim();
+    if (!installationId) {
+      const ref = repoOverride || parseGithubRepo(project?.githubRepo);
+      if (ref) {
+        const discovered = await discoverInstallationId(ref);
+        installationId = String(discovered);
+      }
+    }
+
+    if (installationId) {
+      const cached = tokenCache.get(installationId);
+      if (cached && cached.expiresAt - Date.now() > RENEW_BEFORE_SECONDS * 1000) {
+        return cached.token;
+      }
+
+      let data: any;
+      try {
+        data = await appJwtFetch(`/app/installations/${encodeURIComponent(installationId)}/access_tokens`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ permissions: REQUIRED_PERMISSIONS }),
+        });
+      } catch {
+        // Retry with the App's own permissions if down-scoping was rejected (matching github_auth.py lines 121-125)
+        data = await appJwtFetch(`/app/installations/${encodeURIComponent(installationId)}/access_tokens`, {
+          method: "POST",
+        });
+      }
+
+      const expiresAt = data.expires_at ? new Date(data.expires_at).getTime() : Date.now() + 3600_000;
+      tokenCache.set(installationId, { token: data.token, expiresAt });
+      return data.token;
+    }
+  }
+
+  if (process.env.GITHUB_TOKEN) return process.env.GITHUB_TOKEN;
+
+  if (!requireWrite) {
+    return "";
+  }
+
+  throw new GitHubAuthError(
+    "GitHub write access requires authentication. Click 'Connect GitHub' (GitHub App or User Session) or push from Syncro Desktop."
+  );
+}
+
+/**
+ * Ported from github_status() in shv-codes/zero-ops-autosre/backend/incidents/api/github_views.py.
+ */
+export async function getProjectGitHubStatus(project: any, userToken?: string | null): Promise<GitHubStatus> {
+  const ref = parseGithubRepo(project?.githubRepo);
+  const repoSlug = ref ? `${ref.owner}/${ref.repo}` : project?.githubRepo || "";
+  const hasAppId = Boolean(process.env.GITHUB_APP_ID);
+  const hasToken = Boolean(userToken || process.env.GITHUB_TOKEN);
+  const authMode: GitHubStatus["auth_mode"] = hasAppId ? "app" : hasToken ? "token" : ref ? "public" : "none";
+
+  const status: GitHubStatus = {
+    provider: "github",
+    repo: repoSlug,
+    auth_mode: authMode,
+    connected: false,
+    installation_id: project?.githubInstallationId ? Number(project.githubInstallationId) : null,
+    account: project?.githubAccount || (ref?.owner ?? ""),
+    app: null,
+    token_expires_in_seconds: null,
+    error: null,
+  };
+
+  if (authMode === "token") {
+    status.connected = Boolean(repoSlug);
+    return status;
+  }
+
+  if (authMode === "public") {
+    status.connected = Boolean(repoSlug);
+    status.error = "Public read-only sync active. Configure GITHUB_APP_ID + private key or authenticate with your GitHub account for bot PRs & merges.";
+    return status;
+  }
+
+  if (authMode === "none") {
+    status.error = "GitHub is not configured (see docs/GITHUB_APP_SETUP.md)";
+    return status;
+  }
+
+  try {
+    status.app = await describeGithubApp();
+    if (ref) {
+      const instId = status.installation_id || (await discoverInstallationId(ref));
+      await getInstallationToken({ ...project, githubInstallationId: String(instId) }, null, true, ref);
+      status.installation_id = Number(instId);
+      status.connected = true;
+      status.token_expires_in_seconds = getTokenExpiresInSeconds(instId);
+    }
+  } catch (exc: any) {
+    status.error = exc?.message || String(exc);
+  }
+
+  return status;
+}
+
+/** Extract optional per-request user GitHub token from `X-GitHub-Token` header. */
+export function extractUserGithubToken(request?: Request | null): string | null {
+  if (!request) return null;
+  const headerToken = request.headers.get("x-github-token") || request.headers.get("X-GitHub-Token");
+  return headerToken && headerToken.trim() ? headerToken.trim() : null;
+}
+
+async function ghFetch(
+  project: any,
+  pathStr: string,
+  init: RequestInit = {},
+  opts: { userToken?: string | null; requireWrite?: boolean } = {}
+): Promise<any> {
+  const method = (init.method || "GET").toUpperCase();
+  const requireWrite = opts.requireWrite ?? method !== "GET";
+  const token = await getInstallationToken(project, opts.userToken, requireWrite);
+
+  const headers: Record<string, string> = {
+    Accept: "application/vnd.github+json",
+    "X-GitHub-Api-Version": "2022-11-28",
+    "User-Agent": "Syncro-Control-Plane",
+    ...(init.headers as Record<string, string> || {}),
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${GH_API}${pathStr}`, {
+    ...init,
+    headers,
+    cache: "no-store",
+  });
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok) {
+    const msg = data?.message || `GitHub API ${res.status}`;
+    const details = Array.isArray(data?.errors)
+      ? data.errors.map((e: any) => e.message || e.code).filter(Boolean).join("; ")
+      : "";
+    const err = new Error(`GitHub ${init.method || "GET"} ${pathStr} failed (${res.status}): ${msg}${details ? ` — ${details}` : ""}`) as Error & { status?: number };
+    err.status = res.status;
+    throw err;
+  }
+  return data;
+}
+
+/** Find an existing open PR for head branch -> base branch, if one already exists. */
+export async function findOpenPullRequest(
+  project: any,
+  ref: RepoRef,
+  headBranch: string,
+  baseBranch?: string,
+  userToken?: string | null
+): Promise<any | null> {
+  const q = new URLSearchParams({ state: "open", head: `${ref.owner}:${headBranch}`, per_page: "5" });
+  if (baseBranch) q.set("base", baseBranch);
+  const list = await ghFetch(project, `/repos/${ref.owner}/${ref.repo}/pulls?${q.toString()}`, {}, { userToken, requireWrite: false });
+  return Array.isArray(list) && list.length > 0 ? list[0] : null;
+}
+
+/** List real pull requests directly from GitHub (`state=all`) so existing repo PRs are discovered automatically. */
+export async function listRepoPullRequests(
+  project: any,
+  ref: RepoRef,
+  userToken?: string | null,
+  state: "all" | "open" | "closed" = "all"
+): Promise<any[]> {
+  const q = new URLSearchParams({ state, sort: "updated", direction: "desc", per_page: "20" });
+  const list = await ghFetch(project, `/repos/${ref.owner}/${ref.repo}/pulls?${q.toString()}`, {}, { userToken, requireWrite: false });
+  return Array.isArray(list) ? list : [];
+}
+
+/** Create a pull request (or return the already-open one for the same branch) and return a full snapshot. */
+export async function createOrSyncPullRequest(
+  project: any,
+  ref: RepoRef,
+  opts: { headBranch: string; baseBranch: string; title: string; body: string; draft?: boolean; userToken?: string | null }
+): Promise<PullRequestSnapshot> {
+  let pr = await findOpenPullRequest(project, ref, opts.headBranch, opts.baseBranch, opts.userToken);
+  if (!pr) {
+    pr = await ghFetch(
+      project,
+      `/repos/${ref.owner}/${ref.repo}/pulls`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: opts.title,
+          head: opts.headBranch,
+          base: opts.baseBranch,
+          body: opts.body,
+          draft: Boolean(opts.draft),
+        }),
+      },
+      { userToken: opts.userToken, requireWrite: true }
+    );
+  }
+  return syncPullRequest(project, ref, pr.number, opts.userToken);
+}
+
+/** Fetch PR + latest reviews + check-runs for its head SHA and condense into a PullRequestSnapshot. */
+export async function syncPullRequest(
+  project: any,
+  ref: RepoRef,
+  prNumber: number,
+  userToken?: string | null
+): Promise<PullRequestSnapshot> {
+  const pr = await ghFetch(project, `/repos/${ref.owner}/${ref.repo}/pulls/${prNumber}`, {}, { userToken, requireWrite: false });
+  const headSha: string = pr.head?.sha || "";
+
+  const [reviews, checkRunsResp] = await Promise.all([
+    ghFetch(project, `/repos/${ref.owner}/${ref.repo}/pulls/${prNumber}/reviews?per_page=100`, {}, { userToken, requireWrite: false }).catch(() => []),
+    headSha
+      ? ghFetch(project, `/repos/${ref.owner}/${ref.repo}/commits/${headSha}/check-runs?per_page=50`, {}, { userToken, requireWrite: false }).catch(() => ({ check_runs: [] }))
+      : Promise.resolve({ check_runs: [] }),
   ]);
 
-  const latestReviewByUser = new Map<string, string>();
-  for (const review of reviews) {
-    const login = review.user?.login;
-    const state = String(review.state || "").toUpperCase();
-    if (login && ["APPROVED", "CHANGES_REQUESTED", "DISMISSED"].includes(state)) latestReviewByUser.set(login, state);
+  // Latest decisive review per user wins (GitHub's own rule).
+  const latestByUser = new Map<string, string>();
+  for (const r of Array.isArray(reviews) ? reviews : []) {
+    const login = r?.user?.login;
+    const state = String(r?.state || "").toUpperCase();
+    if (!login) continue;
+    if (state === "APPROVED" || state === "CHANGES_REQUESTED" || state === "DISMISSED") {
+      latestByUser.set(login, state);
+    }
   }
-  const states = [...latestReviewByUser.values()];
-  const approvals = states.filter((s) => s === "APPROVED").length;
-  const changesRequested = states.filter((s) => s === "CHANGES_REQUESTED").length;
-  const reviewDecision = changesRequested > 0 ? "changes_requested" : approvals > 0 ? "approved" : "review_required";
-  const checks: PullRequestCheck[] = (checksBody.check_runs || []).map((check: any) => ({
-    name: check.name || "GitHub check",
-    status: check.status || "",
-    conclusion: check.conclusion || "",
-    url: check.html_url || "",
+  let approvals = 0;
+  let changesRequested = 0;
+  for (const state of latestByUser.values()) {
+    if (state === "APPROVED") approvals++;
+    if (state === "CHANGES_REQUESTED") changesRequested++;
+  }
+  const reviewDecision: PullRequestSnapshot["reviewDecision"] =
+    changesRequested > 0 ? "changes_requested" : approvals > 0 ? "approved" : "review_required";
+
+  const runs = Array.isArray(checkRunsResp?.check_runs) ? checkRunsResp.check_runs : [];
+  const checks: PullRequestCheck[] = runs.slice(0, 25).map((c: any) => ({
+    name: String(c.name || "check"),
+    status: String(c.status || ""),
+    conclusion: String(c.conclusion || ""),
+    url: String(c.html_url || c.details_url || ""),
   }));
 
+  const state: PullRequestSnapshot["state"] = pr.merged ? "merged" : pr.state === "closed" ? "closed" : "open";
+
   return {
-    number,
-    url: pr.html_url || "",
-    repoFullName: `${ref.owner}/${ref.repo}`,
-    state: pr.merged ? "merged" : pr.state === "closed" ? "closed" : "open",
-    draft: !!pr.draft,
+    number: pr.number,
+    title: pr.title || "",
+    url: pr.html_url,
+    state,
+    draft: Boolean(pr.draft),
     mergeable: typeof pr.mergeable === "boolean" ? pr.mergeable : null,
-    mergeableState: pr.mergeable_state || "unknown",
-    headSha: sha,
+    mergeableState: String(pr.mergeable_state || "unknown"),
+    headSha,
+    headBranch: String(pr.head?.ref || ""),
+    baseBranch: String(pr.base?.ref || ""),
+    authorLogin: String(pr.user?.login || ""),
     reviewDecision,
     approvals,
     changesRequested,
     checks,
     lastSyncedAt: new Date(),
+    lastSyncError: "",
   };
 }
 
-export async function reviewPullRequest(project: ProjectGithubConfig, ref: RepoRef, number: number, action: "approve" | "request_changes", body: string) {
-  return request<any>(project, pathFor(ref, `/pulls/${number}/reviews`), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ event: action === "approve" ? "APPROVE" : "REQUEST_CHANGES", body }),
-  });
+/** Submit a review (APPROVE or REQUEST_CHANGES) on a pull request. */
+export async function reviewPullRequest(
+  project: any,
+  ref: RepoRef,
+  prNumber: number,
+  event: "APPROVE" | "REQUEST_CHANGES",
+  body?: string,
+  userToken?: string | null
+) {
+  await ghFetch(
+    project,
+    `/repos/${ref.owner}/${ref.repo}/pulls/${prNumber}/reviews`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        event,
+        body: body || (event === "APPROVE" ? "Approved via Syncro Control Room." : "Changes requested via Syncro Control Room."),
+      }),
+    },
+    { userToken, requireWrite: true }
+  );
+  return syncPullRequest(project, ref, prNumber, userToken);
 }
 
-export async function mergePullRequest(project: ProjectGithubConfig, ref: RepoRef, number: number, sha: string) {
-  return request<any>(project, pathFor(ref, `/pulls/${number}/merge`), {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sha, merge_method: "squash" }),
-  });
+/** Squash-merge a pull request at a specific verified head SHA. */
+export async function mergePullRequest(
+  project: any,
+  ref: RepoRef,
+  prNumber: number,
+  opts: { commitTitle: string; sha?: string; method?: "squash" | "merge" | "rebase"; userToken?: string | null }
+) {
+  await ghFetch(
+    project,
+    `/repos/${ref.owner}/${ref.repo}/pulls/${prNumber}/merge`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        commit_title: opts.commitTitle,
+        merge_method: opts.method || "squash",
+        ...(opts.sha ? { sha: opts.sha } : {}),
+      }),
+    },
+    { userToken: opts.userToken, requireWrite: true }
+  );
+  return syncPullRequest(project, ref, prNumber, opts.userToken);
 }
 
 /**
- * Whether the commit Syncro verified is the commit GitHub would merge.
- * "fresh": verified SHA is the PR head (short or full SHA accepted); "stale": head moved on;
- * "unknown": no verified SHA or no head SHA recorded.
+ * Evaluate whether a task's PR is safe to merge from the Syncro dashboard.
+ * Both Syncro's own verification gate AND GitHub's mergeability/checks must pass,
+ * and the verified commit must still be the PR head (no unverified commits pushed after).
  */
-export function verificationFreshness(task: any): "fresh" | "stale" | "unknown" {
-  const verified = String(task?.latestCommitSha || "").trim().toLowerCase();
-  const head = String(task?.pullRequest?.headSha || "").trim().toLowerCase();
-  if (verified.length < 7 || !head) return "unknown";
-  return head.startsWith(verified) || verified.startsWith(head) ? "fresh" : "stale";
+export function evaluateMergeGate(task: any): { allowed: boolean; reasons: string[] } {
+  const reasons: string[] = [];
+  const pr: PullRequestSnapshot | undefined = task?.pullRequest;
+  if (!pr || !pr.number) return { allowed: false, reasons: ["No pull request is open for this task."] };
+  if (pr.state !== "open") return { allowed: false, reasons: [`Pull request #${pr.number} is ${pr.state}.`] };
+  if (pr.draft) reasons.push("Pull request is still marked as a draft.");
+  if (pr.mergeable === false || pr.mergeableState === "dirty") {
+    reasons.push("Pull request has merge conflicts with the base branch.");
+  }
+
+  const gate = task?.verificationGate || {};
+  const gateStatuses = [gate.buildStatus, gate.testsStatus, gate.sastStatus, gate.contractsStatus].map((s) =>
+    String(s || "").toLowerCase()
+  );
+  const anyFailed = gateStatuses.some((s) => s.startsWith("failed"));
+  const buildOrTestPassed =
+    gateStatuses[0].startsWith("passed") || gateStatuses[1].startsWith("passed");
+  if (anyFailed) reasons.push("One or more Syncro verification gates failed.");
+  if (!buildOrTestPassed) reasons.push("Syncro build/test verification has not passed yet.");
+
+  if (task?.latestCommitSha && pr.headSha && task.latestCommitSha !== pr.headSha) {
+    reasons.push(
+      `New commits were pushed after verification (verified ${task.latestCommitSha.slice(0, 7)}, PR head is ${pr.headSha.slice(0, 7)}). Re-run verification.`
+    );
+  }
+
+  if (pr.changesRequested > 0) {
+    reasons.push(`${pr.changesRequested} reviewer(s) requested changes.`);
+  }
+
+  const failingChecks = (pr.checks || []).filter(
+    (c) => c.status === "completed" && ["failure", "timed_out", "cancelled", "action_required"].includes(c.conclusion)
+  );
+  const pendingChecks = (pr.checks || []).filter((c) => c.status && c.status !== "completed");
+  if (failingChecks.length > 0) {
+    reasons.push(`${failingChecks.length} GitHub check(s) failed: ${failingChecks.map((c) => c.name).join(", ")}.`);
+  }
+  if (pendingChecks.length > 0) {
+    reasons.push(`${pendingChecks.length} GitHub check(s) are still running.`);
+  }
+
+  return { allowed: reasons.length === 0, reasons };
 }
 
-export function evaluateMergeGate(task: any) {
-  const gate = task.verificationGate || {};
-  const statuses = [gate.buildStatus, gate.testsStatus, gate.sastStatus, gate.contractsStatus].map((x) => String(x || "").toLowerCase());
-  const reasons: string[] = [];
-  if (statuses.some((s) => s.startsWith("failed"))) reasons.push("A Syncro verification gate failed.");
-  if (![gate.buildStatus, gate.testsStatus].some((s) => String(s || "").toLowerCase().startsWith("passed"))) {
-    reasons.push("Neither build nor tests produced a passing result.");
-  }
-  const pr = task.pullRequest || {};
-  if (pr.state && pr.state !== "open") reasons.push(`Pull request is ${pr.state}.`);
-  if (pr.mergeable === false) reasons.push("GitHub reports merge conflicts.");
-  if (pr.mergeable === null || pr.mergeable === undefined) reasons.push("GitHub has not finished calculating mergeability.");
-  if (pr.reviewDecision === "changes_requested") reasons.push("A reviewer requested changes.");
-  const verification = verificationFreshness(task);
-  if (verification === "stale") reasons.push("New commits were pushed after Syncro verified this task. Re-verify first.");
-  if (verification === "unknown") reasons.push("Syncro has no record of which commit was verified. Re-verify first.");
-  const failedChecks = (pr.checks || []).filter((c: PullRequestCheck) => ["failure", "cancelled", "timed_out", "action_required", "stale"].includes(c.conclusion));
-  const pendingChecks = (pr.checks || []).filter((c: PullRequestCheck) => c.status !== "completed");
-  if (failedChecks.length) reasons.push(`${failedChecks.length} GitHub check(s) failed.`);
-  if (pendingChecks.length) reasons.push(`${pendingChecks.length} GitHub check(s) are still running.`);
-  return { allowed: reasons.length === 0, reasons };
+/** Verify a GitHub X-Hub-Signature-256 header against GITHUB_WEBHOOK_SECRET in constant time. */
+export function verifyWebhookSignature(rawBody: string, signatureHeader: string | null): boolean {
+  const secret = process.env.GITHUB_WEBHOOK_SECRET;
+  if (!secret || !signatureHeader || !signatureHeader.startsWith("sha256=")) return false;
+  const expected = "sha256=" + crypto.createHmac("sha256", secret).update(rawBody, "utf8").digest("hex");
+  const a = Buffer.from(expected);
+  const b = Buffer.from(signatureHeader);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+/** True when the verified commit SHA matches the PR head SHA (no unverified pushes since). */
+export function verificationFreshness(task: any): "fresh" | "stale" | "unknown" {
+  const verifiedSha = task?.latestCommitSha || "";
+  const headSha = task?.pullRequest?.headSha || "";
+  if (!verifiedSha || !headSha) return "unknown";
+  return verifiedSha === headSha ? "fresh" : "stale";
 }

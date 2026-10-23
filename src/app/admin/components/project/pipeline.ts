@@ -3,6 +3,39 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+const GH_TOKEN_STORAGE_KEY = "syncro_gh_user_token";
+const GH_USER_STORAGE_KEY = "syncro_gh_user_login";
+
+export function getUserGithubToken(): string {
+  if (typeof window === "undefined") return "";
+  return window.sessionStorage.getItem(GH_TOKEN_STORAGE_KEY) || "";
+}
+
+export function getUserGithubLogin(): string {
+  if (typeof window === "undefined") return "";
+  return window.sessionStorage.getItem(GH_USER_STORAGE_KEY) || "";
+}
+
+export function setUserGithubSession(token: string, login = ""): void {
+  if (typeof window === "undefined") return;
+  if (token) {
+    window.sessionStorage.setItem(GH_TOKEN_STORAGE_KEY, token);
+    if (login) window.sessionStorage.setItem(GH_USER_STORAGE_KEY, login);
+  } else {
+    window.sessionStorage.removeItem(GH_TOKEN_STORAGE_KEY);
+    window.sessionStorage.removeItem(GH_USER_STORAGE_KEY);
+  }
+}
+
+export function buildGithubHeaders(extra?: Record<string, string>): Record<string, string> {
+  const headers: Record<string, string> = { ...(extra || {}) };
+  const token = getUserGithubToken();
+  if (token) {
+    headers["X-GitHub-Token"] = token;
+  }
+  return headers;
+}
+
 // ── Types (shape of GET /api/admin/projects/{id}/control-room) ──
 export interface Dependency { taskId: string; title: string; rule: string }
 export interface JobResult { deviceName?: string; headSha?: string; branch?: string; repoPath?: string; [k: string]: unknown }
@@ -50,7 +83,7 @@ export interface CRData {
   now: string;
   project: {
     _id: string; title: string; status: string; progress: number; githubRepo: string; githubInstallationId: string;
-    githubLastWebhookAt: string | null; githubConfigured: boolean; githubMode: "app" | "token" | "none";
+    githubLastWebhookAt: string | null; githubConfigured: boolean; githubMode: "app" | "token" | "user-token" | "public" | "none";
   };
   tasks: CRTask[]; members: CRMember[]; jobs: CRJob[]; activity: CRActivity[];
 }
@@ -66,7 +99,10 @@ export function useControlRoom(projectId: string, { enabled = true, intervalMs =
     if (busy.current) return;
     busy.current = true;
     try {
-      const res = await fetch(`/api/admin/projects/${projectId}/control-room`, { cache: "no-store" });
+      const res = await fetch(`/api/admin/projects/${projectId}/control-room`, {
+        cache: "no-store",
+        headers: buildGithubHeaders(),
+      });
       const d = await res.json().catch(() => ({}));
       if (!res.ok) { setError(d.error || "Could not load the control room"); return; }
       setError(""); setData(d); setUpdatedAt(Date.now());
@@ -91,7 +127,9 @@ export function useControlRoom(projectId: string, { enabled = true, intervalMs =
 export type PrAction = "approve" | "request_changes" | "merge" | "refresh";
 export async function prAction(projectId: string, taskId: string, action: PrAction, message?: string) {
   const res = await fetch(`/api/admin/projects/${projectId}/pull-requests`, {
-    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ taskId, action, message }),
+    method: "POST",
+    headers: buildGithubHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ taskId, action, message }),
   });
   const d = await res.json().catch(() => ({}));
   if (!res.ok) {

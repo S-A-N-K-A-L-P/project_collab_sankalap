@@ -7,7 +7,16 @@ import dbConnect from "@/lib/mongodb";
 import ActivityLog from "@/models/ActivityLog";
 import Project from "@/models/Project";
 import Task from "@/models/Task";
-import { evaluateMergeGate, mergePullRequest, projectRepo, reviewPullRequest, syncPullRequest, verificationFreshness } from "@/lib/githubPullRequests";
+import {
+  evaluateMergeGate,
+  extractUserGithubToken,
+  listRepoPullRequests,
+  mergePullRequest,
+  projectRepo,
+  reviewPullRequest,
+  syncPullRequest,
+  verificationFreshness,
+} from "@/lib/githubPullRequests";
 
 /** Open PRs older than this are refreshed from GitHub when the board polls. */
 const PR_STALE_MS = 60_000;
@@ -17,27 +26,69 @@ function isAdmin(session: any) {
   return session && ["sankalp_associate", "platform_moderator", "master_admin"].includes(session.user?.role);
 }
 
-async function syncOne(task: any, project: any) {
+async function syncOne(task: any, project: any, userToken?: string | null) {
   if (!task.pullRequest?.number) return task;
   try {
     const ref = projectRepo(project, task.repoUrl);
-    const snapshot = await syncPullRequest(project, ref, task.pullRequest.number);
+    const snapshot = await syncPullRequest(project, ref, task.pullRequest.number, userToken);
     task.pullRequest = snapshot;
     task.pullRequestUrl = snapshot.url;
   } catch (error: any) {
-    task.pullRequest.lastSyncError = String(error.message || error).slice(0, 300);
-    task.pullRequest.lastSyncedAt = new Date();
+    const msg = String(error.message || error);
+    if (/404|not found/i.test(msg)) {
+      // Never retain a PR snapshot that does not exist on GitHub.
+      task.pullRequest = undefined;
+      task.pullRequestUrl = "";
+    } else {
+      task.pullRequest.lastSyncError = msg.slice(0, 300);
+      task.pullRequest.lastSyncedAt = new Date();
+    }
   }
   await task.save();
   return task;
 }
 
+async function discoverRepoPullRequests(projectId: string, project: any, userToken?: string | null) {
+  if (!project.githubRepo) return;
+  try {
+    const ref = projectRepo(project);
+    const ghPulls = await listRepoPullRequests(project, ref, userToken);
+    if (!Array.isArray(ghPulls) || ghPulls.length === 0) return;
+
+    const allTasks = await Task.find({ projectId });
+    for (const pr of ghPulls) {
+      const headRef = String(pr.head?.ref || "").trim();
+      if (!headRef) continue;
+      const match = allTasks.find(
+        (t: any) =>
+          t.pullRequest?.number === pr.number ||
+          (t.targetBranch && String(t.targetBranch).toLowerCase() === headRef.toLowerCase())
+      );
+      if (match && (!match.pullRequest?.number || match.pullRequest.number === pr.number)) {
+        match.pullRequest = await syncPullRequest(project, ref, pr.number, userToken);
+        match.pullRequestUrl = match.pullRequest.url;
+        if (match.pullRequest.state === "merged" && match.status !== "completed") {
+          match.status = "completed";
+          match.progress = 100;
+        }
+        await match.save();
+      }
+    }
+  } catch {
+    // Rate limit or offline; existing synced tasks will still render.
+  }
+}
+
 function view(task: any) {
   return {
-    taskId: String(task._id), title: task.title, assignedToName: task.assignedToName,
-    targetBranch: task.targetBranch, baseBranch: task.baseBranch,
+    taskId: String(task._id),
+    title: task.title,
+    assignedToName: task.assignedToName,
+    targetBranch: task.targetBranch,
+    baseBranch: task.baseBranch,
     latestCommitSha: task.latestCommitSha || "",
-    verificationGate: task.verificationGate, pullRequest: task.pullRequest,
+    verificationGate: task.verificationGate,
+    pullRequest: task.pullRequest,
     verification: verificationFreshness(task),
     mergeGate: evaluateMergeGate(task),
   };
@@ -47,28 +98,55 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   try {
     const session = await getServerSession(authOptions);
     if (!isAdmin(session)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const userToken = extractUserGithubToken(request);
     const { id } = await params;
     await dbConnect();
-    const project = await Project.findById(id).select("title githubRepo githubInstallationId githubLastWebhookAt").lean() as any;
+    const project = (await Project.findById(id)
+      .select("title githubRepo githubInstallationId githubLastWebhookAt")
+      .lean()) as any;
     if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
-    const configured = !!(project.githubInstallationId || process.env.GITHUB_TOKEN);
 
-    let tasks = await Task.find({ projectId: id, "pullRequest.number": { $exists: true } }).sort({ "pullRequest.lastSyncedAt": -1 });
-    if (configured) {
-      if (new URL(request.url).searchParams.get("refresh") === "1") {
-        tasks = await Promise.all(tasks.map((task) => syncOne(task, project)));
+    const hasRepo = Boolean(project.githubRepo);
+    const isRefresh = new URL(request.url).searchParams.get("refresh") === "1";
+
+    if (hasRepo && isRefresh) {
+      await discoverRepoPullRequests(id, project, userToken);
+    }
+
+    let tasks = await Task.find({ projectId: id, "pullRequest.number": { $exists: true } }).sort({
+      "pullRequest.lastSyncedAt": -1,
+    });
+
+    if (hasRepo) {
+      if (isRefresh) {
+        tasks = await Promise.all(tasks.map((task) => syncOne(task, project, userToken)));
       } else {
         const cutoff = Date.now() - PR_STALE_MS;
         const stale = tasks
-          .filter((t: any) => t.pullRequest?.state === "open" && (!t.pullRequest.lastSyncedAt || new Date(t.pullRequest.lastSyncedAt).getTime() < cutoff))
+          .filter(
+            (t: any) =>
+              t.pullRequest?.state === "open" &&
+              (!t.pullRequest.lastSyncedAt || new Date(t.pullRequest.lastSyncedAt).getTime() < cutoff)
+          )
           .slice(0, PR_SYNC_PER_POLL);
-        await Promise.all(stale.map((task) => syncOne(task, project)));
+        if (stale.length > 0) {
+          await Promise.all(stale.map((task) => syncOne(task, project, userToken)));
+        }
       }
+      tasks = tasks.filter((t: any) => Boolean(t.pullRequest?.number));
     }
 
     return NextResponse.json({
-      configured: configured || tasks.length > 0,
-      githubMode: project.githubInstallationId ? "app" : process.env.GITHUB_TOKEN ? "token" : "platform",
+      configured: hasRepo,
+      githubMode: userToken
+        ? "user-token"
+        : project.githubInstallationId
+          ? "app"
+          : process.env.GITHUB_TOKEN
+            ? "token"
+            : hasRepo
+              ? "public"
+              : "none",
       githubRepo: project.githubRepo || "",
       githubInstallationId: project.githubInstallationId || "",
       githubLastWebhookAt: project.githubLastWebhookAt || null,
@@ -83,6 +161,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   try {
     const session = await getServerSession(authOptions);
     if (!isAdmin(session)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const userToken = extractUserGithubToken(request);
     const { id } = await params;
     const { taskId, action, message } = await request.json();
     if (!["approve", "request_changes", "merge", "refresh"].includes(action)) {
@@ -95,80 +174,53 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     ]);
     if (!project || !task) return NextResponse.json({ error: "Project or task not found" }, { status: 404 });
     if (!task.pullRequest?.number) return NextResponse.json({ error: "Task has no pull request" }, { status: 409 });
+    const ref = projectRepo(project, task.repoUrl);
 
-    let ref: any = null;
-    try {
-      ref = projectRepo(project, task.repoUrl);
-      task.pullRequest = await syncPullRequest(project, ref, task.pullRequest.number);
-    } catch {
-      // External demo repo or unconfigured GitHub token — keep existing platform PR snapshot
-    }
-
-    if (action === "approve") {
-      try {
-        if (ref) await reviewPullRequest(project, ref, task.pullRequest.number, "approve", message || "Approved in Syncro PR Control.");
-      } catch {
-        // Fallback: record approval directly on the platform PR snapshot
-      }
-      task.pullRequest.reviewDecision = "approved";
-      task.pullRequest.approvals = (Number(task.pullRequest.approvals) || 0) + 1;
-      task.pullRequest.changesRequested = 0;
-      task.pullRequest.lastSyncedAt = new Date();
-    } else if (action === "request_changes") {
-      try {
-        if (ref) await reviewPullRequest(project, ref, task.pullRequest.number, "request_changes", message || "Changes requested in Syncro PR Control.");
-      } catch {
-        // Fallback: record requested changes directly on the platform PR snapshot
-      }
-      task.pullRequest.reviewDecision = "changes_requested";
-      task.pullRequest.changesRequested = (Number(task.pullRequest.changesRequested) || 0) + 1;
-      task.pullRequest.lastSyncedAt = new Date();
+    task.pullRequest = await syncPullRequest(project, ref, task.pullRequest.number, userToken);
+    if (action === "approve" || action === "request_changes") {
+      await reviewPullRequest(
+        project,
+        ref,
+        task.pullRequest.number,
+        action === "approve" ? "APPROVE" : "REQUEST_CHANGES",
+        message || (action === "approve" ? "Approved in Syncro PR Control." : "Changes requested in Syncro PR Control."),
+        userToken
+      );
     } else if (action === "merge") {
       const gate = evaluateMergeGate(task);
       if (!gate.allowed) {
         await task.save();
         return NextResponse.json({ error: "Merge refused", reasons: gate.reasons }, { status: 409 });
       }
-      let mergedRemotely = false;
       try {
-        if (ref) {
-          await mergePullRequest(project, ref, task.pullRequest.number, task.pullRequest.headSha);
-          mergedRemotely = true;
-        }
+        await mergePullRequest(project, ref, task.pullRequest.number, {
+          commitTitle: `${task.title} (#${task.pullRequest.number})`,
+          sha: task.pullRequest.headSha,
+          method: "squash",
+          userToken,
+        });
       } catch (e: any) {
         const msg = String(e?.message || e);
-        if (/405|not mergeable|protected|required/i.test(msg)) {
-          return NextResponse.json({
+        return NextResponse.json(
+          {
             error: "GitHub refused the merge",
-            reasons: [`GitHub branch protection blocked the merge: ${msg}`],
-          }, { status: 409 });
-        }
-        // If GitHub isn't configured or external demo repo isn't writable by server token, complete merge in platform state
-      }
-      if (mergedRemotely && ref) {
-        try {
-          task.pullRequest = await syncPullRequest(project, ref, task.pullRequest.number);
-        } catch {
-          task.pullRequest.state = "merged";
-        }
-      } else {
-        task.pullRequest.state = "merged";
-        task.pullRequest.lastSyncedAt = new Date();
-      }
-    } else if (action === "refresh" && ref) {
-      try {
-        task.pullRequest = await syncPullRequest(project, ref, task.pullRequest.number);
-      } catch {
-        task.pullRequest.lastSyncedAt = new Date();
+            reasons: [
+              /405|not mergeable|protected|required/i.test(msg)
+                ? `GitHub branch protection blocked the merge: ${msg}`
+                : msg,
+            ],
+          },
+          { status: 409 }
+        );
       }
     }
 
+    task.pullRequest = await syncPullRequest(project, ref, task.pullRequest.number, userToken);
     task.pullRequestUrl = task.pullRequest.url;
     if (task.pullRequest.state === "merged" && task.status !== "completed") {
       task.status = "completed";
       task.progress = 100;
     }
-    task.markModified("pullRequest");
     await task.save();
     if (action !== "refresh") {
       await ActivityLog.create({

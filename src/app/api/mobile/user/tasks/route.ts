@@ -65,7 +65,7 @@ export async function GET(req: Request) {
           taskId: st._id.toString(),
           taskTitle: st.title || "",
           lockedByUserId: st.assignedTo || "",
-          lockedByName: st.assignedToName || st.assignedTo || "Teammate",
+          lockedByName: st.assignedToName || st.assignedTo || "",
           lockMode: st.fileLockMode || "strict",
           targetBranch: st.targetBranch || "",
         });
@@ -85,15 +85,15 @@ export async function GET(req: Request) {
         scopeDescription: t.description ?? "",
         repoUrl: (t.repoUrl || proj.githubRepo || "").trim(),
         baseBranch: t.baseBranch || "main",
-        targetBranch: t.targetBranch || `task/${idStr.slice(-6)}`,
+        targetBranch: t.targetBranch || "",
         status: t.status || "pending",
         progress: t.progress ?? 0,
         priority: t.priority || "medium",
         deadline: t.deadline,
-        assignedTo: t.assignedTo || session.id,
-        assignedToName: t.assignedToName || session.name || "",
+        assignedTo: t.assignedTo || "",
+        assignedToName: t.assignedToName || "",
         assignedBy: t.assignedBy || "",
-        assignedByName: t.assignedByName || "Project Lead",
+        assignedByName: t.assignedByName || "",
         assignedFiles: Array.isArray(t.assignedFiles) ? t.assignedFiles : [],
         allowedGlobs: Array.isArray(t.allowedGlobs) ? t.allowedGlobs : [],
         readOnlyFiles: Array.isArray(t.readOnlyFiles) ? t.readOnlyFiles : [],
@@ -101,12 +101,8 @@ export async function GET(req: Request) {
         latestCommitSha: t.latestCommitSha || "",
         commitCount: t.commitCount ?? 0,
         pullRequestUrl: t.pullRequestUrl || "",
-        verificationGate: t.verificationGate || {
-          buildPassed: false,
-          testsPassed: false,
-          sastPassed: false,
-          contractsPassed: false,
-        },
+        // Sent as stored; a task that was never verified has no gate (shown as "Not verified").
+        verificationGate: t.verificationGate || null,
         teammateLockedFiles: locksByProject.get(t.projectId) || [],
       };
     });
