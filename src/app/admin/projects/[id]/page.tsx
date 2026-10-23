@@ -9,6 +9,7 @@ import {
   CollisionList, EMPTY_SCOPE, GateChips, RosterEditor, ScopeSummary, TaskScopeEditor, TaskScopeFields,
   type Collision, type TaskScope, type VerificationGate,
 } from "@/app/admin/components/GitTaskScope";
+import AgentsPanel from "@/app/admin/components/AgentsPanel";
 import {
   ArrowLeft, Loader2, Check, X, Plus, Trash2, UserPlus,
   Github, ShieldCheck, CalendarDays, AlertCircle,
@@ -63,7 +64,7 @@ export default function AdminProjectDetailPage() {
   const [project, setProject]   = useState<Project | null>(null);
   const [tasks, setTasks]       = useState<Task[]>([]);
   const [loading, setLoading]   = useState(true);
-  const [tab, setTab]           = useState<"overview"|"team"|"tasks">("overview");
+  const [tab, setTab]           = useState<"overview"|"team"|"tasks"|"agents">("overview");
 
   const loadProject = useCallback(async () => {
     setLoading(true);
@@ -144,12 +145,12 @@ export default function AdminProjectDetailPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 border-b border-border-subtle pb-0">
-          {(["overview", "team", "tasks"] as const).map((t) => (
+        <div className="flex gap-1 border-b border-border-subtle pb-0 overflow-x-auto">
+          {(["overview", "team", "tasks", "agents"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider rounded-t-xl transition-all border-b-2 -mb-px ${
+              className={`px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider rounded-t-xl transition-all border-b-2 -mb-px whitespace-nowrap ${
                 tab === t
                   ? "text-accent border-accent bg-accent/5"
                   : "text-muted border-transparent hover:text-foreground"
@@ -176,6 +177,9 @@ export default function AdminProjectDetailPage() {
         {tab === "tasks" && (
           <TasksTab projectId={id} members={project.members} tasks={tasks} onRefresh={loadTasks} />
         )}
+
+        {/* ── Agents tab: members' Syncro Desktop PCs and their jobs ── */}
+        {tab === "agents" && <AgentsPanel projectId={id} />}
       </div>
     </AdminShell>
   );

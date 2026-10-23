@@ -3,6 +3,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import Project from "@/models/Project";
+// Models used by populate() must be registered on cold start, or the query throws
+// "Schema hasn't been registered for model …".
+import User from "@/models/User";
+import Org from "@/models/Org";
+import Proposal from "@/models/Proposal";
+void User; void Org; void Proposal;
 
 function isAdmin(s: any) {
   return s && ["sankalp_associate", "master_admin"].includes(s.user?.role);

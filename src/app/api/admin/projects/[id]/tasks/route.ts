@@ -5,6 +5,7 @@ import dbConnect from "@/lib/mongodb";
 import Task from "@/models/Task";
 import Project from "@/models/Project";
 import ActivityLog from "@/models/ActivityLog";
+import { enqueueSetupTask } from "@/lib/agentJobs";
 import { cleanPathList, collisionError, defaultTargetBranch, findScopeCollisions } from "@/lib/gitTaskScope";
 
 function isAdmin(s: any) {
@@ -81,7 +82,7 @@ export async function POST(
 
     await dbConnect();
 
-    const project = await Project.findById(id).select("githubRepo").lean() as any;
+    const project = await Project.findById(id).select("githubRepo title").lean() as any;
 
     const cleanAssignedFiles = cleanPathList(assignedFiles);
     const cleanAllowedGlobs = cleanPathList(allowedGlobs);
@@ -128,7 +129,14 @@ export async function POST(
       metadata: { taskId: task._id.toString(), assignedTo, assignedFiles: cleanAssignedFiles, targetBranch: task.targetBranch, forced: !!forceAssign },
     });
 
-    return NextResponse.json({ task, warnings: collisions }, { status: 201 });
+    // Tell the assignee's Syncro Desktop to clone the repo and check out the task branch.
+    const setupJob = await enqueueSetupTask(task, {
+      projectTitle: project?.title || "",
+      byId: (session?.user as any)?.id || "",
+      byName: session?.user?.name || session?.user?.email || "",
+    });
+
+    return NextResponse.json({ task, warnings: collisions, setupJobId: setupJob ? String(setupJob._id) : null }, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

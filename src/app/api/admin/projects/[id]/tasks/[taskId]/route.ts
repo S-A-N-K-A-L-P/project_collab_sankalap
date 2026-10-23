@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import Task from "@/models/Task";
 import { cleanPathList, collisionError, findScopeCollisions } from "@/lib/gitTaskScope";
+import { cancelTaskJobs, enqueueSetupTask } from "@/lib/agentJobs";
+import Project from "@/models/Project";
 
 function isAdmin(s: any) {
   return s && ["sankalp_associate", "master_admin"].includes(s.user?.role);
@@ -69,6 +71,12 @@ export async function PATCH(
 
     if (!updated) return NextResponse.json({ error: "Task not found" }, { status: 404 });
 
+    // New assignee or a different branch: the old setup job is stale, queue a fresh one.
+    if (assignedTo !== undefined || targetBranch !== undefined || baseBranch !== undefined) {
+      const p = (await Project.findById(id).select("title").lean()) as any;
+      await enqueueSetupTask(updated, { projectTitle: p?.title || "", byId: (session?.user as any)?.id || "", byName: session?.user?.name || "" });
+    }
+
     return NextResponse.json(updated);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
@@ -89,6 +97,7 @@ export async function DELETE(
     const deleted = await Task.findOneAndDelete({ _id: taskId, projectId: id });
 
     if (!deleted) return NextResponse.json({ error: "Task not found" }, { status: 404 });
+    await cancelTaskJobs(taskId, "task deleted");
 
     return NextResponse.json({ message: "Task deleted" });
   } catch (err: any) {

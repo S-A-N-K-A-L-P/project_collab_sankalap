@@ -9,6 +9,7 @@ import Project from "@/models/Project";
 import OrgMember from "@/models/OrgMember";
 import Task from "@/models/Task";
 import { cleanPathList, collisionError, defaultTargetBranch, findScopeCollisions } from "@/lib/gitTaskScope";
+import { enqueueSetupTask } from "@/lib/agentJobs";
 
 type CreateTaskBody = {
     projectId?: string;
@@ -150,7 +151,13 @@ export async function POST(request: Request) {
             },
         });
 
-        return NextResponse.json({ task, warnings: collisions }, { status: 201 });
+        const setupJob = await enqueueSetupTask(task, {
+            projectTitle: project?.title || "",
+            byId: session.id,
+            byName: session.name || session.email || "",
+        });
+
+        return NextResponse.json({ task, warnings: collisions, setupJobId: setupJob ? String(setupJob._id) : null }, { status: 201 });
     } catch (error: any) {
         if (error.message?.includes("Missing") || error.message?.includes("jwt")) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

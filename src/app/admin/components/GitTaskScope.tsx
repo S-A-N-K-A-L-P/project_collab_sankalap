@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, FileCode2, GitBranch, Loader2, Lock, Search, ShieldCheck, X, Check } from "lucide-react";
 
 // ── Shared types ───────────────────────────────────────────────
@@ -222,7 +222,7 @@ export function TaskScopeFields({ projectId, scope, onChange, assignedTo, exclud
         <div className="space-y-2">
           {checking && <p className="text-[10px] font-mono text-muted flex items-center gap-1.5"><Loader2 className="w-3 h-3 animate-spin" /> Checking locks…</p>}
           {!checking && collisions.length === 0 && (scope.assignedFiles.length > 0 || scope.allowedGlobs.length > 0) && (
-            <p className="text-[10px] font-mono text-emerald-400 flex items-center gap-1.5"><Check className="w-3 h-3" /> No overlap with other members' active tasks</p>
+            <p className="text-[10px] font-mono text-emerald-400 flex items-center gap-1.5"><Check className="w-3 h-3" /> No overlap with other members&apos; active tasks</p>
           )}
           <CollisionList collisions={collisions} />
         </div>
@@ -330,7 +330,7 @@ export function RosterEditor({ projectId, refreshKey }: { projectId: string; ref
   const [saving, setSaving] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setError("");
     const res = await fetch(`/api/mobile/projects/${projectId}/team`);
     const d = await res.json().catch(() => ({}));
@@ -338,8 +338,8 @@ export function RosterEditor({ projectId, refreshKey }: { projectId: string; ref
     const list: RosterMember[] = d.members || [];
     setMembers(list);
     setDrafts(Object.fromEntries(list.map((m) => [m.userId, { projectRole: m.projectRole, ownedPaths: m.ownedPaths.join("\n"), maxActiveTasks: m.maxActiveTasks }])));
-  };
-  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [projectId, refreshKey]);
+  }, [projectId]);
+  useEffect(() => { load(); }, [load, refreshKey]);
 
   const save = async (m: RosterMember) => {
     const d = drafts[m.userId];

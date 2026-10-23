@@ -8,6 +8,7 @@ import ActivityLog from "@/models/ActivityLog";
 import Project from "@/models/Project";
 import Task from "@/models/Task";
 import { cleanPathList, collisionError, findScopeCollisions } from "@/lib/gitTaskScope";
+import { cancelTaskJobs, enqueueSetupTask } from "@/lib/agentJobs";
 
 type PatchTaskBody = {
     status?: "pending" | "in-progress" | "completed" | "delayed";
@@ -163,6 +164,11 @@ export async function PATCH(
 
         await task.save();
 
+        if (isLeadOrAdmin && (body.assignedTo !== undefined || body.targetBranch !== undefined || body.baseBranch !== undefined || body.repoUrl !== undefined)) {
+            const p = (await Project.findById(task.projectId).select("title").lean()) as any;
+            await enqueueSetupTask(task, { projectTitle: p?.title || "", byId: session.id, byName: session.name || session.email || "" });
+        }
+
         await ActivityLog.create({
             projectId: task.projectId,
             userId: session.id,
@@ -210,6 +216,7 @@ export async function DELETE(
         }
 
         await Task.findByIdAndDelete(taskId);
+        await cancelTaskJobs(taskId, "task deleted");
 
         return NextResponse.json({ message: "Task deleted" });
     } catch (error: any) {
