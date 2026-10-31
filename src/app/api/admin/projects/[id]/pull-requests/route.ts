@@ -7,9 +7,12 @@ import dbConnect from "@/lib/mongodb";
 import ActivityLog from "@/models/ActivityLog";
 import Project from "@/models/Project";
 import Task from "@/models/Task";
+import { annotatePullRequestScope } from "@/lib/gitTaskScope";
 import {
+  applyGithubTaskState,
   evaluateMergeGate,
   extractUserGithubToken,
+  forgetMissingPullRequest,
   listRepoPullRequests,
   mergePullRequest,
   projectRepo,
@@ -33,12 +36,12 @@ async function syncOne(task: any, project: any, userToken?: string | null) {
     const snapshot = await syncPullRequest(project, ref, task.pullRequest.number, userToken);
     task.pullRequest = snapshot;
     task.pullRequestUrl = snapshot.url;
+    await annotatePullRequestScope(task);
+    applyGithubTaskState(task);
   } catch (error: any) {
     const msg = String(error.message || error);
     if (/404|not found/i.test(msg)) {
-      // Never retain a PR snapshot that does not exist on GitHub.
-      task.pullRequest = undefined;
-      task.pullRequestUrl = "";
+      forgetMissingPullRequest(task);
     } else {
       task.pullRequest.lastSyncError = msg.slice(0, 300);
       task.pullRequest.lastSyncedAt = new Date();
@@ -67,10 +70,8 @@ async function discoverRepoPullRequests(projectId: string, project: any, userTok
       if (match && (!match.pullRequest?.number || match.pullRequest.number === pr.number)) {
         match.pullRequest = await syncPullRequest(project, ref, pr.number, userToken);
         match.pullRequestUrl = match.pullRequest.url;
-        if (match.pullRequest.state === "merged" && match.status !== "completed") {
-          match.status = "completed";
-          match.progress = 100;
-        }
+        await annotatePullRequestScope(match);
+        applyGithubTaskState(match);
         await match.save();
       }
     }
@@ -126,7 +127,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
           .filter(
             (t: any) =>
               t.pullRequest?.state === "open" &&
-              (!t.pullRequest.lastSyncedAt || new Date(t.pullRequest.lastSyncedAt).getTime() < cutoff)
+              (!t.pullRequest.scopeCheck?.checked ||
+                !t.pullRequest.lastSyncedAt ||
+                new Date(t.pullRequest.lastSyncedAt).getTime() < cutoff)
           )
           .slice(0, PR_SYNC_PER_POLL);
         if (stale.length > 0) {
@@ -164,7 +167,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const userToken = extractUserGithubToken(request);
     const { id } = await params;
     const { taskId, action, message } = await request.json();
-    if (!["approve", "request_changes", "merge", "refresh"].includes(action)) {
+    if (!["approve", "request_changes", "merge", "refresh", "reconcile"].includes(action)) {
       return NextResponse.json({ error: "Unknown pull request action" }, { status: 400 });
     }
     await dbConnect();
@@ -176,7 +179,33 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (!task.pullRequest?.number) return NextResponse.json({ error: "Task has no pull request" }, { status: 409 });
     const ref = projectRepo(project, task.repoUrl);
 
-    task.pullRequest = await syncPullRequest(project, ref, task.pullRequest.number, userToken);
+    try {
+      task.pullRequest = await syncPullRequest(project, ref, task.pullRequest.number, userToken);
+    } catch (error: any) {
+      const msg = String(error?.message || error);
+      if ((action === "reconcile" || action === "refresh") && /404|not found/i.test(msg)) {
+        const note = forgetMissingPullRequest(task);
+        await task.save();
+        return NextResponse.json({ ...view(task), note });
+      }
+      throw error;
+    }
+    await annotatePullRequestScope(task);
+    if (action === "reconcile" || action === "refresh") {
+      const note = applyGithubTaskState(task);
+      task.pullRequestUrl = task.pullRequest?.url || "";
+      await task.save();
+      if (action === "reconcile") {
+        await ActivityLog.create({
+          projectId: id,
+          userId: (session!.user as any).id || "",
+          userName: session!.user?.email || session!.user?.name || "",
+          action: `Reconciled pull request #${task.pullRequest?.number || "?"} for task "${task.title}" with GitHub`,
+          metadata: { taskId, note },
+        });
+      }
+      return NextResponse.json({ ...view(task), note });
+    }
     if (action === "approve" || action === "request_changes") {
       await reviewPullRequest(
         project,
@@ -216,22 +245,25 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
 
     task.pullRequest = await syncPullRequest(project, ref, task.pullRequest.number, userToken);
+    await annotatePullRequestScope(task);
     task.pullRequestUrl = task.pullRequest.url;
-    if (task.pullRequest.state === "merged" && task.status !== "completed") {
-      task.status = "completed";
-      task.progress = 100;
-    }
+    const note = applyGithubTaskState(task);
     await task.save();
-    if (action !== "refresh") {
-      await ActivityLog.create({
-        projectId: id,
-        userId: (session!.user as any).id || "",
-        userName: session!.user?.email || session!.user?.name || "",
-        action: `${action === "request_changes" ? "Requested changes on" : action === "approve" ? "Approved" : "Merged"} pull request #${task.pullRequest.number} for task "${task.title}"`,
-        metadata: { taskId, pullRequestUrl: task.pullRequest.url },
-      });
-    }
-    return NextResponse.json(view(task));
+    const verb = action === "request_changes"
+      ? "Requested changes on"
+      : action === "approve"
+        ? "Approved"
+        : task.pullRequest.state === "merged"
+          ? "Merged"
+          : "Asked GitHub to merge";
+    await ActivityLog.create({
+      projectId: id,
+      userId: (session!.user as any).id || "",
+      userName: session!.user?.email || session!.user?.name || "",
+      action: `${verb} pull request #${task.pullRequest.number} for task "${task.title}"`,
+      metadata: { taskId, pullRequestUrl: task.pullRequest.url, note },
+    });
+    return NextResponse.json({ ...view(task), note });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -1,9 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- Mongoose lean documents are runtime-shaped at this API boundary. */
 import { NextResponse } from "next/server";
 import { getMobileSession } from "@/lib/mobileAuth";
 import dbConnect from "@/lib/mongodb";
 import Project from "@/models/Project";
 import Proposal from "@/models/Proposal";
 import OrgMember from "@/models/OrgMember";
+import Task from "@/models/Task";
+import User from "@/models/User";
+import { idOf, lastActivityByProject, loadProjectTasks, projectSummary } from "@/lib/projectMobileView";
 
 export async function POST(req: Request) {
   try {
@@ -87,6 +91,7 @@ export async function PATCH(req: Request) {
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
+    if (searchParams.get("view") === "mine") return mineView(req);
     const orgId = searchParams.get("orgId");
 
     await dbConnect();
@@ -101,5 +106,48 @@ export async function GET(req: Request) {
     return NextResponse.json(JSON.parse(JSON.stringify(projects)));
   } catch (error) {
     return NextResponse.json({ message: "Internal Error" }, { status: 500 });
+  }
+}
+
+/**
+ * GET /api/mobile/projects?view=mine — the signed-in member's projects (lead, member, mentor or
+ * task assignee) with metrics computed from their tasks. Shape: { projects: [...] }.
+ * (The plain GET above keeps its old array shape for existing clients.)
+ */
+async function mineView(req: Request) {
+  let session;
+  try {
+    session = getMobileSession(req);
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  try {
+    await dbConnect();
+    void User; // registers the model for populate() on cold start
+    const assignedProjectIds = (await Task.distinct("projectId", { assignedTo: session.id })) as string[];
+    const projects = (await Project.find({
+      $or: [
+        { lead: session.id },
+        { members: session.id },
+        { mentorIds: session.id },
+        { _id: { $in: assignedProjectIds.filter((x) => /^[a-f0-9]{24}$/i.test(String(x))) } },
+      ],
+    })
+      .populate("lead", "name avatar")
+      .populate("members", "name avatar")
+      .sort({ updatedAt: -1 })
+      .lean()) as any[];
+
+    const ids = projects.map((p) => idOf(p));
+    const [tasks, lastByProject] = await Promise.all([loadProjectTasks(ids), lastActivityByProject(ids)]);
+    const nowMs = Date.now();
+    return NextResponse.json({
+      now: new Date(nowMs).toISOString(),
+      projects: projects.map((p) =>
+        projectSummary(p, tasks.filter((t) => String(t.projectId) === idOf(p)), nowMs, lastByProject.get(idOf(p)))
+      ),
+    });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

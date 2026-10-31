@@ -29,13 +29,19 @@ export function PullRequestDetail({ projectId, task, onChanged }: { projectId: s
   const [busy, setBusy] = useState<PrAction | null>(null);
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState<{ text: string; reasons: string[] } | null>(null);
+  const [note, setNote] = useState("");
 
   if (!pr) return <p className="text-[12px] text-muted">No pull request yet. The member&apos;s Syncro Desktop opens it after Verify &amp; Complete passes.</p>;
 
   const run = async (a: PrAction) => {
     if (a === "merge" && !confirm(`Squash-merge PR #${pr.number} into its base branch?`)) return;
     setBusy(a); setErr(null);
-    try { await prAction(projectId, task._id, a, msg || undefined); setMsg(""); onChanged(); }
+    try {
+      const d = await prAction(projectId, task._id, a, msg || undefined);
+      setNote(typeof d?.note === "string" ? d.note : "");
+      setMsg("");
+      onChanged();
+    }
     catch (e) { const er = e as Error & { reasons?: string[] }; setErr({ text: er.message, reasons: er.reasons || [] }); }
     finally { setBusy(null); }
   };
@@ -99,6 +105,12 @@ export function PullRequestDetail({ projectId, task, onChanged }: { projectId: s
           <ul className="list-disc pl-5 text-[11px] text-foreground space-y-0.5">{task.mergeGate.reasons.map((r, i) => <li key={i}>{r}</li>)}</ul>
         </div>
       )}
+      {open && (task.mergeGate?.warnings || []).length > 0 && (
+        <div className="rounded-xl border border-border-subtle bg-background p-3">
+          <p className="text-[11px] font-bold text-muted mb-1">Scope warnings</p>
+          <ul className="list-disc pl-5 text-[11px] text-foreground space-y-0.5">{(task.mergeGate?.warnings ?? []).map((r, i) => <li key={i}>{r}</li>)}</ul>
+        </div>
+      )}
       {pr.lastSyncError && <p className="text-[11px] text-red-500">{pr.lastSyncError}</p>}
 
       {open && (
@@ -112,9 +124,6 @@ export function PullRequestDetail({ projectId, task, onChanged }: { projectId: s
             <button disabled={!!busy} onClick={() => run("request_changes")} className={`${btn} bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20`}>
               {busy === "request_changes" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}Request changes
             </button>
-            <button disabled={!!busy} onClick={() => run("refresh")} className={`${btn} bg-background text-muted hover:text-foreground border border-border-subtle`}>
-              {busy === "refresh" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}Refresh
-            </button>
             <button disabled={!!busy || !task.mergeGate?.allowed} onClick={() => run("merge")}
               title={task.mergeGate?.allowed ? "All gates passed" : task.mergeGate?.reasons.join("\n")}
               className={`${btn} ml-auto bg-accent text-white hover:bg-accent/90`}>
@@ -123,6 +132,15 @@ export function PullRequestDetail({ projectId, task, onChanged }: { projectId: s
           </div>
         </div>
       )}
+      <div className="flex flex-wrap gap-2">
+        <button disabled={!!busy} onClick={() => run("refresh")} className={`${btn} bg-background text-muted hover:text-foreground border border-border-subtle`}>
+          {busy === "refresh" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}Refresh
+        </button>
+        <button disabled={!!busy} onClick={() => run("reconcile")} className={`${btn} bg-background text-muted hover:text-foreground border border-border-subtle`}>
+          {busy === "reconcile" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}Reconcile with GitHub
+        </button>
+      </div>
+      {note && <p className="text-[11px] text-foreground">{note}</p>}
       {err && (
         <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-3 text-[11px]">
           <p className="font-bold text-red-500">{err.text}</p>

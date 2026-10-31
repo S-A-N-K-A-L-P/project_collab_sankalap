@@ -42,17 +42,24 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       return { userId: uid, name: m.name || m.email || uid, email: m.email || "", devices: mine, online: mine.some((d) => d.online) };
     });
 
-    const deviceName = new Map(devices.map((d) => [d.deviceId, d.name]));
+    const deviceById = new Map(devices.map((d) => [d.deviceId, d]));
     return NextResponse.json({
       members,
-      jobs: jobs.map((j) => ({
+      jobs: jobs.map((j) => {
+        const active = ["claimed", "running"].includes(j.status);
+        const device = j.claimedBy ? deviceById.get(j.claimedBy) : null;
+        const deviceOnline = !!device && isOnline(device.lastSeenAt);
+        const leaseStale = active && !!j.leaseUntil && new Date(j.leaseUntil).getTime() < now;
+        return {
         id: String(j._id), type: j.type, taskId: j.taskId, title: j.payload?.title || "",
         targetUserId: j.targetUserId, targetUserName: j.targetUserName,
         status: j.status,
-        stalled: ["claimed", "running"].includes(j.status) && j.leaseUntil && new Date(j.leaseUntil).getTime() < now,
-        claimedBy: j.claimedBy, claimedByName: deviceName.get(j.claimedBy) || "", attempts: j.attempts, maxAttempts: j.maxAttempts,
+        stalled: active && (leaseStale || !deviceOnline),
+        deviceOnline,
+        claimedBy: j.claimedBy, claimedByName: device?.name || "", attempts: j.attempts, maxAttempts: j.maxAttempts,
         note: j.note, error: j.error, result: j.result, createdAt: j.createdAt, finishedAt: j.finishedAt,
-      })),
+        };
+      }),
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

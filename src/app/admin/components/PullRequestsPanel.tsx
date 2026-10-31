@@ -40,7 +40,7 @@ interface Item {
   verificationGate: Gate;
   pullRequest: PRSnapshot;
   verification: "fresh" | "stale" | "unknown";
-  mergeGate: { allowed: boolean; reasons: string[] };
+  mergeGate: { allowed: boolean; reasons: string[]; warnings?: string[] };
 }
 interface Payload {
   configured: boolean;
@@ -75,6 +75,7 @@ function column(i: Item): Col {
   const pr = i.pullRequest;
   if (pr.state === "merged" || pr.state === "closed") return "done";
   if (i.mergeGate.allowed) return "ready";
+  if ((i.mergeGate.reasons || []).some((r) => /outside the scope|locked by|read-only for task|changed files from GitHub/i.test(r))) return "changes";
   if (pr.reviewDecision === "changes_requested" || i.verification === "stale" || pr.mergeable === false) return "changes";
   if ((pr.checks || []).some((c) => c.status !== "completed")) return "checks";
   return "review";

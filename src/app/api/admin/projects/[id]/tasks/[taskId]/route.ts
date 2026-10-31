@@ -34,6 +34,14 @@ export async function PATCH(
     if (description !== undefined) updates.description = description;
     if (assignedTo !== undefined) updates.assignedTo = assignedTo;
     if (assignedToName !== undefined) updates.assignedToName = assignedToName;
+    if (status === "completed") {
+      const currentForMerge = (await Task.findOne({ _id: taskId, projectId: id }).select("pullRequest").lean()) as any;
+      if (currentForMerge?.pullRequest?.number && currentForMerge.pullRequest.state !== "merged") {
+        return NextResponse.json({
+          error: "This pull request is not merged on GitHub. Reconcile with GitHub from the PR board instead of marking the task completed.",
+        }, { status: 409 });
+      }
+    }
     if (status !== undefined) updates.status = status;
     if (priority !== undefined) updates.priority = priority;
     if (deadline !== undefined) updates.deadline = new Date(deadline);

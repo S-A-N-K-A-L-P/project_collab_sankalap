@@ -11,6 +11,7 @@ import User from "@/models/User";
 import OrgMember from "@/models/OrgMember";
 import ActivityLog from "@/models/ActivityLog";
 import { applyRosterChanges, validateRosterChanges } from "@/lib/teamRoster";
+import { lockPaths } from "@/lib/gitTaskScope";
 
 async function resolveCaller(req: Request): Promise<{ id: string; role: string; name: string } | null> {
   try {
@@ -99,11 +100,7 @@ export async function GET(
         ? Math.round(userTasks.reduce((sum, t) => sum + (t.progress || 0), 0) / userTasks.length)
         : 0;
 
-      const lockedFiles = Array.from(
-        new Set(
-          activeTasks.flatMap((t) => Array.isArray(t.assignedFiles) ? t.assignedFiles : [])
-        )
-      );
+      const lockedFiles = Array.from(new Set(activeTasks.flatMap((t) => lockPaths(t))));
 
       return {
         userId: uid,

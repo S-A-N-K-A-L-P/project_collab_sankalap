@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- Mongoose lean documents are runtime-shaped here. */
 import Task from "@/models/Task";
-import { computeCollisions, type ScopeCollision } from "@/lib/gitTaskScopeCore";
+import { computeCollisions, evaluatePullRequestFiles, type ScopeCollision } from "@/lib/gitTaskScopeCore";
 
 /**
  * Shared rules for git-scoped tasks ("duty assignment"), used by the admin and the mobile/desktop
@@ -39,4 +40,36 @@ export async function findScopeCollisions(opts: {
     .select("title assignedTo assignedToName assignedFiles allowedGlobs fileLockMode")
     .lean()) as any[];
   return computeCollisions(others, { assignedFiles, allowedGlobs, fileLockMode: opts.fileLockMode });
+}
+
+/**
+ * L4 — write the file-scope result onto a pull request snapshot.
+ * `changedFiles` is filled by the GitHub sync. When it is missing, the merge stays blocked:
+ * a pull request we could not read is not treated as in scope.
+ */
+export async function annotatePullRequestScope(task: any): Promise<void> {
+  const pr = task?.pullRequest;
+  if (!pr?.number) return;
+
+  if (!Array.isArray(pr.changedFiles)) {
+    const detail = pr.changedFilesError ? `: ${String(pr.changedFilesError).slice(0, 240)}` : ".";
+    pr.scopeCheck = {
+      checked: true,
+      blocking: true,
+      reasons: [`Couldn't read this pull request's changed files from GitHub${detail}`],
+      warnings: [],
+    };
+  } else {
+    const siblings = (await Task.find({
+      projectId: task.projectId,
+      status: { $in: ACTIVE_STATUSES },
+      assignedTo: { $ne: task.assignedTo },
+      _id: { $ne: task._id },
+    })
+      .select("title assignedTo assignedToName assignedFiles allowedGlobs fileLockMode")
+      .lean()) as any[];
+    pr.scopeCheck = { checked: true, ...evaluatePullRequestFiles(task, pr.changedFiles, siblings) };
+  }
+
+  if (typeof task.markModified === "function") task.markModified("pullRequest");
 }

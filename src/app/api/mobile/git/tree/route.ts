@@ -7,6 +7,7 @@ import dbConnect from "@/lib/mongodb";
 import GitRepo from "@/models/GitRepo";
 import Project from "@/models/Project";
 import Task from "@/models/Task";
+import { lockPaths } from "@/lib/gitTaskScope";
 
 async function resolveCaller(req: Request) {
   try {
@@ -61,8 +62,7 @@ export async function GET(req: Request) {
     }> = [];
 
     for (const t of activeTasks) {
-      const files: string[] = Array.isArray(t.assignedFiles) ? t.assignedFiles : [];
-      for (const fp of files) {
+      for (const fp of lockPaths(t)) {
         fileLocks.push({
           filePath: fp,
           taskId: t._id.toString(),

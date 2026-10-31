@@ -95,7 +95,12 @@ export async function PATCH(
             return NextResponse.json({ error: "Forbidden: Task is assigned to another developer" }, { status: 403 });
         }
 
-        // Receiver & Status updates
+        // Receiver & Status updates. Completion is GitHub's merge, not a progress number.
+        if (body.status === "completed" && task.pullRequest?.number && task.pullRequest.state !== "merged") {
+            return NextResponse.json({
+                error: "This pull request is not merged on GitHub. Reconcile with GitHub from the PR board instead of marking the task completed.",
+            }, { status: 409 });
+        }
         if (body.status !== undefined) {
             if (body.status === "in-progress" && !task.acceptedAt) {
                 task.acceptedAt = new Date();
@@ -104,13 +109,16 @@ export async function PATCH(
         }
         if (body.progress !== undefined) {
             task.progress = Math.max(0, Math.min(100, body.progress));
-            if (task.progress >= 100 && task.status !== "completed") {
-                task.status = "completed";
-            }
         }
         if (body.latestCommitSha !== undefined) task.latestCommitSha = body.latestCommitSha;
         if (body.commitCount !== undefined) task.commitCount = body.commitCount;
-        if (body.pullRequestUrl !== undefined) task.pullRequestUrl = body.pullRequestUrl;
+        if (body.pullRequestUrl !== undefined) {
+            const url = String(body.pullRequestUrl || "").trim();
+            if (url && !/^https:\/\/github\.com\/[^/]+\/[^/]+\/pull\/\d+\/?$/i.test(url)) {
+                return NextResponse.json({ error: "pullRequestUrl must be a GitHub pull request URL." }, { status: 400 });
+            }
+            task.pullRequestUrl = url;
+        }
         if (body.verificationGate) {
             const g = body.verificationGate;
             const prev = task.verificationGate || {};

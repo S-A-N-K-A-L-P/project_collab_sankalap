@@ -12,9 +12,12 @@ import AgentJob from "@/models/AgentJob";
 import ActivityLog from "@/models/ActivityLog";
 import User from "@/models/User";
 import { dependencyMet, isOnline } from "@/lib/agentJobs";
+import { annotatePullRequestScope } from "@/lib/gitTaskScope";
 import {
+  applyGithubTaskState,
   evaluateMergeGate,
   extractUserGithubToken,
+  forgetMissingPullRequest,
   parseGithubRepo,
   projectRepo,
   syncPullRequest,
@@ -58,6 +61,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         $or: [
           { "pullRequest.lastSyncedAt": { $exists: false } },
           { "pullRequest.lastSyncedAt": { $lt: new Date(Date.now() - PR_STALE_MS) } },
+          { "pullRequest.scopeCheck.checked": { $ne: true } },
         ],
       }).limit(PR_SYNC_PER_REQUEST);
 
@@ -67,16 +71,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
             const ref = projectRepo(project, task.repoUrl);
             task.pullRequest = await syncPullRequest(project, ref, task.pullRequest.number, userToken);
             task.pullRequestUrl = task.pullRequest.url;
-            if (task.pullRequest.state === "merged" && task.status !== "completed") {
-              task.status = "completed";
-              task.progress = 100;
-            }
+            await annotatePullRequestScope(task);
+            applyGithubTaskState(task);
             await task.save();
           } catch (e: any) {
             const msg = String(e?.message || e);
             if (msg.includes("(404)")) {
-              task.pullRequest = undefined;
-              task.pullRequestUrl = "";
+              forgetMissingPullRequest(task);
               await task.save();
             } else {
               task.pullRequest.lastSyncError = msg.slice(0, 300);
@@ -101,7 +102,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
 
     const now = Date.now();
     const taskById = new Map(tasks.map((t) => [String(t._id), t]));
-    const deviceName = new Map(devices.map((d) => [d.deviceId, d.name]));
+    const deviceById = new Map(devices.map((d) => [d.deviceId, d]));
 
     const unmetFor = (depIds: string[] = [], rule: string) =>
       depIds
@@ -109,18 +110,25 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
         .filter((d) => d && !dependencyMet(d, rule === "merged" ? "merged" : "completed"))
         .map((d: any) => ({ taskId: String(d._id), title: d.title, rule }));
 
-    const jobView = (j: any) => ({
+    const jobView = (j: any) => {
+      const active = ["claimed", "running"].includes(j.status);
+      const device = j.claimedBy ? deviceById.get(j.claimedBy) : null;
+      const deviceOnline = !!device && isOnline(device.lastSeenAt);
+      const leaseStale = active && !!j.leaseUntil && new Date(j.leaseUntil).getTime() < now;
+      return {
       id: String(j._id), type: j.type, taskId: j.taskId, title: j.payload?.title || taskById.get(j.taskId)?.title || "",
       targetUserId: j.targetUserId, targetUserName: j.targetUserName,
       status: j.status,
-      stalled: ["claimed", "running"].includes(j.status) && !!j.leaseUntil && new Date(j.leaseUntil).getTime() < now,
+      stalled: active && (leaseStale || !deviceOnline),
+      deviceOnline,
       runAt: j.runAt || j.createdAt,
       waitingOn: j.status === "queued" ? unmetFor(j.dependsOnTaskIds, j.dependencyRule) : [],
-      claimedBy: j.claimedBy, claimedByName: deviceName.get(j.claimedBy) || "",
+      claimedBy: j.claimedBy, claimedByName: device?.name || "",
       attempts: j.attempts, maxAttempts: j.maxAttempts,
       note: j.note, error: j.error, result: j.result,
       createdAt: j.createdAt, createdByName: j.createdByName, finishedAt: j.finishedAt,
-    });
+    };
+    };
 
     // Latest setup job per task (jobs are already newest-first).
     const setupByTask = new Map<string, any>();

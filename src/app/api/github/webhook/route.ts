@@ -4,7 +4,8 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Project from "@/models/Project";
 import Task from "@/models/Task";
-import { syncPullRequest } from "@/lib/githubPullRequests";
+import { annotatePullRequestScope } from "@/lib/gitTaskScope";
+import { applyGithubTaskState, syncPullRequest } from "@/lib/githubPullRequests";
 
 export const runtime = "nodejs";
 
@@ -51,6 +52,8 @@ export async function POST(request: Request) {
     const [owner, repo] = fullName.split("/");
     task.pullRequest = await syncPullRequest(project, { owner, repo }, task.pullRequest.number, installationId);
     task.pullRequestUrl = task.pullRequest.url;
+    await annotatePullRequestScope(task);
+    applyGithubTaskState(task);
     await task.save();
     updated++;
   }

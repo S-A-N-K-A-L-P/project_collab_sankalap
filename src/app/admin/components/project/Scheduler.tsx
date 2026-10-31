@@ -213,9 +213,9 @@ export function JobQueue({ data, projectId, onChanged, jobs }: { data: CRData; p
   const list = jobs ?? data.jobs;
   const cols: { id: string; label: string; items: CRJob[] }[] = [
     { id: "upcoming", label: "Upcoming", items: list.filter((j) => j.status === "queued" && (j.waitingOn.length > 0 || new Date(j.runAt).getTime() > nowMs)) },
-    { id: "active", label: "Ready & running", items: list.filter((j) => (j.status === "queued" && !j.waitingOn.length && new Date(j.runAt).getTime() <= nowMs) || ["claimed", "running"].includes(j.status)) },
+    { id: "active", label: "Ready & running", items: list.filter((j) => (j.status === "queued" && !j.waitingOn.length && new Date(j.runAt).getTime() <= nowMs) || (["claimed", "running"].includes(j.status) && !j.stalled)) },
     { id: "done", label: "Done", items: list.filter((j) => j.status === "done").slice(0, 15) },
-    { id: "failed", label: "Failed & cancelled", items: list.filter((j) => ["failed", "cancelled"].includes(j.status)).slice(0, 15) },
+    { id: "failed", label: "Failed, stalled & cancelled", items: list.filter((j) => j.stalled || ["failed", "cancelled"].includes(j.status)).slice(0, 15) },
   ];
   return (
     <div className={`${cardCls} overflow-hidden`}>
