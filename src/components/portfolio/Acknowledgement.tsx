@@ -58,7 +58,7 @@ export const Acknowledgement = () => {
           transition={{ delay: 0.3 }}
           className="text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed mb-20"
         >
-          S.A.N.K.A.L.P. thrives on the dedication of its members. We deeply acknowledge the relentless effort, passion, and code contributed by our global community towards building an Atmanirbhar Nation.
+          Madhyam AI thrives on the dedication of its members. We deeply acknowledge the relentless effort, passion, and code contributed by our global community towards building an Atmanirbhar Nation.
         </motion.p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">

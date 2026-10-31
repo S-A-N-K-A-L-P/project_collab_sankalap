@@ -4,50 +4,83 @@ import { motion } from "framer-motion";
 import { ArrowUpRight, Crown, FolderOpen, ShieldCheck, Users } from "lucide-react";
 import type { IOrgPublic } from "@/types/org";
 
-const CATEGORY: Record<string, { label: string; accent: string; soft: string; glow: string }> = {
-  community: { label: "Community", accent: "#2563eb", soft: "#eff6ff", glow: "rgba(37,99,235,.20)" },
-  academic: { label: "Academic", accent: "#059669", soft: "#ecfdf5", glow: "rgba(5,150,105,.20)" },
-  company: { label: "Company", accent: "#ea580c", soft: "#fff7ed", glow: "rgba(234,88,12,.20)" },
-  open_source: { label: "Open Source", accent: "#7c3aed", soft: "#f5f3ff", glow: "rgba(124,58,237,.22)" },
+const CATEGORY: Record<string, { label: string; pill: string; accent: string }> = {
+  community:   { label: "Community",   pill: "pill-info",     accent: "#6257E8" },
+  academic:    { label: "Academic",    pill: "pill-success",  accent: "#20B981" },
+  company:     { label: "Company",     pill: "pill-warning",  accent: "#F59E0B" },
+  open_source: { label: "Open Source", pill: "pill-research", accent: "#9A8AEF" },
 };
 
 export default function OrgCard({ org, index = 0 }: { org: IOrgPublic; index?: number }) {
-  const color = CATEGORY[org.category] || CATEGORY.community;
+  const cat = CATEGORY[org.category] || CATEGORY.community;
   const logo = org.logo || org.avatar || "";
-  const description = org.tagline || org.description || "Explore projects, people, and opportunities from this organization.";
+  const description = org.tagline || org.description || "Explore projects, contributors, and opportunities from this organization.";
 
   return (
     <motion.a
       href={`/orgs/${org.slug}`}
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: Math.min(index * .035, .18), duration: .32 }}
-      whileHover={{ y: -6 }}
-      className="group relative flex min-h-[360px] flex-col overflow-hidden rounded-[28px] border border-black/[.07] bg-white shadow-[0_12px_35px_rgba(15,23,42,.08)] transition-all duration-300 hover:shadow-[0_24px_60px_rgba(15,23,42,.16)] dark:border-white/10 dark:bg-slate-900"
-      style={{ "--org-accent": color.accent, "--org-glow": color.glow } as React.CSSProperties}
+      transition={{ delay: Math.min(index * 0.03, 0.15), duration: 0.25 }}
+      className="group saas-card flex flex-col overflow-hidden rounded-[16px] hover:border-primary/35 hover:shadow-[var(--shadow-md)] transition-all duration-200"
     >
-      <div className="absolute inset-x-0 top-0 h-1.5 bg-[var(--org-accent)]" />
-      <div className="relative flex h-[190px] items-center justify-center overflow-hidden px-8 pt-4" style={{ background: `linear-gradient(145deg, ${color.soft}, #ffffff 58%)` }}>
-        <div className="absolute -right-16 -top-20 h-48 w-48 rounded-full bg-[var(--org-glow)] blur-3xl transition-transform duration-500 group-hover:scale-125" />
-        <div className="absolute -bottom-20 -left-16 h-40 w-40 rounded-full bg-[var(--org-glow)] blur-3xl" />
-        <span className="absolute right-4 top-4 rounded-full border border-black/5 bg-white/80 px-3 py-1 text-[10px] font-bold uppercase tracking-[.12em] text-slate-600 shadow-sm backdrop-blur">{color.label}</span>
-        {org.isHost && <span className="absolute left-4 top-4 inline-flex items-center gap-1 rounded-full bg-amber-300 px-2.5 py-1 text-[10px] font-bold text-amber-950"><Crown size={10} /> Official</span>}
-        <div className="relative flex h-28 w-40 items-center justify-center transition-transform duration-300 group-hover:scale-105">
-          {logo ? <img src={logo} alt={`${org.name} logo`} className="max-h-24 max-w-36 object-contain drop-shadow-sm" /> : <div className="flex h-24 w-24 items-center justify-center rounded-3xl text-4xl font-black text-white shadow-xl" style={{ background: `linear-gradient(135deg, ${color.accent}, ${org.themeColor || color.accent})` }}>{org.name[0]?.toUpperCase()}</div>}
+      {/* Top banner area with subtle lavender/surface blend */}
+      <div className="relative flex h-36 items-center justify-center overflow-hidden px-6 bg-gradient-to-br from-primary-light/65 via-card to-background border-b border-border">
+        <span className={`absolute right-3.5 top-3.5 rounded-full px-2.5 py-0.5 text-[10.5px] font-semibold ${cat.pill}`}>
+          {cat.label}
+        </span>
+
+        {org.isHost && (
+          <span className="absolute left-3.5 top-3.5 inline-flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/25 px-2.5 py-0.5 text-[10.5px] font-semibold text-amber-700 dark:text-amber-300">
+            <Crown size={11} /> Official
+          </span>
+        )}
+
+        <div className="relative flex h-20 w-32 items-center justify-center transition-transform duration-200 group-hover:scale-105">
+          {logo ? (
+            <img src={logo} alt={`${org.name} logo`} className="max-h-16 max-w-28 object-contain" />
+          ) : (
+            <div
+              className="flex h-16 w-16 items-center justify-center rounded-2xl text-2xl font-bold text-white shadow-sm"
+              style={{ background: `linear-gradient(135deg, #6257E8, ${org.themeColor || "#9A8AEF"})` }}
+            >
+              {org.name[0]?.toUpperCase()}
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col items-center px-6 pb-5 pt-5 text-center">
-        <div className="flex max-w-full items-center gap-1.5">
-          <h2 className="truncate text-lg font-bold tracking-tight text-slate-950 dark:text-white">{org.name}</h2>
-          {org.trustScore?.founderVerified && <ShieldCheck size={15} className="shrink-0 text-emerald-500" />}
+      {/* Body */}
+      <div className="flex flex-1 flex-col p-5">
+        <div className="flex items-center gap-1.5">
+          <h2 className="truncate text-base font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
+            {org.name}
+          </h2>
+          {org.trustScore?.founderVerified && (
+            <ShieldCheck size={15} className="shrink-0 text-emerald-500" />
+          )}
         </div>
-        <p className="mt-2 line-clamp-2 min-h-10 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{description}</p>
 
-        <div className="mt-auto flex w-full items-center justify-center gap-5 border-t border-slate-100 pt-4 text-xs text-slate-500 dark:border-white/10 dark:text-slate-400">
-          <span className="flex items-center gap-1.5"><Users size={13} /><strong className="text-slate-900 dark:text-white">{org.stats?.memberCount ?? 0}</strong> Members</span>
-          <span className="flex items-center gap-1.5"><FolderOpen size={13} /><strong className="text-slate-900 dark:text-white">{org.stats?.projectCount ?? 0}</strong> Projects</span>
-          <span className="ml-auto flex h-9 w-9 items-center justify-center rounded-full text-white transition-transform group-hover:rotate-12" style={{ background: color.accent, boxShadow: `0 8px 20px ${color.glow}` }}><ArrowUpRight size={16} /></span>
+        <p className="mt-1.5 line-clamp-2 min-h-[2.5rem] text-xs leading-relaxed text-muted">
+          {description}
+        </p>
+
+        {/* Footer stats */}
+        <div className="mt-4 flex w-full items-center justify-between border-t border-border pt-3.5 text-xs text-muted">
+          <div className="flex items-center gap-4">
+            <span className="flex items-center gap-1.5">
+              <Users size={13} className="text-primary" />
+              <strong className="font-semibold text-foreground">{org.stats?.memberCount ?? 0}</strong> Members
+            </span>
+            <span className="flex items-center gap-1.5">
+              <FolderOpen size={13} className="text-primary" />
+              <strong className="font-semibold text-foreground">{org.stats?.projectCount ?? 0}</strong> Projects
+            </span>
+          </div>
+
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary-light text-primary group-hover:bg-primary group-hover:text-white transition-colors">
+            <ArrowUpRight size={14} />
+          </span>
         </div>
       </div>
     </motion.a>

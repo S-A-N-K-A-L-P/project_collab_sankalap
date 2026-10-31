@@ -43,7 +43,7 @@ function SlugField({ slug, setSlug, available, checking }: {
       </label>
       <div className="relative">
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground dark:text-white/30 text-sm select-none">
-          sankalp.dev/orgs/
+          madhyam.ai/orgs/
         </span>
         <input
           type="text"
@@ -364,7 +364,7 @@ export default function OrgLaunchPage() {
                       {form.logo ? <img src={form.logo} alt="" className="w-full h-full object-cover" /> : form.name[0]?.toUpperCase()}
                     </div>
                     <h2 className="font-bold text-foreground dark:text-white mt-2 text-lg">{form.name || "Org Name"}</h2>
-                    <p className="text-xs text-muted-foreground dark:text-white/40">sankalp.dev/orgs/{form.slug}</p>
+                    <p className="text-xs text-muted-foreground dark:text-white/40">madhyam.ai/orgs/{form.slug}</p>
                     <p className="text-sm text-muted-foreground dark:text-white/60 mt-1 line-clamp-2">{form.tagline || form.description}</p>
                   </div>
                 </div>

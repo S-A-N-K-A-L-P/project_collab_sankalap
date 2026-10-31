@@ -97,7 +97,7 @@ export default function AdminSidebar() {
               fontSize: 10, fontWeight: 700, letterSpacing: "0.08em",
               textTransform: "uppercase", color: "text.disabled", lineHeight: 1,
             }}>
-              Syncro
+              Madhyam AI
             </Typography>
             <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.3, letterSpacing: "-0.02em" }}>
               Admin Panel

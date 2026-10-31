@@ -4,11 +4,6 @@ import { useState } from "react";
 import { LayoutGrid, Palette, ExternalLink } from "lucide-react";
 import PortfolioBuilder from "./PortfolioBuilder";
 
-/**
- * Adds an "Overview | Portfolio" tab bar to the profile page.
- * - Owner → Portfolio tab shows the two-pane <PortfolioBuilder/>.
- * - Visitor → Portfolio tab shows a link to the public portfolio (if they have a handle).
- */
 export default function ProfileTabs({
   isOwnProfile,
   handle,
@@ -19,16 +14,18 @@ export default function ProfileTabs({
   children: React.ReactNode;
 }) {
   const [tab, setTab] = useState<"overview" | "portfolio">("overview");
-
-  // Visitors with no published handle → don't show the portfolio tab at all.
   const showPortfolioTab = isOwnProfile || !!handle;
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-1 border-b border-border">
-        <TabBtn active={tab === "overview"} onClick={() => setTab("overview")} icon={<LayoutGrid className="w-4 h-4" />}>Overview</TabBtn>
+      <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-card border border-border">
+        <TabBtn active={tab === "overview"} onClick={() => setTab("overview")} icon={<LayoutGrid className="w-3.5 h-3.5" />}>
+          Overview
+        </TabBtn>
         {showPortfolioTab && (
-          <TabBtn active={tab === "portfolio"} onClick={() => setTab("portfolio")} icon={<Palette className="w-4 h-4" />}>Portfolio</TabBtn>
+          <TabBtn active={tab === "portfolio"} onClick={() => setTab("portfolio")} icon={<Palette className="w-3.5 h-3.5" />}>
+            Portfolio
+          </TabBtn>
         )}
       </div>
 
@@ -39,12 +36,19 @@ export default function ProfileTabs({
           ? <PortfolioBuilder />
           : handle
             ? (
-              <div className="flex flex-col items-center justify-center py-16 bg-card border border-border rounded-xl text-center">
-                <Palette className="w-10 h-10 text-primary/40 mb-3" />
-                <p className="text-sm font-medium text-foreground">This user has a portfolio</p>
-                <a href={`/portfolio/${handle}`} target="_blank" rel="noreferrer"
-                  className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg text-sm font-semibold transition-colors">
-                  <ExternalLink className="w-4 h-4" /> View portfolio
+              <div className="saas-card flex flex-col items-center justify-center py-16 text-center px-4">
+                <div className="w-12 h-12 rounded-2xl bg-primary-light flex items-center justify-center mb-3">
+                  <Palette className="w-6 h-6 text-primary" />
+                </div>
+                <p className="text-sm font-semibold text-foreground">Published Developer Portfolio</p>
+                <p className="text-xs text-muted mt-1">Explore their full interactive portfolio showcase.</p>
+                <a
+                  href={`/portfolio/${handle}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-semibold shadow-[0_2px_8px_-2px_rgba(98,87,232,0.4)] transition-all"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" /> Open Live Portfolio
                 </a>
               </div>
             )
@@ -58,8 +62,10 @@ function TabBtn({ active, onClick, icon, children }: { active: boolean; onClick:
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
-        active ? "border-primary text-primary" : "border-transparent text-muted hover:text-foreground"
+      className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+        active
+          ? "bg-primary text-white shadow-xs"
+          : "text-muted hover:text-foreground"
       }`}
     >
       {icon}{children}

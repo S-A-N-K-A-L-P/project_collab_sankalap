@@ -25,12 +25,12 @@ export default function ThemeSelector({ className = "", orientation = "horizonta
     }, []);
 
     const activeTheme: ThemeMode = useMemo(() => {
-        if (!isMounted) return "system";
+        if (!isMounted) return "light";
         if (theme && isThemeMode(theme)) return theme;
-        return "system";
+        return "light";
     }, [theme, isMounted]);
 
-    const containerBase = "rounded-xl border border-border-subtle bg-surface p-1 shadow-sm";
+    const containerBase = "rounded-xl border border-border bg-card p-1 shadow-xs";
     const gridClass = orientation === "vertical" ? "grid grid-cols-1 gap-1" : "grid grid-cols-3 gap-1";
 
     return (
@@ -50,9 +50,9 @@ export default function ThemeSelector({ className = "", orientation = "horizonta
                             onClick={() => {
                                 setTheme(value);
                             }}
-                            className={`flex h-10 w-10 items-center justify-center rounded-lg border text-[12px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${isActive
-                                ? "border-accent bg-accent/10 text-foreground shadow-[0_0_0_1px_var(--accent-glow)]"
-                                : "border-transparent text-muted hover:border-border-subtle hover:bg-surface-alt hover:text-foreground"
+                            className={`flex h-9 w-9 items-center justify-center rounded-lg border text-[12px] font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${isActive
+                                ? "border-primary/25 bg-primary-light text-primary shadow-xs"
+                                : "border-transparent text-muted hover:border-border hover:bg-muted-bg hover:text-foreground"
                                 }`}
                         >
                             <Icon className="h-4 w-4" />

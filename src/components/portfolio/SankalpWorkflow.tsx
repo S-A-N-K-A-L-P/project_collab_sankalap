@@ -101,7 +101,7 @@ export const SankalpWorkflow = () => {
             viewport={{ once: true }}
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-sm font-bold mb-4"
           >
-            <Zap className="w-4 h-4" /> S.A.N.K.A.L.P. Blueprint
+            <Zap className="w-4 h-4" /> Madhyam AI Blueprint
           </motion.div>
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}

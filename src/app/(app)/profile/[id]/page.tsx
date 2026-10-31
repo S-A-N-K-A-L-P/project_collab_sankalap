@@ -29,7 +29,7 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
   await dbConnect();
 
   const user = (await User.findById(id).lean()) as ProfileUser | null;
-  if (!user) notFound();
+  if (!user) return notFound();
 
   const rawProposals = await Proposal.find({ createdBy: id })
     .populate("createdBy", "name avatar role")
@@ -68,7 +68,6 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
   });
   const profileViews = (user as any).profileViews || 0;
 
-  // increment views (fire-and-forget) — skip the owner's own visits
   if (!isOwnProfile) {
     User.updateOne({ _id: id }, { $inc: { profileViews: 1 } }).catch(() => null);
   }
@@ -87,8 +86,8 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-20">
-      {/* LinkedIn-style Header */}
+    <div className="max-w-4xl mx-auto space-y-6 pb-16">
+      {/* Header */}
       <ProfileHeader
         user={JSON.parse(JSON.stringify(user))}
         isOwnProfile={isOwnProfile}
@@ -100,45 +99,45 @@ export default async function UserProfilePage({ params }: { params: Promise<{ id
 
       {/* Overview / Portfolio tabs */}
       <ProfileTabs isOwnProfile={isOwnProfile} handle={(user as any).handle}>
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-        <div className="md:col-span-8 space-y-8">
-          <ImpactAnalytics stats={analyticsStats} />
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <div className="md:col-span-8 space-y-6">
+            <ImpactAnalytics stats={analyticsStats} />
 
-          <section className="space-y-3">
-            <h2 className="text-sm font-semibold text-foreground px-1">
-              Proposals
-              <span className="ml-2 text-xs font-normal text-muted">({proposals.length})</span>
-            </h2>
-            <FeedList items={proposals} />
-          </section>
-
-          {activities.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-sm font-semibold text-foreground px-1">Recent Activity</h2>
-              <FeedList items={activities} />
+              <h2 className="text-sm font-bold text-foreground px-1">
+                Proposals
+                <span className="ml-2 text-xs font-medium text-muted">({proposals.length})</span>
+              </h2>
+              <FeedList items={proposals} />
             </section>
-          )}
-        </div>
 
-        <div className="md:col-span-4 space-y-5">
-          <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
-            <h3 className="text-sm font-semibold text-foreground mb-3">About</h3>
-            <p className="text-sm text-muted leading-relaxed">
-              {user.bio || "No bio added yet."}
-            </p>
-            {user.location && (
-              <div className="mt-4 pt-4 border-t border-border">
-                <div className="flex items-center gap-2 text-sm text-muted">
-                  <span className="font-medium text-foreground">Location:</span>
-                  <span>{user.location}</span>
-                </div>
-              </div>
+            {activities.length > 0 && (
+              <section className="space-y-3">
+                <h2 className="text-sm font-bold text-foreground px-1">Recent Activity</h2>
+                <FeedList items={activities} />
+              </section>
             )}
           </div>
 
-          <GitProfileMetrics userId={id} />
+          <div className="md:col-span-4 space-y-5">
+            <div className="saas-card p-5">
+              <h3 className="text-sm font-bold text-foreground mb-2.5">About</h3>
+              <p className="text-xs text-muted leading-relaxed">
+                {user.bio || "No bio added yet."}
+              </p>
+              {user.location && (
+                <div className="mt-4 pt-3.5 border-t border-border">
+                  <div className="flex items-center justify-between text-xs text-muted">
+                    <span className="font-semibold text-foreground">Location</span>
+                    <span>{user.location}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <GitProfileMetrics userId={id} />
+          </div>
         </div>
-      </div>
       </ProfileTabs>
     </div>
   );

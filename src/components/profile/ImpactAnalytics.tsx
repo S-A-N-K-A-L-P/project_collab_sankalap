@@ -2,9 +2,6 @@
 
 import React from "react";
 import { Eye, Users, GitCommit, Activity, Target } from "lucide-react";
-import { PremiumCard } from "@/components/ui/premium-card";
-import { TypographySection, TypographySubtitle, TypographyTitle } from "@/components/ui/typography";
-import { AnimatedButton } from "@/components/ui/animated-button";
 
 interface ImpactAnalyticsProps {
   stats: {
@@ -18,53 +15,51 @@ interface ImpactAnalyticsProps {
 
 export default function ImpactAnalytics({ stats }: ImpactAnalyticsProps) {
   const metrics = [
-    { label: "Projects Built", value: stats.projectsBuilt, icon: <Target className="text-primary" size={20} /> },
-    { label: "Profile Views", value: stats.views.toLocaleString(), icon: <Eye className="text-info" size={20} /> },
-    { label: "Followers", value: stats.followers.toLocaleString(), icon: <Users className="text-warning" size={20} /> },
-    { label: "Contributions", value: stats.contributions.toLocaleString(), icon: <GitCommit className="text-os" size={20} /> },
+    { label: "Projects Built", value: stats.projectsBuilt,                icon: <Target className="text-primary" size={18} /> },
+    { label: "Profile Views",  value: stats.views.toLocaleString(),       icon: <Eye className="text-primary" size={18} /> },
+    { label: "Followers",      value: stats.followers.toLocaleString(),   icon: <Users className="text-emerald-600" size={18} /> },
+    { label: "Contributions",  value: stats.contributions.toLocaleString(), icon: <GitCommit className="text-amber-600" size={18} /> },
   ];
 
   return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between">
-        <TypographySection>Impact & Analytics</TypographySection>
+    <section className="space-y-3">
+      <div className="flex items-center justify-between px-1">
+        <h2 className="text-sm font-bold text-foreground">Impact & Analytics</h2>
       </div>
 
-      <PremiumCard className="p-0 overflow-hidden bg-gradient-to-br from-card to-muted/20 border-border dark:border-white/10">
-        <div className="flex items-center gap-6 p-6 border-b border-border dark:border-white/5">
-          <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0 shadow-inner">
-            <Activity className="text-primary w-10 h-10" />
+      <div className="saas-card overflow-hidden">
+        <div className="saas-card-featured border-0 border-b border-border rounded-none flex items-center gap-5 p-5">
+          <div className="h-14 w-14 rounded-2xl bg-primary-light flex items-center justify-center border border-primary/15 shrink-0">
+            <Activity className="text-primary w-7 h-7" />
           </div>
           <div>
-            <TypographySubtitle className="text-muted-foreground uppercase tracking-widest text-[10px] font-bold mb-1">
+            <span className="text-[11px] font-semibold text-primary uppercase tracking-wider block">
               Global Impact Score
-            </TypographySubtitle>
-            <div className="flex items-end gap-2">
-              <TypographyTitle className="text-4xl text-foreground font-black tracking-tighter">
-                {stats.impactScore.toLocaleString()}
-              </TypographyTitle>
+            </span>
+            <div className="text-3xl text-foreground font-bold tracking-tight tabular-nums mt-0.5">
+              {stats.impactScore.toLocaleString()}
             </div>
-            <TypographySubtitle className="text-xs mt-1 max-w-sm">
-              Impact score is calculated based on completed projects, community contributions, and followers.
-            </TypographySubtitle>
+            <p className="text-xs text-muted mt-0.5">
+              Calculated from shipped projects, approved contributions, and community engagement.
+            </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-border dark:divide-white/5">
+        <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-border">
           {metrics.map((metric, i) => (
             <div
               key={i}
-              className={`p-5 flex flex-col gap-2 hover:bg-muted/30 transition-colors ${i >= 2 ? "border-t md:border-t-0 border-border dark:border-white/5 mt-[-1px] md:mt-0" : ""}`}
+              className="p-4 flex flex-col gap-1.5 hover:bg-background/50 transition-colors"
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{metric.label}</span>
+                <span className="text-xs font-medium text-muted">{metric.label}</span>
                 {metric.icon}
               </div>
-              <span className="text-2xl font-bold text-foreground mt-1">{metric.value}</span>
+              <span className="text-xl font-bold text-foreground tabular-nums">{metric.value}</span>
             </div>
           ))}
         </div>
-      </PremiumCard>
+      </div>
     </section>
   );
 }

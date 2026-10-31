@@ -58,14 +58,11 @@ export default function ProposalDetailPanel({ proposal, onClose }: { proposal: P
   };
 
   return (
-    <div
-      className="bg-card rounded-xl overflow-hidden divide-y divide-border elevation-3"
-      style={{ border: "1.5px solid var(--border-strong)" }}
-    >
+    <div className="saas-card overflow-hidden divide-y divide-border">
       {/* ── Header ─────────────────────────────────────────── */}
-      <div className="px-5 py-3.5 flex items-center justify-between bg-background/40">
+      <div className="px-5 py-4 flex items-center justify-between saas-card-featured border-0 rounded-none">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-primary/10 border border-border flex items-center justify-center text-xs font-bold text-primary uppercase overflow-hidden shrink-0">
+          <div className="w-9 h-9 rounded-full bg-primary-light border border-primary/15 flex items-center justify-center text-xs font-bold text-primary uppercase overflow-hidden shrink-0">
             {proposal.createdBy?.avatar
               ? <img src={proposal.createdBy.avatar} alt="" className="w-full h-full object-cover" />
               : proposal.createdBy?.name?.[0] || "U"
@@ -87,44 +84,44 @@ export default function ProposalDetailPanel({ proposal, onClose }: { proposal: P
           {isAuthor && (
             <>
               <button onClick={() => setShowEdit(true)} title="Edit"
-                className="p-1.5 rounded-lg hover:bg-background text-muted hover:text-primary transition-colors">
+                className="p-1.5 rounded-xl hover:bg-card text-muted hover:text-primary transition-colors cursor-pointer">
                 <Edit className="w-3.5 h-3.5" />
               </button>
               <button onClick={handleDelete} title="Delete"
-                className="p-1.5 rounded-lg hover:bg-red-50 text-muted hover:text-red-600 transition-colors">
+                className="p-1.5 rounded-xl hover:bg-red-500/10 text-muted hover:text-red-600 transition-colors cursor-pointer">
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             </>
           )}
           <button onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-background text-muted hover:text-foreground transition-colors border border-border ml-1">
+            className="p-1.5 rounded-xl bg-card hover:bg-background text-muted hover:text-foreground transition-colors border border-border ml-1 cursor-pointer">
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
       {/* ── Metadata grid ──────────────────────────────────── */}
-      <div className="px-5 py-3.5 bg-background/20">
+      <div className="px-5 py-4 bg-background/35">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="bg-card border border-border rounded-lg p-3">
+          <div className="bg-card border border-border rounded-xl p-3">
             <div className="flex items-center gap-1.5 mb-1.5">
               <Tag className="w-3 h-3 text-muted" />
               <span className="text-[10px] font-semibold text-muted uppercase tracking-wider">Type</span>
             </div>
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${typeColor}`}>
+            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize ${typeColor}`}>
               {proposal.type}
             </span>
           </div>
-          <div className="bg-card border border-border rounded-lg p-3">
+          <div className="bg-card border border-border rounded-xl p-3">
             <div className="flex items-center gap-1.5 mb-1.5">
               <Activity className="w-3 h-3 text-muted" />
               <span className="text-[10px] font-semibold text-muted uppercase tracking-wider">Status</span>
             </div>
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${statusColor}`}>
+            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize ${statusColor}`}>
               {proposal.status}
             </span>
           </div>
-          <div className="bg-card border border-border rounded-lg p-3">
+          <div className="bg-card border border-border rounded-xl p-3">
             <div className="flex items-center gap-1.5 mb-1.5">
               <Users className="w-3 h-3 text-muted" />
               <span className="text-[10px] font-semibold text-muted uppercase tracking-wider">Contributors</span>
@@ -133,7 +130,7 @@ export default function ProposalDetailPanel({ proposal, onClose }: { proposal: P
               {(proposal.contributors?.length || 0) + 1}
             </span>
           </div>
-          <div className="bg-card border border-border rounded-lg p-3">
+          <div className="bg-card border border-border rounded-xl p-3">
             <div className="flex items-center gap-1.5 mb-1.5">
               <Clock className="w-3 h-3 text-muted" />
               <span className="text-[10px] font-semibold text-muted uppercase tracking-wider">Voting Ends</span>
@@ -147,8 +144,10 @@ export default function ProposalDetailPanel({ proposal, onClose }: { proposal: P
 
       {/* ── Proposal content ────────────────────────────────── */}
       <div className="px-5 py-5 space-y-5">
-        <div className="flex items-start gap-2">
-          <FileText className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+        <div className="flex items-start gap-2.5">
+          <div className="w-7 h-7 rounded-lg bg-primary-light flex items-center justify-center shrink-0 mt-0.5">
+            <FileText className="w-3.5 h-3.5 text-primary" />
+          </div>
           <h2 className="text-base font-bold text-foreground leading-snug">
             {proposal.title}
           </h2>
@@ -182,17 +181,17 @@ export default function ProposalDetailPanel({ proposal, onClose }: { proposal: P
       </div>
 
       {/* ── Actions ─────────────────────────────────────────── */}
-      <div className="px-5 py-4 space-y-3 bg-background/20">
+      <div className="px-5 py-4 space-y-3 bg-background/30">
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted">
+          <span className="text-xs font-medium text-muted">
             {totalVotes} upvote{totalVotes !== 1 ? "s" : ""}
           </span>
           <VoteLimitIndicator current={userVotes} max={proposal.maxVotesPerUser} />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <VoteButton proposalId={proposal._id} onVoteChange={(t, u) => { setTotalVotes(t); setUserVotes(u); }} />
-          <button className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 border border-border rounded-lg text-sm font-medium text-muted hover:text-foreground hover:border-border-strong hover:bg-background transition-colors">
-            <Users className="w-3.5 h-3.5" /> Request to Join
+          <button className="flex-1 flex items-center justify-center gap-1.5 px-3.5 py-2 bg-card border border-border rounded-xl text-xs font-semibold text-foreground hover:border-primary/35 hover:bg-primary-light/40 transition-all cursor-pointer">
+            <Users className="w-3.5 h-3.5 text-primary" /> Request to Join
           </button>
         </div>
       </div>

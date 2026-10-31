@@ -70,8 +70,8 @@ const PROJECT_STATUS: Record<string, Mapping> = {
 // ─── ROLE ────────────────────────────────────────────────────────────────────
 const ROLE: Record<string, Mapping> = {
   user:                { intent: "neutral",   label: "User"               },
-  sankalp_member:      { intent: "info",      label: "SANKALP Member"     },
-  sankalp_associate:   { intent: "primary",   label: "SANKALP Associate"  },
+  sankalp_member:      { intent: "info",      label: "Madhyam Member"     },
+  sankalp_associate:   { intent: "primary",   label: "Madhyam Associate"  },
   master_admin:        { intent: "error",     label: "Master Admin"       },
 };
 

@@ -7,7 +7,7 @@ import {
 } from "@mui/material";
 import SearchRounded        from "@mui/icons-material/SearchRounded";
 import NotificationsRounded from "@mui/icons-material/NotificationsRounded";
-import FlashOn               from "@mui/icons-material/FlashOn";
+import FlashOn              from "@mui/icons-material/FlashOn";
 import MenuRounded          from "@mui/icons-material/MenuRounded";
 import HomeRounded          from "@mui/icons-material/HomeRounded";
 import DescriptionRounded   from "@mui/icons-material/DescriptionRounded";
@@ -15,8 +15,9 @@ import ChecklistRounded     from "@mui/icons-material/ChecklistRounded";
 import CorporateFareRounded from "@mui/icons-material/CorporateFareRounded";
 import GridViewRounded      from "@mui/icons-material/GridViewRounded";
 import ExploreRounded       from "@mui/icons-material/ExploreRounded";
+
 const BellIcon      = NotificationsRounded;
-const BoltIcon      = FlashOn;   // BoltRounded has no individual file in @mui/icons-material@6
+const BoltIcon      = FlashOn;
 const SearchIcon    = SearchRounded;
 const MenuIcon      = MenuRounded;
 const FeedIcon      = HomeRounded;
@@ -25,6 +26,7 @@ const TasksIcon     = ChecklistRounded;
 const OrgsIcon      = CorporateFareRounded;
 const ShowcaseIcon  = GridViewRounded;
 const DiscoverIcon  = ExploreRounded;
+
 import NextLink from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useSession }  from "next-auth/react";
@@ -68,11 +70,11 @@ type CombinedResult = PersonResult | ProposalResult;
 /* ── Search box: live people + proposals dropdown ─────── */
 function NavSearch() {
   const router = useRouter();
-  const [query, setQuery]     = useState("");
-  const [people, setPeople]   = useState<PersonResult[]>([]);
+  const [query, setQuery]         = useState("");
+  const [people, setPeople]       = useState<PersonResult[]>([]);
   const [proposals, setProposals] = useState<ProposalResult[]>([]);
-  const [open, setOpen]       = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [open, setOpen]           = useState(false);
+  const [loading, setLoading]     = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -113,15 +115,23 @@ function NavSearch() {
 
   return (
     <ClickAwayListener onClickAway={() => setOpen(false)}>
-      <Box sx={{ position: "relative", width: "100%", maxWidth: 380, display: { xs: "none", md: "block" } }}>
+      <Box sx={{ position: "relative", width: "100%", maxWidth: 340, display: { xs: "none", md: "block" } }}>
         <Box
           sx={{
             display: "flex", alignItems: "center", gap: 1,
-            height: 38, borderRadius: 2.5, px: 1.5,
-            bgcolor: "action.hover",
-            border: "1px solid transparent",
-            "&:focus-within": { borderColor: "primary.main", bgcolor: "background.paper" },
-            transition: "all 150ms",
+            height: 38, borderRadius: "12px", px: 1.5,
+            bgcolor: (t) => t.palette.mode === "dark" ? alpha("#FFFFFF", 0.05) : "#F5F5F8",
+            border: "1px solid",
+            borderColor: "divider",
+            "&:hover": {
+              borderColor: (t) => alpha(t.palette.primary.main, 0.35),
+            },
+            "&:focus-within": {
+              borderColor: "primary.main",
+              bgcolor: "background.paper",
+              boxShadow: (t) => `0 0 0 3px ${alpha(t.palette.primary.main, 0.12)}`,
+            },
+            transition: "all 150ms ease",
           }}
         >
           <SearchIcon sx={{ fontSize: 18, color: "text.secondary", flexShrink: 0 }} />
@@ -135,17 +145,17 @@ function NavSearch() {
               if (e.key === "Enter" && results[0]) handleSelect(results[0]);
             }}
             placeholder="Search proposals, modules, or users..."
-            sx={{ fontSize: 13.5, flex: 1, "& input": { p: 0 } }}
+            sx={{ fontSize: 13, fontWeight: 450, flex: 1, "& input": { p: 0 } }}
           />
         </Box>
 
         {open && (loading || results.length > 0) && (
           <Box
             sx={{
-              position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0,
+              position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0,
               bgcolor: "background.paper", border: "1px solid", borderColor: "divider",
-              borderRadius: 2, boxShadow: 4, zIndex: (t) => t.zIndex.drawer + 3,
-              maxHeight: 360, overflowY: "auto", py: 0.5,
+              borderRadius: "14px", boxShadow: 4, zIndex: (t) => t.zIndex.drawer + 3,
+              maxHeight: 360, overflowY: "auto", py: 0.75,
             }}
           >
             {loading && (
@@ -155,7 +165,7 @@ function NavSearch() {
             )}
 
             {!loading && proposals.length > 0 && (
-              <Typography sx={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "text.secondary", px: 1.5, pt: 0.75, pb: 0.25 }}>
+              <Typography sx={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "text.secondary", px: 1.75, pt: 0.75, pb: 0.5 }}>
                 Proposals
               </Typography>
             )}
@@ -165,11 +175,11 @@ function NavSearch() {
                 onClick={() => handleSelect(r)}
                 sx={{
                   display: "flex", alignItems: "center", gap: 1.25,
-                  px: 1.5, py: 1, cursor: "pointer",
+                  px: 1.75, py: 1, cursor: "pointer",
                   "&:hover": { bgcolor: "action.hover" },
                 }}
               >
-                <Box sx={{ width: 28, height: 28, borderRadius: 1, bgcolor: alpha("#6366f1", 0.12), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Box sx={{ width: 30, height: 30, borderRadius: "8px", bgcolor: (t) => t.palette.mode === "dark" ? alpha("#857BF0", 0.16) : "#EEECFF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   <ProposalsIcon sx={{ fontSize: 16, color: "primary.main" }} />
                 </Box>
                 <Box sx={{ minWidth: 0 }}>
@@ -184,7 +194,7 @@ function NavSearch() {
             ))}
 
             {!loading && people.length > 0 && (
-              <Typography sx={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "text.secondary", px: 1.5, pt: 0.75, pb: 0.25 }}>
+              <Typography sx={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "text.secondary", px: 1.75, pt: 1, pb: 0.5 }}>
                 People
               </Typography>
             )}
@@ -194,11 +204,11 @@ function NavSearch() {
                 onClick={() => handleSelect(r)}
                 sx={{
                   display: "flex", alignItems: "center", gap: 1.25,
-                  px: 1.5, py: 1, cursor: "pointer",
+                  px: 1.75, py: 1, cursor: "pointer",
                   "&:hover": { bgcolor: "action.hover" },
                 }}
               >
-                <Avatar src={r.avatar} sx={{ width: 28, height: 28, fontSize: 11, bgcolor: "primary.main" }}>
+                <Avatar src={r.avatar} sx={{ width: 30, height: 30, fontSize: 11, fontWeight: 600, bgcolor: "primary.main" }}>
                   {(r.name || "?")[0]?.toUpperCase()}
                 </Avatar>
                 <Box sx={{ minWidth: 0 }}>
@@ -225,7 +235,7 @@ export default function TopNav() {
   const user = session?.user as any;
 
   const userHref = user?.id ? `/profile/${user.id}` : "/login";
-  const initials  = (user?.name || "?")
+  const initials = (user?.name || "?")
     .split(" ").map((w: string) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
 
   return (
@@ -235,7 +245,7 @@ export default function TopNav() {
       sx={{
         zIndex: (t) => t.zIndex.drawer + 2,
         bgcolor: "background.paper",
-        color:   "text.primary",
+        color: "text.primary",
         borderBottom: "1px solid",
         borderColor: "divider",
       }}
@@ -244,8 +254,8 @@ export default function TopNav() {
         sx={{
           height: TOP_NAV_HEIGHT,
           minHeight: `${TOP_NAV_HEIGHT}px !important`,
-          px: { xs: 1.5, sm: 2, md: 3 },
-          gap: { xs: 1, sm: 1.5, md: 2.5 },
+          px: { xs: 1.5, sm: 2.5, md: 3 },
+          gap: { xs: 1, sm: 1.5, md: 2 },
         }}
       >
         {/* ── Mobile sidebar toggle ─────────────────── */}
@@ -258,7 +268,7 @@ export default function TopNav() {
           }}
           sx={{
             display: { xs: "flex", sm: "none" },
-            width: 36, height: 36, borderRadius: 1.5,
+            width: 36, height: 36, borderRadius: "10px",
             alignItems: "center", justifyContent: "center",
             color: "text.secondary", flexShrink: 0, cursor: "pointer",
             "&:hover": { bgcolor: "action.hover", color: "text.primary" },
@@ -277,21 +287,21 @@ export default function TopNav() {
           }}
         >
           <Box sx={{
-            width: 32, height: 32, borderRadius: 1,
-            background: "linear-gradient(135deg, #6366f1, #4f46e5)",
+            width: 34, height: 34, borderRadius: "10px",
+            background: "linear-gradient(135deg, #6257E8 0%, #9A8AEF 100%)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 2px 8px rgba(99,102,241,0.35)",
+            boxShadow: "0 3px 10px -2px rgba(98, 87, 232, 0.40)",
           }}>
-            <BoltIcon sx={{ color: "#fff", fontSize: 20 }} />
+            <BoltIcon sx={{ color: "#FFFFFF", fontSize: 19 }} />
           </Box>
           <Typography
             sx={{
-              fontSize: 14, fontWeight: 700, letterSpacing: "-0.02em",
-              color: "primary.main",
+              fontSize: 15, fontWeight: 700, letterSpacing: "-0.025em",
+              color: "text.primary",
               display: { xs: "none", sm: "block" },
             }}
           >
-            S.A.N.K.A.L.P
+            Madhyam <Box component="span" sx={{ color: "primary.main" }}>AI</Box>
           </Typography>
         </Box>
 
@@ -319,33 +329,37 @@ export default function TopNav() {
                 component={NextLink}
                 href={href}
                 sx={{
+                  position: "relative",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: 0.25,
+                  gap: 0.35,
                   height: 44,
-                  px: 1.5,
-                  borderRadius: 1.5,
+                  px: { xs: 1.25, md: 1.75 },
+                  borderRadius: "12px",
                   whiteSpace: "nowrap",
                   flexShrink: 0,
                   textDecoration: "none",
                   color: active ? "primary.main" : "text.secondary",
-                  bgcolor: active ? alpha("#6366f1", 0.1) : "transparent",
+                  bgcolor: active
+                    ? (t) => (t.palette.mode === "dark" ? alpha("#857BF0", 0.16) : "#EEECFF")
+                    : "transparent",
                   "&:hover": {
-                    bgcolor: active ? alpha("#6366f1", 0.14) : (t) => alpha(t.palette.text.primary, 0.04),
+                    bgcolor: active
+                      ? (t) => (t.palette.mode === "dark" ? alpha("#857BF0", 0.22) : "#E4E0FF")
+                      : "action.hover",
                     color: active ? "primary.main" : "text.primary",
                   },
-                  transition: "all 150ms",
+                  transition: "all 150ms ease",
                 }}
               >
-                <Icon sx={{ fontSize: 21 }} />
+                <Icon sx={{ fontSize: 19 }} />
                 <Typography
                   sx={{
-                    fontSize: 10,
-                    fontWeight: active ? 700 : 600,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.03em",
+                    fontSize: 10.5,
+                    fontWeight: active ? 700 : 500,
+                    letterSpacing: "-0.005em",
                     lineHeight: 1,
                   }}
                 >
@@ -359,21 +373,27 @@ export default function TopNav() {
         {/* ── Search ────────────────────────────────── */}
         <NavSearch />
 
-        {/* ── User ──────────────────────────────────── */}
+        {/* ── User Profile Access ───────────────────── */}
         <Box
           component={NextLink}
           href={userHref}
           sx={{
             display: "flex",
             alignItems: "center", gap: 1.25,
+            pl: { xs: 0.5, lg: 1.25 },
+            pr: 0.5,
+            py: 0.5,
+            borderRadius: "999px",
             textDecoration: "none", flexShrink: 0,
+            transition: "background-color 150ms ease",
+            "&:hover": { bgcolor: "action.hover" },
           }}
         >
           <Box sx={{ textAlign: "right", display: { xs: "none", lg: "block" } }}>
-            <Typography sx={{ fontSize: 13, fontWeight: 600, color: "text.primary", lineHeight: 1.25 }} noWrap>
+            <Typography sx={{ fontSize: 13, fontWeight: 600, color: "text.primary", lineHeight: 1.2 }} noWrap>
               {user?.name || "Guest"}
             </Typography>
-            <Typography sx={{ fontSize: 11, color: "text.secondary", lineHeight: 1.25 }} noWrap>
+            <Typography sx={{ fontSize: 11, color: "text.secondary", lineHeight: 1.2 }} noWrap>
               {roleLabel(user?.role)}
             </Typography>
           </Box>
@@ -386,12 +406,9 @@ export default function TopNav() {
                   width: 34, height: 34,
                   fontSize: 12, fontWeight: 700,
                   bgcolor: "primary.main",
-                  border: "2px solid transparent",
-                  "&:hover": {
-                    borderColor: "primary.main",
-                    boxShadow: (t) => `0 0 0 2px ${alpha(t.palette.primary.main, 0.25)}`,
-                  },
-                  transition: "all 150ms",
+                  border: "2px solid",
+                  borderColor: (t) => alpha(t.palette.primary.main, 0.18),
+                  transition: "all 150ms ease",
                 }}
               >
                 {initials}
@@ -400,7 +417,7 @@ export default function TopNav() {
                 sx={{
                   position: "absolute", right: -1, bottom: -1,
                   width: 10, height: 10, borderRadius: "50%",
-                  bgcolor: "#22c55e",
+                  bgcolor: "#20B981",
                   border: "2px solid",
                   borderColor: "background.paper",
                 }}

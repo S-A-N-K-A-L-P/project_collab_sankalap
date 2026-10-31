@@ -78,17 +78,17 @@ export default function VoteButton({ proposalId, onVoteChange }: VoteButtonProps
       <AlertDialogTrigger asChild>
         <button
           disabled={triggerDisabled}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border cursor-pointer ${
             voted
-              ? "bg-primary/10 text-primary border-primary/25 hover:bg-primary/15"
-              : "bg-transparent text-muted border-border hover:text-foreground hover:border-border-strong"
+              ? "bg-primary-light text-primary border-primary/25 hover:bg-primary-light/80"
+              : "bg-card text-muted border-border hover:text-foreground hover:border-primary/30"
           } ${!isActive ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           {loading ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
           ) : (
             <>
-              <ArrowBigUp className={`w-3.5 h-3.5 ${voted ? "fill-primary" : ""}`} />
+              <ArrowBigUp className={`w-3.5 h-3.5 ${voted ? "fill-primary text-primary" : ""}`} />
               {voted ? `Upvoted (${userVotes})` : "Upvote"}
             </>
           )}
@@ -102,8 +102,8 @@ export default function VoteButton({ proposalId, onVoteChange }: VoteButtonProps
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>No</AlertDialogCancel>
-          <AlertDialogAction onClick={confirmVote}>Yes</AlertDialogAction>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={confirmVote}>Confirm Upvote</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

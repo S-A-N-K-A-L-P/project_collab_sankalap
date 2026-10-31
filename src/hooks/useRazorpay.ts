@@ -55,7 +55,7 @@ export function useRazorpay() {
           amount: orderData.amount,
           currency: orderData.currency,
           order_id: orderData.orderId,
-          name: "S.A.N.K.A.L.P.",
+          name: "Madhyam AI",
           description: "Pro Plan — Unlock premium features",
           image: "/logo.png",
           prefill: {

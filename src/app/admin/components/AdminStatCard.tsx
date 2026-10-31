@@ -23,30 +23,30 @@ export default function AdminStatCard({
   return (
     <div
       onMouseMove={onMouseMove}
-      className={`group relative overflow-hidden p-6 rounded-2xl border space-y-3 transition-shadow ${
+      className={`group relative overflow-hidden p-5 rounded-[16px] space-y-2.5 transition-all ${
         accent
-          ? "bg-accent/10 border-accent/20"
-          : "bg-surface border-border-subtle"
+          ? "saas-card-featured"
+          : "saas-card"
       }`}
     >
       <CardGlow background={background} />
       <div className="relative z-10 flex items-center justify-between">
-        <p className="text-[10px] font-mono font-bold text-muted uppercase tracking-widest">
+        <p className="text-xs font-semibold text-muted">
           {title}
         </p>
-        <div className={`p-2 rounded-xl ${accent ? "bg-accent/20" : "bg-background"}`}>
-          <Icon className={`w-4 h-4 ${accent ? "text-accent" : "text-muted"}`} />
+        <div className={`p-2 rounded-xl ${accent ? "bg-primary-light border border-primary/15" : "bg-background border border-border"}`}>
+          <Icon className={`w-4 h-4 ${accent ? "text-primary" : "text-muted"}`} />
         </div>
       </div>
       <p
-        className={`relative z-10 text-3xl font-bold tracking-tight ${
-          accent ? "text-accent" : "text-foreground"
+        className={`relative z-10 text-2xl font-bold tracking-tight tabular-nums ${
+          accent ? "text-primary" : "text-foreground"
         }`}
       >
         {value}
       </p>
       {description && (
-        <p className="relative z-10 text-[11px] text-muted font-bold uppercase tracking-wider">
+        <p className="relative z-10 text-[11px] text-muted font-medium">
           {description}
         </p>
       )}

@@ -11,7 +11,7 @@ const getIcon = (type: string) => {
     case "JOIN":            return <UserPlus className="w-3.5 h-3.5 text-emerald-500" />;
     case "CREATE_PROPOSAL": return <FileText className="w-3.5 h-3.5 text-primary" />;
     case "FOLLOW":          return <UserPlus className="w-3.5 h-3.5 text-primary" />;
-    case "COMMENT":         return <MessageCircle className="w-3.5 h-3.5 text-blue-500" />;
+    case "COMMENT":         return <MessageCircle className="w-3.5 h-3.5 text-primary" />;
     default:                return <Activity className="w-3.5 h-3.5 text-muted" />;
   }
 };
@@ -60,9 +60,9 @@ export default function LiveActivityStream() {
   if (loading && activities.length === 0) {
     return (
       <div className="space-y-2">
-        <h3 className="text-xs font-semibold text-muted uppercase tracking-wider px-1 mb-3">Recent Activity</h3>
+        <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wider px-1 mb-2.5">Recent Activity</h3>
         {[1, 2, 3].map(i => (
-          <div key={i} className="h-14 bg-card rounded-lg animate-pulse" />
+          <div key={i} className="h-12 bg-background rounded-xl animate-pulse" />
         ))}
       </div>
     );
@@ -70,14 +70,14 @@ export default function LiveActivityStream() {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between px-1 mb-3">
-        <h3 className="text-xs font-semibold text-muted uppercase tracking-wider">Recent Activity</h3>
-        <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+      <div className="flex items-center justify-between px-1 mb-2.5">
+        <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wider">Recent Activity</h3>
+        <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
       </div>
 
       <AnimatePresence mode="popLayout">
         {activities.length === 0 ? (
-          <p className="text-xs text-muted text-center py-6">No activity yet.</p>
+          <p className="text-xs text-muted text-center py-5">No recent activity.</p>
         ) : (
           activities.map((act, i) => {
             const actorName = act.actorId?.name || "A user";
@@ -88,13 +88,13 @@ export default function LiveActivityStream() {
             return (
               <motion.div
                 key={act._id}
-                initial={{ opacity: 0, y: 5 }}
+                initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ delay: i * 0.04 }}
-                className="flex items-start gap-3 p-3 rounded-lg bg-card hover:bg-card-hover transition-colors"
+                transition={{ delay: i * 0.03 }}
+                className="flex items-start gap-2.5 p-2.5 rounded-xl hover:bg-muted/70 transition-colors"
               >
-                <div className="mt-0.5 w-7 h-7 rounded-md bg-background border border-border flex items-center justify-center shrink-0">
+                <div className="mt-0.5 w-7 h-7 rounded-lg bg-primary-light/70 border border-primary/10 flex items-center justify-center shrink-0">
                   {getIcon(act.type)}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -105,7 +105,7 @@ export default function LiveActivityStream() {
                       <> <span className="text-primary font-medium">{target}</span></>
                     )}
                   </p>
-                  <p className="text-[10px] text-muted mt-0.5">{timeAgo(act.createdAt)}</p>
+                  <p className="text-[10.5px] text-muted mt-0.5">{timeAgo(act.createdAt)}</p>
                 </div>
               </motion.div>
             );

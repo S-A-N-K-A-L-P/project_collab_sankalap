@@ -192,7 +192,7 @@ export default function RegisterForm() {
               className="w-full pl-12 pr-4 py-3 bg-background border border-border-subtle rounded-xl focus:border-accent/50 outline-none transition-all text-foreground text-[13px] font-black uppercase appearance-none cursor-pointer"
             >
               <option value="user">USER</option>
-              <option value="sankalp_member">SANKALP MEMBER</option>
+              <option value="sankalp_member">MADHYAM MEMBER</option>
             </select>
           </div>
         </div>

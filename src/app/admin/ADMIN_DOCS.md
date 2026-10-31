@@ -1,4 +1,4 @@
-# Syncro Admin Panel — Developer Documentation
+# Madhyam AI Admin Panel — Developer Documentation
 
 ## Table of Contents
 
@@ -26,7 +26,7 @@
 
 ## Overview
 
-The Admin Panel provides privileged management of users, proposals, and projects for the Syncro platform. Access is restricted to users with the `admin` or `pixel_head` role.
+The Admin Panel provides privileged management of users, proposals, and projects for the Madhyam AI platform. Access is restricted to users with the `admin` or `pixel_head` role.
 
 **Base path:** `/admin`  
 **API base path:** `/api/admin`
@@ -372,7 +372,7 @@ Convert an approved/active proposal into a Project.
 **Request body:**
 ```json
 {
-  "orgId": "<orgId>",       // optional — falls back to first org, or creates "SANKALP"
+  "orgId": "<orgId>",       // optional — falls back to first org, or creates "Madhyam"
   "title": "My Project",    // optional — defaults to proposal title
   "description": "...",     // optional — defaults to proposal description
   "leadId": "<userId>"      // optional — defaults to proposal.projectLead or current admin

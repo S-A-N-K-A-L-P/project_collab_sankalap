@@ -3,8 +3,8 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 
 export const metadata: Metadata = {
-  title: "Syncro",
-  description: "SANKALP Collaboration Platform",
+  title: "Madhyam AI",
+  description: "From developer intent to intelligent execution. AI-powered technical workflow orchestration for engineering teams.",
 };
 
 export default function RootLayout({

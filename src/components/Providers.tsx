@@ -28,11 +28,12 @@ function MuiBridge({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  // Default to light (matches HTML reference); switch only when explicitly dark
+  // Default to light (matches Madhyam AI SaaS reference); switch only when explicitly dark
   const theme = mounted && resolvedTheme === "dark" ? muiDarkTheme : muiLightTheme;
 
   return (
     <MuiThemeProvider theme={theme}>
+      <CssBaseline />
       {children}
     </MuiThemeProvider>
   );
@@ -42,9 +43,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <NextThemesProvider
       attribute="class"
-      defaultTheme="system"
-      enableSystem
-      storageKey="pixel-platform-theme"
+      defaultTheme="light"
+      enableSystem={false}
+      storageKey="madhyam-saas-theme"
       disableTransitionOnChange
     >
       <AppRouterCacheProvider options={{ key: "mui", enableCssLayer: false }}>

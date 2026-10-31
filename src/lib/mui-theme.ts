@@ -3,20 +3,14 @@
 import { createTheme, alpha } from "@mui/material/styles";
 
 /* ============================================================================
-   MUI Theme — tuned to match our shadcn/Tailwind tokens.
+   MUI Theme — tuned to match our Madhyam AI SaaS design tokens.
    Pairs with globals.css. Used by <MuiThemeProvider> in Providers.tsx.
-
-   IMPORTANT: palette values below are hand-mirrored from the CSS custom
-   properties in src/app/globals.css (:root / .dark). If you change a color
-   there, update the matching value here too — MUI can't consume var(--x)
-   directly for its alpha()/contrast math, so this file keeps its own literal
-   copies rather than reading the CSS variables at runtime.
    ========================================================================= */
 
-const PRIMARY_DARK    = "#818cf8";    // indigo-400 — matches --primary dark
-const PRIMARY_LIGHT   = "#4f46e5";    // indigo-600 — matches --primary light
-const SECONDARY_LIGHT = "#ec4899";    // pink-500 — matches --secondary-accent light
-const SECONDARY_DARK  = "#f472b6";    // pink-400 — matches --secondary-accent dark
+const PRIMARY_DARK    = "#857BF0";    // matches --primary dark
+const PRIMARY_LIGHT   = "#6257E8";    // matches --primary light
+const SECONDARY_LIGHT = "#9A8AEF";    // matches --secondary light
+const SECONDARY_DARK  = "#9A8AEF";    // matches --secondary dark
 
 // ─── DARK ────────────────────────────────────────────────────────────────────
 
@@ -25,112 +19,113 @@ export const muiDarkTheme = createTheme({
     mode: "dark",
     primary: {
       main:  PRIMARY_DARK,
-      dark:  "#6c61d4",
-      light: "#a39bf3",
-      contrastText: "#ffffff",
+      dark:  "#6257E8",
+      light: "#A49BF5",
+      contrastText: "#FFFFFF",
     },
     secondary: {
       main: SECONDARY_DARK,
-      contrastText: "#0f172a",
+      contrastText: "#0F111A",
     },
-    success: { main: "#4ade80", contrastText: "#0f172a" }, // matches --success dark
-    info:    { main: "#60a5fa", contrastText: "#0f172a" }, // matches --info dark
-    warning: { main: "#fbbf24", contrastText: "#0f172a" }, // matches --warning dark
-    error:   { main: "#f87171", contrastText: "#0f172a" }, // matches --error dark
+    success: { main: "#20B981", contrastText: "#0F111A" },
+    info:    { main: "#857BF0", contrastText: "#FFFFFF" },
+    warning: { main: "#F59E0B", contrastText: "#0F111A" },
+    error:   { main: "#EF4444", contrastText: "#FFFFFF" },
     background: {
-      default: "#0f172a",   // matches --background dark (slate-900)
-      paper:   "#1e293b",   // matches --card dark (slate-800)
+      default: "#0F111A",
+      paper:   "#171A28",
     },
     text: {
-      primary:   "#f1f5f9", // matches --foreground dark
-      secondary: "#94a3b8", // matches --muted-foreground dark
-      disabled:  "#64748b", // slate-500 — between muted-foreground and border-strong, no dedicated CSS var
+      primary:   "#F2F3F8",
+      secondary: "#9496A8",
+      disabled:  "#686B7E",
     },
-    divider: "rgba(255, 255, 255, 0.10)",
+    divider: "rgba(255, 255, 255, 0.08)",
     action: {
-      hover:           "rgba(255, 255, 255, 0.06)",
-      selected:        alpha(PRIMARY_DARK, 0.16),
+      hover:              "rgba(255, 255, 255, 0.05)",
+      selected:           alpha(PRIMARY_DARK, 0.16),
       disabledBackground: "rgba(255, 255, 255, 0.04)",
-      focus:           alpha(PRIMARY_DARK, 0.20),
+      focus:              alpha(PRIMARY_DARK, 0.22),
     },
   },
   typography: {
     fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif",
-    h1:   { fontWeight: 600, letterSpacing: "-0.02em" },
-    h2:   { fontWeight: 600, letterSpacing: "-0.02em" },
-    h3:   { fontWeight: 600, letterSpacing: "-0.02em" },
+    h1:   { fontWeight: 600, letterSpacing: "-0.022em" },
+    h2:   { fontWeight: 600, letterSpacing: "-0.022em" },
+    h3:   { fontWeight: 600, letterSpacing: "-0.022em" },
     h4:   { fontWeight: 600, letterSpacing: "-0.02em" },
-    h5:   { fontWeight: 600, letterSpacing: "-0.02em" },
-    h6:   { fontWeight: 600, letterSpacing: "-0.01em" },
-    body1: { letterSpacing: "-0.01em" },
-    body2: { letterSpacing: "-0.01em" },
-    button: { textTransform: "none", fontWeight: 500, letterSpacing: 0 },
+    h5:   { fontWeight: 600, letterSpacing: "-0.018em" },
+    h6:   { fontWeight: 600, letterSpacing: "-0.012em" },
+    body1: { letterSpacing: "-0.011em" },
+    body2: { letterSpacing: "-0.011em" },
+    button: { textTransform: "none", fontWeight: 600, letterSpacing: "-0.01em" },
   },
-  shape: { borderRadius: 8 },
+  shape: { borderRadius: 14 },
   shadows: [
     "none",
-    "0 1px 2px 0 rgba(0,0,0,0.40), 0 0 0 1px rgba(255,255,255,0.02)",
-    "0 2px 4px -1px rgba(0,0,0,0.50), 0 4px 8px -2px rgba(0,0,0,0.40), inset 0 1px 0 0 rgba(255,255,255,0.04)",
-    "0 3px 6px -1px rgba(0,0,0,0.52), 0 6px 12px -3px rgba(0,0,0,0.42), inset 0 1px 0 0 rgba(255,255,255,0.05)",
-    "0 4px 8px -2px rgba(0,0,0,0.55), 0 8px 16px -4px rgba(0,0,0,0.45), inset 0 1px 0 0 rgba(255,255,255,0.05)",
-    "0 5px 10px -2px rgba(0,0,0,0.55), 0 10px 20px -4px rgba(0,0,0,0.46), inset 0 1px 0 0 rgba(255,255,255,0.05)",
-    "0 6px 12px -3px rgba(0,0,0,0.57), 0 12px 24px -5px rgba(0,0,0,0.46), inset 0 1px 0 0 rgba(255,255,255,0.06)",
-    "0 7px 14px -3px rgba(0,0,0,0.58), 0 14px 28px -6px rgba(0,0,0,0.47), inset 0 1px 0 0 rgba(255,255,255,0.06)",
-    "0 8px 16px -4px rgba(0,0,0,0.60), 0 16px 32px -8px rgba(0,0,0,0.50), inset 0 1px 0 0 rgba(255,255,255,0.06)",
-    "0 9px 18px -4px rgba(0,0,0,0.60), 0 18px 36px -8px rgba(0,0,0,0.50), inset 0 1px 0 0 rgba(255,255,255,0.06)",
-    "0 10px 20px -4px rgba(0,0,0,0.62), 0 20px 40px -10px rgba(0,0,0,0.51), inset 0 1px 0 0 rgba(255,255,255,0.07)",
-    "0 11px 22px -5px rgba(0,0,0,0.62), 0 22px 44px -10px rgba(0,0,0,0.52), inset 0 1px 0 0 rgba(255,255,255,0.07)",
-    "0 12px 24px -5px rgba(0,0,0,0.63), 0 24px 48px -10px rgba(0,0,0,0.52), inset 0 1px 0 0 rgba(255,255,255,0.07)",
-    "0 13px 26px -6px rgba(0,0,0,0.64), 0 26px 52px -12px rgba(0,0,0,0.53), inset 0 1px 0 0 rgba(255,255,255,0.07)",
-    "0 14px 28px -6px rgba(0,0,0,0.65), 0 28px 56px -12px rgba(0,0,0,0.53), inset 0 1px 0 0 rgba(255,255,255,0.07)",
-    "0 15px 30px -7px rgba(0,0,0,0.66), 0 30px 60px -14px rgba(0,0,0,0.54), inset 0 1px 0 0 rgba(255,255,255,0.08)",
-    "0 16px 32px -8px rgba(0,0,0,0.68), 0 32px 64px -16px rgba(0,0,0,0.55), inset 0 1px 0 0 rgba(255,255,255,0.08)",
-    "0 17px 34px -8px rgba(0,0,0,0.69), 0 34px 68px -16px rgba(0,0,0,0.55), inset 0 1px 0 0 rgba(255,255,255,0.08)",
-    "0 18px 36px -9px rgba(0,0,0,0.70), 0 36px 72px -18px rgba(0,0,0,0.56), inset 0 1px 0 0 rgba(255,255,255,0.08)",
-    "0 19px 38px -9px rgba(0,0,0,0.71), 0 38px 76px -18px rgba(0,0,0,0.56), inset 0 1px 0 0 rgba(255,255,255,0.08)",
-    "0 20px 40px -10px rgba(0,0,0,0.72), 0 40px 80px -20px rgba(0,0,0,0.57), inset 0 1px 0 0 rgba(255,255,255,0.09)",
-    "0 21px 42px -10px rgba(0,0,0,0.73), 0 42px 84px -20px rgba(0,0,0,0.57), inset 0 1px 0 0 rgba(255,255,255,0.09)",
-    "0 22px 44px -11px rgba(0,0,0,0.74), 0 44px 88px -22px rgba(0,0,0,0.58), inset 0 1px 0 0 rgba(255,255,255,0.09)",
-    "0 23px 46px -11px rgba(0,0,0,0.75), 0 46px 92px -22px rgba(0,0,0,0.58), inset 0 1px 0 0 rgba(255,255,255,0.09)",
-    "0 24px 48px -12px rgba(0,0,0,0.76), 0 48px 96px -24px rgba(0,0,0,0.59), inset 0 1px 0 0 rgba(255,255,255,0.10)",
+    "0 1px 3px 0 rgba(0,0,0,0.35)",
+    "0 2px 10px -2px rgba(0,0,0,0.45), 0 1px 3px 0 rgba(0,0,0,0.30)",
+    "0 4px 14px -3px rgba(0,0,0,0.48), 0 2px 5px -1px rgba(0,0,0,0.32)",
+    "0 6px 18px -4px rgba(0,0,0,0.50), 0 2px 6px -1px rgba(0,0,0,0.35)",
+    "0 8px 22px -5px rgba(0,0,0,0.52), 0 3px 8px -2px rgba(0,0,0,0.36)",
+    "0 10px 25px -5px rgba(0,0,0,0.54), 0 4px 10px -2px rgba(0,0,0,0.38)",
+    "0 12px 28px -6px rgba(0,0,0,0.56), 0 4px 10px -2px rgba(0,0,0,0.40)",
+    "0 14px 32px -7px rgba(0,0,0,0.58), 0 5px 12px -3px rgba(0,0,0,0.40)",
+    "0 16px 36px -8px rgba(0,0,0,0.60), 0 6px 14px -3px rgba(0,0,0,0.42)",
+    "0 18px 40px -9px rgba(0,0,0,0.62), 0 7px 16px -4px rgba(0,0,0,0.44)",
+    "0 20px 42px -10px rgba(0,0,0,0.63), 0 8px 16px -4px rgba(0,0,0,0.45)",
+    "0 22px 44px -10px rgba(0,0,0,0.64), 0 8px 18px -5px rgba(0,0,0,0.46)",
+    "0 24px 48px -11px rgba(0,0,0,0.65), 0 9px 20px -5px rgba(0,0,0,0.47)",
+    "0 26px 52px -12px rgba(0,0,0,0.66), 0 10px 22px -6px rgba(0,0,0,0.48)",
+    "0 28px 56px -13px rgba(0,0,0,0.67), 0 11px 24px -6px rgba(0,0,0,0.49)",
+    "0 30px 60px -14px rgba(0,0,0,0.68), 0 12px 26px -7px rgba(0,0,0,0.50)",
+    "0 32px 64px -15px rgba(0,0,0,0.69), 0 13px 28px -7px rgba(0,0,0,0.51)",
+    "0 34px 68px -16px rgba(0,0,0,0.70), 0 14px 30px -8px rgba(0,0,0,0.52)",
+    "0 36px 72px -17px rgba(0,0,0,0.71), 0 15px 32px -8px rgba(0,0,0,0.53)",
+    "0 38px 76px -18px rgba(0,0,0,0.72), 0 16px 34px -9px rgba(0,0,0,0.54)",
+    "0 40px 80px -19px rgba(0,0,0,0.73), 0 17px 36px -9px rgba(0,0,0,0.55)",
+    "0 42px 84px -20px rgba(0,0,0,0.74), 0 18px 38px -10px rgba(0,0,0,0.56)",
+    "0 44px 88px -21px rgba(0,0,0,0.75), 0 19px 40px -10px rgba(0,0,0,0.57)",
+    "0 46px 92px -22px rgba(0,0,0,0.76), 0 20px 42px -11px rgba(0,0,0,0.58)",
   ] as any,
   components: {
     MuiPaper: {
-      defaultProps: { elevation: 2 },
+      defaultProps: { elevation: 1 },
       styleOverrides: {
-        root: { backgroundImage: "none" },
+        root: { backgroundImage: "none", borderRadius: 16 },
       },
     },
     MuiCard: {
-      defaultProps: { elevation: 2 },
+      defaultProps: { elevation: 1 },
       styleOverrides: {
         root: {
           border: "1px solid rgba(255,255,255,0.08)",
           backgroundImage: "none",
+          borderRadius: 16,
         },
       },
     },
     MuiButton: {
-      defaultProps: { disableElevation: false },
+      defaultProps: { disableElevation: true },
       styleOverrides: {
-        root: { borderRadius: 8, fontWeight: 500, paddingLeft: 16, paddingRight: 16 },
+        root: { borderRadius: 10, fontWeight: 600, paddingLeft: 16, paddingRight: 16 },
       },
     },
     MuiChip: {
       styleOverrides: {
-        root: { fontWeight: 500, borderRadius: 6 },
+        root: { fontWeight: 600, borderRadius: 8 },
       },
     },
     MuiTabs: {
       styleOverrides: {
-        indicator: { height: 3, borderRadius: "3px 3px 0 0" },
+        indicator: { height: 2.5, borderRadius: "3px 3px 0 0" },
       },
     },
     MuiTab: {
       styleOverrides: {
         root: {
-          textTransform: "none", fontWeight: 500, fontSize: 14, minHeight: 48,
-          letterSpacing: 0,
+          textTransform: "none", fontWeight: 600, fontSize: 13.5, minHeight: 44,
+          letterSpacing: "-0.01em",
         },
       },
     },
@@ -144,81 +139,94 @@ export const muiLightTheme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main:  PRIMARY_LIGHT,                  // indigo-600 #4f46e5
-      dark:  "#4338ca",                      // indigo-700
-      light: "#6366f1",                      // indigo-500
-      contrastText: "#ffffff",
+      main:  PRIMARY_LIGHT,                  // #6257E8
+      dark:  "#5246D9",
+      light: "#9A8AEF",
+      contrastText: "#FFFFFF",
     },
-    secondary: { main: SECONDARY_LIGHT, contrastText: "#ffffff" },
-    success:   { main: "#15803d", contrastText: "#ffffff" }, // green-700
-    info:      { main: "#1d4ed8", contrastText: "#ffffff" }, // blue-700
-    warning:   { main: "#b45309", contrastText: "#ffffff" }, // amber-700
-    error:     { main: "#b91c1c", contrastText: "#ffffff" }, // red-700
+    secondary: { main: SECONDARY_LIGHT, contrastText: "#171827" },
+    success:   { main: "#20B981", contrastText: "#FFFFFF" },
+    info:      { main: "#6257E8", contrastText: "#FFFFFF" },
+    warning:   { main: "#F59E0B", contrastText: "#FFFFFF" },
+    error:     { main: "#EF4444", contrastText: "#FFFFFF" },
     background: {
-      default: "#f3f4f6",                    // gray-100 — matches HTML reference
-      paper:   "#ffffff",                    // pure white cards
+      default: "#F5F5F8",                    // Neutral light background
+      paper:   "#FFFFFF",                    // Clean white surfaces
     },
     text: {
-      primary:   "#111827",                  // gray-900
-      secondary: "#6b7280",                  // gray-500
-      disabled:  "#9ca3af",                  // gray-400
+      primary:   "#171827",                  // Deep ink primary text
+      secondary: "#737586",                  // Muted slate secondary text
+      disabled:  "#9E9FAF",
     },
-    divider: "#e5e7eb",                      // gray-200 (solid, not transparent)
+    divider: "#E8E8EF",                      // Thin low-contrast border
+    action: {
+      hover:              "rgba(23, 24, 39, 0.035)",
+      selected:           "#EEECFF",
+      disabledBackground: "rgba(23, 24, 39, 0.04)",
+      focus:              "rgba(98, 87, 232, 0.16)",
+    },
   },
   shadows: [
     "none",
-    "0 1px 2px 0 rgba(0,0,0,0.04)",
-    "0 1px 3px 0 rgba(0,0,0,0.08), 0 1px 2px -1px rgba(0,0,0,0.04)",
-    "0 2px 4px -1px rgba(0,0,0,0.08), 0 1px 2px -1px rgba(0,0,0,0.04)",
-    "0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.05)",
-    "0 6px 10px -2px rgba(0,0,0,0.09), 0 2px 6px -2px rgba(0,0,0,0.06)",
-    "0 8px 14px -3px rgba(0,0,0,0.10), 0 3px 8px -3px rgba(0,0,0,0.06)",
-    "0 10px 15px -3px rgba(0,0,0,0.10), 0 4px 6px -4px rgba(0,0,0,0.06)",
-    "0 12px 18px -4px rgba(0,0,0,0.11), 0 5px 8px -4px rgba(0,0,0,0.06)",
-    "0 14px 22px -5px rgba(0,0,0,0.12), 0 6px 10px -5px rgba(0,0,0,0.07)",
-    "0 16px 24px -6px rgba(0,0,0,0.12), 0 7px 12px -6px rgba(0,0,0,0.07)",
-    "0 18px 28px -7px rgba(0,0,0,0.13), 0 8px 14px -7px rgba(0,0,0,0.07)",
-    "0 20px 25px -5px rgba(0,0,0,0.12), 0 8px 10px -6px rgba(0,0,0,0.06)",
-    "0 22px 28px -6px rgba(0,0,0,0.13), 0 9px 12px -7px rgba(0,0,0,0.07)",
-    "0 24px 32px -7px rgba(0,0,0,0.13), 0 10px 14px -8px rgba(0,0,0,0.07)",
-    "0 25px 35px -8px rgba(0,0,0,0.14), 0 11px 16px -9px rgba(0,0,0,0.08)",
-    "0 26px 38px -9px rgba(0,0,0,0.14), 0 12px 18px -10px rgba(0,0,0,0.08)",
-    "0 28px 42px -10px rgba(0,0,0,0.15), 0 13px 20px -11px rgba(0,0,0,0.08)",
-    "0 30px 45px -11px rgba(0,0,0,0.15), 0 14px 22px -12px rgba(0,0,0,0.09)",
-    "0 32px 48px -12px rgba(0,0,0,0.16), 0 15px 24px -13px rgba(0,0,0,0.09)",
-    "0 34px 52px -13px rgba(0,0,0,0.16), 0 16px 26px -14px rgba(0,0,0,0.09)",
-    "0 36px 56px -14px rgba(0,0,0,0.17), 0 17px 28px -15px rgba(0,0,0,0.10)",
-    "0 38px 60px -15px rgba(0,0,0,0.17), 0 18px 30px -16px rgba(0,0,0,0.10)",
-    "0 40px 64px -16px rgba(0,0,0,0.18), 0 19px 32px -17px rgba(0,0,0,0.10)",
-    "0 42px 68px -17px rgba(0,0,0,0.18), 0 20px 34px -18px rgba(0,0,0,0.11)",
+    "0 1px 3px 0 rgba(23, 24, 39, 0.04), 0 1px 2px -1px rgba(23, 24, 39, 0.02)",
+    "0 2px 10px -2px rgba(23, 24, 39, 0.05), 0 1px 3px 0 rgba(23, 24, 39, 0.03)",
+    "0 4px 14px -3px rgba(23, 24, 39, 0.06), 0 2px 4px -2px rgba(23, 24, 39, 0.03)",
+    "0 6px 18px -4px rgba(23, 24, 39, 0.07), 0 2px 6px -2px rgba(23, 24, 39, 0.04)",
+    "0 8px 22px -4px rgba(23, 24, 39, 0.08), 0 3px 8px -3px rgba(23, 24, 39, 0.04)",
+    "0 10px 25px -5px rgba(23, 24, 39, 0.08), 0 4px 10px -4px rgba(23, 24, 39, 0.04)",
+    "0 12px 28px -6px rgba(23, 24, 39, 0.09), 0 4px 10px -4px rgba(23, 24, 39, 0.04)",
+    "0 14px 30px -6px rgba(23, 24, 39, 0.09), 0 5px 12px -4px rgba(23, 24, 39, 0.05)",
+    "0 16px 34px -7px rgba(23, 24, 39, 0.10), 0 6px 14px -5px rgba(23, 24, 39, 0.05)",
+    "0 18px 36px -8px rgba(23, 24, 39, 0.10), 0 7px 14px -5px rgba(23, 24, 39, 0.05)",
+    "0 20px 38px -8px rgba(23, 24, 39, 0.11), 0 8px 16px -6px rgba(23, 24, 39, 0.05)",
+    "0 22px 40px -9px rgba(23, 24, 39, 0.11), 0 8px 16px -6px rgba(23, 24, 39, 0.06)",
+    "0 24px 44px -10px rgba(23, 24, 39, 0.12), 0 9px 18px -6px rgba(23, 24, 39, 0.06)",
+    "0 26px 48px -10px rgba(23, 24, 39, 0.12), 0 10px 20px -7px rgba(23, 24, 39, 0.06)",
+    "0 28px 50px -11px rgba(23, 24, 39, 0.12), 0 11px 22px -7px rgba(23, 24, 39, 0.06)",
+    "0 30px 54px -12px rgba(23, 24, 39, 0.13), 0 12px 24px -8px rgba(23, 24, 39, 0.06)",
+    "0 32px 58px -12px rgba(23, 24, 39, 0.13), 0 13px 26px -8px rgba(23, 24, 39, 0.07)",
+    "0 34px 60px -13px rgba(23, 24, 39, 0.14), 0 14px 28px -9px rgba(23, 24, 39, 0.07)",
+    "0 36px 64px -14px rgba(23, 24, 39, 0.14), 0 15px 30px -9px rgba(23, 24, 39, 0.07)",
+    "0 38px 68px -14px rgba(23, 24, 39, 0.15), 0 16px 32px -10px rgba(23, 24, 39, 0.07)",
+    "0 40px 72px -15px rgba(23, 24, 39, 0.15), 0 17px 34px -10px rgba(23, 24, 39, 0.08)",
+    "0 42px 76px -16px rgba(23, 24, 39, 0.16), 0 18px 36px -11px rgba(23, 24, 39, 0.08)",
+    "0 44px 80px -16px rgba(23, 24, 39, 0.16), 0 19px 38px -11px rgba(23, 24, 39, 0.08)",
+    "0 46px 84px -17px rgba(23, 24, 39, 0.17), 0 20px 40px -12px rgba(23, 24, 39, 0.08)",
   ] as any,
   components: {
     MuiPaper: {
       defaultProps: { elevation: 1 },
-      styleOverrides: { root: { backgroundImage: "none" } },
+      styleOverrides: {
+        root: { backgroundImage: "none", borderRadius: 16 },
+      },
     },
     MuiCard: {
       defaultProps: { elevation: 1 },
       styleOverrides: {
-        root: { border: 0, backgroundImage: "none" },
+        root: {
+          border: "1px solid #E8E8EF",
+          backgroundImage: "none",
+          borderRadius: 16,
+        },
       },
     },
     MuiButton: {
+      defaultProps: { disableElevation: true },
       styleOverrides: {
-        root: { borderRadius: 8, fontWeight: 600, paddingLeft: 16, paddingRight: 16 },
+        root: { borderRadius: 10, fontWeight: 600, paddingLeft: 16, paddingRight: 16 },
       },
     },
     MuiChip: {
-      styleOverrides: { root: { fontWeight: 500, borderRadius: 999 } },  // fully rounded pill
+      styleOverrides: { root: { fontWeight: 600, borderRadius: 8 } },
     },
     MuiTabs: {
       styleOverrides: {
-        indicator: { height: 3, borderRadius: "3px 3px 0 0" },
+        indicator: { height: 2.5, borderRadius: "3px 3px 0 0" },
       },
     },
     MuiTab: {
       styleOverrides: {
-        root: { textTransform: "none", fontWeight: 500, fontSize: 14, minHeight: 48, letterSpacing: 0 },
+        root: { textTransform: "none", fontWeight: 600, fontSize: 13.5, minHeight: 44, letterSpacing: "-0.01em" },
       },
     },
   },

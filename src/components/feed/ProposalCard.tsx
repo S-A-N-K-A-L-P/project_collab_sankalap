@@ -32,38 +32,37 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 export default function ProposalCard({ proposal, onExpand, isActive }: ProposalCardProps) {
-  const [totalVotes, setTotalVotes] = useState(proposal.totalVotes || 0);
+  const [, setTotalVotes] = useState(proposal.totalVotes || 0);
   const { onMouseMove, background } = useCardGlow();
 
   const createdLabel = formatIsoDate(proposal.createdAt, "");
   const typeColor    = TYPE_COLOR[proposal.type?.toLowerCase()]   ?? "pill-neutral";
   const statusColor  = STATUS_COLOR[proposal.status?.toLowerCase()] ?? "pill-neutral";
 
-  // Strip ## markdown section headers so the preview shows clean prose
   const descPreview = (proposal.description || "")
-    .replace(/^##\s+.+$/gm, "")   // remove ## header lines
-    .replace(/\n{2,}/g, " ")       // collapse blank lines
-    .replace(/\n/g, " ")           // remaining newlines → space
+    .replace(/^##\s+.+$/gm, "")
+    .replace(/\n{2,}/g, " ")
+    .replace(/\n/g, " ")
     .trim();
 
   return (
     <div
       onClick={onExpand}
       onMouseMove={onMouseMove}
-      className={`group relative bg-card rounded-xl cursor-pointer transition-all duration-200 overflow-hidden ${
+      className={`group relative rounded-[16px] cursor-pointer transition-all duration-200 overflow-hidden ${
         isActive
-          ? "border-2 border-primary border-l-4 border-l-primary shadow-[0_4px_12px_var(--ring)]"
-          : "border border-border elevation-2 hover:shadow-[var(--shadow-md)]"
+          ? "saas-card-selected"
+          : "saas-card hover:border-primary/30 hover:shadow-[var(--shadow-md)]"
       }`}
     >
       <CardGlow background={background} />
 
       {/* Card body */}
-      <div className="relative z-10 p-4 space-y-3">
+      <div className="relative z-10 p-5 space-y-3.5">
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-primary/10 border border-border flex items-center justify-center text-xs font-bold text-primary uppercase overflow-hidden shrink-0">
+            <div className="w-8 h-8 rounded-full bg-primary-light border border-primary/15 flex items-center justify-center text-xs font-bold text-primary uppercase overflow-hidden shrink-0">
               {proposal.createdBy?.avatar
                 ? <img src={proposal.createdBy.avatar} alt="" className="w-full h-full object-cover" />
                 : proposal.createdBy?.name?.[0] || "U"
@@ -78,14 +77,14 @@ export default function ProposalCard({ proposal, onExpand, isActive }: ProposalC
               )}
             </div>
           </div>
-          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 capitalize ${typeColor}`}>
+          <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full shrink-0 capitalize ${typeColor}`}>
             {proposal.type}
           </span>
         </div>
 
         {/* Title + description */}
         <div>
-          <h3 className="text-sm font-bold text-foreground leading-snug mb-1">
+          <h3 className="text-[15px] font-semibold text-foreground leading-snug mb-1.5 group-hover:text-primary transition-colors">
             {proposal.title}
           </h3>
           <p className="text-xs text-muted leading-relaxed line-clamp-2">
@@ -95,9 +94,9 @@ export default function ProposalCard({ proposal, onExpand, isActive }: ProposalC
 
         {/* Tech stack */}
         {proposal.techStack && proposal.techStack.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-1.5 pt-0.5">
             {proposal.techStack.slice(0, 4).map(tag => (
-              <span key={tag} className="pill-info text-[10px] font-medium px-2 py-0.5 rounded-full">
+              <span key={tag} className="pill-info text-[10.5px] font-medium px-2.5 py-0.5 rounded-full">
                 {tag}
               </span>
             ))}
@@ -105,25 +104,21 @@ export default function ProposalCard({ proposal, onExpand, isActive }: ProposalC
         )}
       </div>
 
-      {/* Action bar — separated with subtle top border + lighter bg */}
+      {/* Action bar */}
       <div
-        className="relative z-10 flex items-center justify-between px-4 py-2.5 rounded-b-xl"
-        style={{
-          borderTop: "1.5px solid var(--border)",
-          background: "color-mix(in srgb, var(--background) 60%, transparent)",
-        }}
+        className="relative z-10 flex items-center justify-between px-5 py-3 border-t border-border bg-background/45"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center gap-3">
-          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize ${statusColor}`}>
+          <span className={`text-[10.5px] font-semibold px-2.5 py-0.5 rounded-full capitalize ${statusColor}`}>
             {proposal.status || "pending"}
           </span>
           <div className="flex items-center gap-3 text-xs text-muted">
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1" title="Contributors">
               <Users className="w-3.5 h-3.5" />
               {proposal.contributors?.length || 0}
             </span>
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1" title="Comments">
               <MessageSquare className="w-3.5 h-3.5" />
               {proposal.commentsCount || 0}
             </span>
@@ -133,7 +128,7 @@ export default function ProposalCard({ proposal, onExpand, isActive }: ProposalC
           <VoteButton proposalId={proposal._id} onVoteChange={(t) => setTotalVotes(t)} />
           <button
             onClick={onExpand}
-            className="flex items-center gap-0.5 text-xs font-semibold text-primary hover:text-primary-hover transition-colors px-2 py-1 rounded-lg hover:bg-primary/5"
+            className="flex items-center gap-0.5 text-xs font-semibold text-primary hover:text-primary-hover transition-colors px-2.5 py-1.5 rounded-xl hover:bg-primary-light cursor-pointer"
           >
             View <ChevronRight className="w-3.5 h-3.5" />
           </button>

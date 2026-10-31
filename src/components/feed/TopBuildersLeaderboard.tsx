@@ -39,40 +39,40 @@ export default function TopBuildersLeaderboard() {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between px-1 mb-3">
+      <div className="flex items-center justify-between px-1 mb-2.5">
         <div className="flex items-center gap-2">
           <Trophy className="w-3.5 h-3.5 text-amber-500" />
-          <h3 className="text-xs font-semibold text-muted uppercase tracking-wider">Top Contributors</h3>
+          <h3 className="text-[11px] font-semibold text-muted uppercase tracking-wider">Top Contributors</h3>
         </div>
-        <Link href="/discover" className="text-xs text-primary hover:underline font-medium">View all</Link>
+        <Link href="/discover" className="text-[11px] text-primary hover:underline font-semibold">View all</Link>
       </div>
 
       {loading ? (
         <div className="space-y-2">
           {[1, 2, 3].map(i => (
-            <div key={i} className="h-12 bg-card rounded-lg animate-pulse" />
+            <div key={i} className="h-10 bg-background rounded-xl animate-pulse" />
           ))}
         </div>
       ) : (
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           {rankings.map((r, i) => (
             <motion.div
               key={r._id}
               initial={{ opacity: 0, x: -4 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-card transition-colors"
+              transition={{ delay: i * 0.04 }}
+              className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl hover:bg-muted/70 transition-colors"
             >
-              <span className={`text-sm font-bold w-5 text-center shrink-0 ${medalColor(r.rank)}`}>
+              <span className={`text-xs font-bold w-5 text-center shrink-0 ${medalColor(r.rank)}`}>
                 {r.rank <= 3 ? ["🥇","🥈","🥉"][r.rank - 1] : r.rank}
               </span>
               <Link
                 href={`/profile/${r._id}`}
-                className="flex-1 min-w-0 text-sm font-medium text-foreground hover:text-primary transition-colors truncate"
+                className="flex-1 min-w-0 text-xs font-semibold text-foreground hover:text-primary transition-colors truncate"
               >
                 {r.name}
               </Link>
-              <span className="text-xs font-semibold text-primary tabular-nums shrink-0">
+              <span className="text-[11px] font-semibold text-primary bg-primary-light px-2 py-0.5 rounded-full tabular-nums shrink-0">
                 {r.points.toLocaleString()} pts
               </span>
             </motion.div>

@@ -13,22 +13,22 @@ export function EmptyState({ icon, title, description, action, className, ...pro
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center p-8 text-center space-y-4 rounded-2xl border border-dashed border-border bg-muted/30 dark:bg-white/5",
+        "saas-card flex flex-col items-center justify-center p-10 text-center space-y-4",
         className
       )}
       {...props}
     >
       {icon && (
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-muted-bg dark:bg-white/10 mb-2">
-          <div className="text-muted-foreground dark:text-white/60">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-light border border-primary/15 mb-1">
+          <div className="text-primary">
             {icon}
           </div>
         </div>
       )}
       
       <div className="space-y-1.5 max-w-sm">
-        <TypographyTitle as="h3" className="text-xl">{title}</TypographyTitle>
-        <TypographySubtitle>{description}</TypographySubtitle>
+        <TypographyTitle as="h3" className="text-base font-bold text-foreground">{title}</TypographyTitle>
+        <TypographySubtitle className="text-xs text-muted leading-relaxed">{description}</TypographySubtitle>
       </div>
       
       {action && (

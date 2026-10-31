@@ -40,10 +40,12 @@ export default function ConnectButton({ targetId, initialIsConnected, variant = 
       <button
         onClick={handleConnect}
         disabled={loading}
-        className={`p-2.5 rounded-xl border transition-all duration-150 ${isConnected
-            ? "bg-accent/10 border-accent/30 text-accent"
-            : "bg-surface-alt border-border-subtle text-muted hover:text-foreground hover:bg-surface hover:border-border-strong"
-          }`}
+        title={isConnected ? "Connected" : "Connect"}
+        className={`p-2 rounded-xl border transition-all duration-150 cursor-pointer ${
+          isConnected
+            ? "bg-primary-light border-primary/25 text-primary"
+            : "bg-card border-border text-muted hover:text-primary hover:bg-primary-light/50 hover:border-primary/25"
+        }`}
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : isConnected ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
       </button>
@@ -54,20 +56,21 @@ export default function ConnectButton({ targetId, initialIsConnected, variant = 
     <button
       onClick={handleConnect}
       disabled={loading}
-      className={`px-6 py-2.5 rounded-xl text-[11px] font-bold uppercase tracking-tight transition-all duration-150 flex items-center justify-center gap-2 ${isConnected
-          ? "bg-surface text-muted border border-border-subtle hover:border-accent/30"
-          : "bg-accent text-white shadow-sm hover:bg-[#4f46e5] active:scale-95"
-        }`}
+      className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-150 flex items-center justify-center gap-1.5 cursor-pointer ${
+        isConnected
+          ? "bg-card text-foreground border border-border hover:border-primary/35"
+          : "bg-primary text-white shadow-[0_2px_10px_-2px_rgba(98,87,232,0.4)] hover:bg-primary-hover"
+      }`}
     >
       {loading ? (
         <Loader2 className="w-3.5 h-3.5 animate-spin" />
       ) : isConnected ? (
         <>
-          <UserCheck className="w-4 h-4" /> Synchronized
+          <UserCheck className="w-3.5 h-3.5 text-primary" /> Following
         </>
       ) : (
         <>
-          <UserPlus className="w-4 h-4" /> Synchronize
+          <UserPlus className="w-3.5 h-3.5" /> Follow
         </>
       )}
     </button>

@@ -193,7 +193,7 @@ export default function PlatformOrgRequestsPage() {
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-foreground dark:text-white">{selected.name}</h2>
-                  <p className="text-xs text-muted-foreground dark:text-white/40">sankalp.dev/orgs/{selected.slug}</p>
+                  <p className="text-xs text-muted-foreground dark:text-white/40">madhyam.ai/orgs/{selected.slug}</p>
                 </div>
               </div>
 

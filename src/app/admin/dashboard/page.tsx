@@ -9,7 +9,7 @@ import Task from "@/models/Task";
 import AdminShell from "@/app/admin/components/AdminShell";
 import AdminDashboardClient from "@/app/admin/components/AdminDashboardClient";
 
-export const metadata = { title: "Dashboard | Admin | Syncro" };
+export const metadata = { title: "Dashboard | Admin | Madhyam AI" };
 
 async function getStats() {
   await dbConnect();

@@ -1,5 +1,5 @@
 /**
- * S.A.N.K.A.L.P. Role System
+ * Madhyam AI Role System
  * ─────────────────────────────────────────────────────────────
  *  user               Regular registered member.
  *                     Can: browse, vote, comment, read proposals.
@@ -143,8 +143,8 @@ export function canReviewOrgRequests(role?: string): boolean {
 
 export const ROLE_LABELS: Record<AppRole, string> = {
   user:                "User",
-  sankalp_member:      "SANKALP Member",
-  sankalp_associate:   "SANKALP Associate",
+  sankalp_member:      "Madhyam Member",
+  sankalp_associate:   "Madhyam Associate",
   platform_moderator:  "Platform Moderator",
   master_admin:        "Master Admin",
 };

@@ -5,19 +5,18 @@ import { cn } from "@/lib/utils";
 import { useCardGlow, CardGlow } from "./card-glow";
 
 /* ============================================================================
-   MudBlazor-style Card — uses strong Material elevation that's actually
-   visible in dark mode. Variants: flat, raised (default), elevated.
-   Pass `glow` to opt into the cursor-follow hover glow (see PremiumCard for
-   the single-slot, motion-driven version of this same treatment).
+   Madhyam AI SaaS Card — 16px border radius, thin low-contrast border,
+   very subtle soft shadows, optional featured lavender gradient or hover glow.
    ========================================================================= */
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   elevation?: 0 | 1 | 2 | 3 | 4;
   glow?: boolean;
+  featured?: boolean;
 }
 
 const ELEVATION = {
-  0: "",                  // flat — border only
+  0: "elevation-0",
   1: "elevation-1",
   2: "elevation-2",
   3: "elevation-3",
@@ -25,7 +24,7 @@ const ELEVATION = {
 } as const;
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
-  ({ className, elevation = 1, glow = false, onMouseMove, ...props }, ref) => {
+  ({ className, elevation = 2, glow = false, featured = false, onMouseMove, ...props }, ref) => {
     const { onMouseMove: onGlowMove, background } = useCardGlow();
 
     return (
@@ -33,7 +32,8 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
         ref={ref}
         onMouseMove={glow ? (e) => { onGlowMove(e); onMouseMove?.(e); } : onMouseMove}
         className={cn(
-          "group relative rounded-lg border border-border bg-card text-card-foreground",
+          "group relative rounded-[16px] border border-border bg-card text-card-foreground transition-all duration-200",
+          featured && "saas-card-featured",
           ELEVATION[elevation],
           className,
         )}
@@ -56,14 +56,14 @@ CardHeader.displayName = "CardHeader";
 
 const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
-    <h3 ref={ref} className={cn("text-base font-semibold leading-none tracking-tight", className)} {...props} />
+    <h3 ref={ref} className={cn("text-base font-semibold leading-snug tracking-tight text-foreground", className)} {...props} />
   ),
 );
 CardTitle.displayName = "CardTitle";
 
 const CardDescription = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HTMLParagraphElement>>(
   ({ className, ...props }, ref) => (
-    <p ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
+    <p ref={ref} className={cn("text-sm text-muted-foreground leading-relaxed", className)} {...props} />
   ),
 );
 CardDescription.displayName = "CardDescription";

@@ -1,6 +1,6 @@
 import AdminLoginForm from "@/app/admin/components/AdminLoginForm";
 
-export const metadata = { title: "Admin Login | Syncro" };
+export const metadata = { title: "Admin Login | Madhyam AI" };
 
 export default function AdminLoginPage() {
   return (

@@ -13,7 +13,7 @@ export default function PublicNavbar() {
                         <Zap className="w-6 h-6 fill-current" />
                     </div>
                     <div className="flex flex-col -space-y-1">
-                        <span className="text-lg font-black text-foreground tracking-tighter uppercase italic">S.A.N.K.A.L.P.</span>
+                        <span className="text-lg font-black text-foreground tracking-tighter uppercase italic">Madhyam AI</span>
                         <span className="text-[10px] font-mono font-black text-blue-600 uppercase tracking-widest">PLATFORM</span>
                     </div>
                 </Link>
