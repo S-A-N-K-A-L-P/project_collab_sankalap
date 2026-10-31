@@ -16,7 +16,7 @@ const ORBS = Array.from({ length: 20 }, (_, i) => ({
   duration: 10 + ((i * 7) % 10),
 }));
 
-const SANKALP_LETTERS = "S.A.N.K.A.L.P.".split("");
+const MADHYAM_LETTERS = "MADHYAM".split("");
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -72,7 +72,7 @@ export const HeroSection = () => {
           transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
           className="relative w-28 h-28 mx-auto mb-8 rounded-3xl overflow-hidden shadow-2xl shadow-indigo-500/20 border-4 border-white dark:border-slate-800"
         >
-          <Image src="/syncro.jpg" alt="S.A.N.K.A.L.P Logo" fill sizes="(max-width: 768px) 112px, 112px" className="object-cover" />
+          <Image src="/syncro.jpg" alt="MADHYAM Logo" fill sizes="(max-width: 768px) 112px, 112px" className="object-cover" />
         </motion.div>
 
         <motion.h1 
@@ -81,7 +81,7 @@ export const HeroSection = () => {
           animate="visible"
           className="text-6xl md:text-8xl font-black tracking-tighter text-slate-900 dark:text-white mb-2 flex justify-center flex-wrap"
         >
-          {SANKALP_LETTERS.map((char, index) => (
+          {MADHYAM_LETTERS.map((char, index) => (
             <motion.span 
               key={index} 
               variants={letterVariants}

@@ -1,4 +1,4 @@
-# S.A.N.K.A.L.P. — Platform Hierarchy & Organization Workflow
+# MADHYAM — Platform Hierarchy & Organization Workflow
 
 > The canonical reference for user tiers, organization tiers, capacity rules,
 > reputation, and trust metrics. Product + engineering source of truth.

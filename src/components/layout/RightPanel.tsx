@@ -62,7 +62,7 @@ export default function RightPanel() {
                         ))}
                     </div>
                     <p className="text-xs text-muted/60">
-                        S.A.N.K.A.L.P. Platform © {new Date().getFullYear()}
+                        MADHYAM Platform © {new Date().getFullYear()}
                     </p>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-# S.A.N.K.A.L.P. — Finalised Project Workflow & Roadmap
+# MADHYAM — Finalised Project Workflow & Roadmap
 
 > **Status:** Planning document — no code written yet.
 > **Scope:** Full lifecycle from idea → vote → project → completed → showcase/marketplace

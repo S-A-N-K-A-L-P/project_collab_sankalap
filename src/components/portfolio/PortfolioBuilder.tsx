@@ -18,6 +18,9 @@ import {
 import { defaultTitleFor, defaultContentFor, sanitizeImportedSections, uid, type SectionType } from "./sections";
 
 type Tab = "theme" | "background" | "sections" | "data" | "publish";
+const PREVIEW_MESSAGE_TYPE = "madhyam-preview";
+const PREVIEW_READY_MESSAGE_TYPE = "madhyam-preview-ready";
+const LEGACY_PREVIEW_READY_MESSAGE_TYPE = "sankalp-preview-ready";
 const TABS: { id: Tab; label: string; icon: any }[] = [
   { id: "theme",      label: "Theme",      icon: Palette },
   { id: "background", label: "Background", icon: ImageIcon },
@@ -101,13 +104,20 @@ export default function PortfolioBuilder() {
   const previewUrl = "/portfolio/preview";
   const pushPreviewData = () => {
     const win = previewFrameRef.current?.contentWindow;
-    if (win && previewData) win.postMessage({ type: "sankalp-preview", data: previewData }, window.location.origin);
+    if (win && previewData) {
+      win.postMessage({ type: PREVIEW_MESSAGE_TYPE, data: previewData }, window.location.origin);
+    }
   };
   useEffect(() => {
     pushPreviewData();
     // Re-push when the iframe (re)announces it's ready (e.g. after reload).
     const onMsg = (e: MessageEvent) => {
-      if (e.origin === window.location.origin && e.data?.type === "sankalp-preview-ready") pushPreviewData();
+      if (
+        e.origin === window.location.origin &&
+        [PREVIEW_READY_MESSAGE_TYPE, LEGACY_PREVIEW_READY_MESSAGE_TYPE].includes(e.data?.type)
+      ) {
+        pushPreviewData();
+      }
     };
     window.addEventListener("message", onMsg);
     return () => window.removeEventListener("message", onMsg);

@@ -25,7 +25,7 @@ const FEATURES = [
   { Icon: Cable,         color: "#22d3ee", title: "Connector Workbench",  desc: "Maps frontend API calls to backend routes and generates the missing contract — zero manual glue." },
   { Icon: Play,          color: "#4ade80", title: "Runtime Orchestration",desc: "Run entire multi-project stacks with one click, with continuous health checks and live status." },
   { Icon: Network,       color: "#818cf8", title: "Universe Graph",       desc: "A living knowledge graph of your workspace — every service, route, and dependency, connected." },
-  { Icon: Rss,           color: "#fb923c", title: "Platform Sync",        desc: "Feed, proposals, marketplace and your portfolio from S.A.N.K.A.L.P. — right inside the app." },
+  { Icon: Rss,           color: "#fb923c", title: "Platform Sync",        desc: "Feed, proposals, marketplace and your portfolio from MADHYAM — right inside the app." },
 ];
 
 const TECH = [".NET 9", "MAUI", "Blazor Hybrid", "MudBlazor", "Groq AI", "LiteDB", "MongoDB", "Windows 10+"];
@@ -63,7 +63,7 @@ export default function SyncroDesktopLanding() {
             Syncro <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(135deg, #818cf8, #a78bfa)" }}>Desktop</span>
           </h1>
           <p className="text-base sm:text-xl text-muted max-w-2xl mx-auto mb-8 leading-relaxed">
-            The all-in-one developer cockpit for the S.A.N.K.A.L.P. community — AI agent,
+            The all-in-one developer cockpit for the MADHYAM community — AI agent,
             project scaffolding, Git automation, and full-stack orchestration in a single native app.
           </p>
 
@@ -103,7 +103,7 @@ export default function SyncroDesktopLanding() {
         <div className="text-center mb-12">
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-3">Everything a developer needs</h2>
           <p className="text-muted max-w-2xl mx-auto">
-            Syncro Desktop folds your entire local workflow and the S.A.N.K.A.L.P. platform into one place.
+            Syncro Desktop folds your entire local workflow and the MADHYAM platform into one place.
           </p>
         </div>
 
@@ -178,7 +178,7 @@ export default function SyncroDesktopLanding() {
         </div>
 
         <p className="text-center text-xs text-muted mt-8">
-          Syncro Desktop · The native companion to S.A.N.K.A.L.P.
+          Syncro Desktop · The native companion to MADHYAM
         </p>
       </section>
     </div>

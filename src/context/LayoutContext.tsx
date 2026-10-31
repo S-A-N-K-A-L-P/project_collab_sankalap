@@ -15,7 +15,8 @@ interface LayoutContextType {
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 
-const SIDEBAR_COLLAPSE_STORAGE_KEY = "sankalp:sidebar-collapsed";
+const SIDEBAR_COLLAPSE_STORAGE_KEY = "madhyam:sidebar-collapsed";
+const LEGACY_SIDEBAR_COLLAPSE_STORAGE_KEY = "sankalp:sidebar-collapsed";
 
 export function LayoutProvider({ children }: { children: React.ReactNode }) {
   const [isRightPanelCollapsed, setIsRightPanelCollapsed] = useState(false);
@@ -23,7 +24,9 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem(SIDEBAR_COLLAPSE_STORAGE_KEY);
+    const stored =
+      localStorage.getItem(SIDEBAR_COLLAPSE_STORAGE_KEY) ??
+      localStorage.getItem(LEGACY_SIDEBAR_COLLAPSE_STORAGE_KEY);
     if (stored !== null) setIsSidebarCollapsed(stored === "true");
   }, []);
 

@@ -1,4 +1,4 @@
-# S.A.N.K.A.L.P. — Master Admin Portal Configuration
+# MADHYAM — Master Admin Portal Configuration
 
 > Every tunable knob behind the hierarchy defined in
 > [`hierarchy.md`](./hierarchy.md). Values here are **runtime configuration**,

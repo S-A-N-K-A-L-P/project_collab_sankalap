@@ -1,4 +1,4 @@
-# S.A.N.K.A.L.P. — Org Creation System
+# MADHYAM — Org Creation System
 
 > Canonical documentation for the organization creation feature.
 > Companion to [`hierarchy.md`](./hierarchy.md) and [`config.md`](./config.md).
@@ -8,7 +8,7 @@
 
 ## 1. Overview
 
-The org creation system transforms S.A.N.K.A.L.P. from instant org creation to a **governed lifecycle**: users submit org launch requests, platform admins review them, and approved orgs get dynamic public pages with optional portfolio websites powered by the existing portfolio builder.
+The org creation system transforms MADHYAM from instant org creation to a **governed lifecycle**: users submit org launch requests, platform admins review them, and approved orgs get dynamic public pages with optional portfolio websites powered by the existing portfolio builder.
 
 ### Key Principles
 1. **Request-based creation** — orgs are not created instantly; they go through platform review
@@ -173,7 +173,7 @@ Source: `src/models/Org.ts`
 | Field | Type | Default | Purpose |
 |---|---|---|---|
 | `status` | enum | `"requested"` | Lifecycle state |
-| `isHost` | boolean | `false` | S.A.N.K.A.L.P. host org flag |
+| `isHost` | boolean | `false` | MADHYAM host org flag |
 | `orgType` | enum | `"free"` | free/standard/premium/research/invite_only |
 | `category` | enum | `"community"` | community/academic/company/open_source |
 | `charter` | string | `""` | Mission statement / why this org exists |
@@ -261,7 +261,7 @@ CLOUDINARY_API_SECRET=your_api_secret
 
 ### Folder Structure in Cloudinary
 ```
-sankalp/
+madhyam/
 ├── orgs/avatars/          — org logos (max 2MB)
 ├── orgs/banners/          — org hero banners (max 5MB)
 ├── orgs/gallery/          — org gallery images (max 10MB)

@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
   if (!data) return { title: "Portfolio not found", robots: { index: false } };
 
   const name = data.user?.name || "Portfolio";
-  const desc = data.headline || data.user?.bio || `${name}'s portfolio on S.A.N.K.A.L.P.`;
+  const desc = data.headline || data.user?.bio || `${name}'s portfolio on MADHYAM`;
   const title = data.seo?.title || `${name} — Portfolio`;
 
   return {
@@ -73,7 +73,7 @@ export default async function PublicPortfolioPage({ params }: { params: Promise<
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0b1020", color: "#e2e8f0", flexDirection: "column", gap: 8 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700 }}>Portfolio not available</h1>
         <p style={{ color: "#94a3b8", fontSize: 14 }}>This portfolio doesn&apos;t exist or isn&apos;t public yet.</p>
-        <a href="/" style={{ color: "#7c5cff", fontSize: 14, marginTop: 8 }}>← Back to S.A.N.K.A.L.P.</a>
+        <a href="/" style={{ color: "#7c5cff", fontSize: 14, marginTop: 8 }}>← Back to MADHYAM</a>
       </div>
     );
   }

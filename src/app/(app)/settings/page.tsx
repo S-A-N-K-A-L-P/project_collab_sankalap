@@ -132,7 +132,7 @@ export default function SettingsPage() {
                   className={`${inputCls} cursor-pointer`}
                 >
                   <option value="user">User</option>
-                  <option value="sankalp_member">Sankalp Member</option>
+                  <option value="sankalp_member">Madhyam Member</option>
                 </select>
               </Field>
             </div>

@@ -35,7 +35,7 @@ export default function ShowcasePage() {
               Project Showcase
             </h1>
             <p className="text-sm text-muted mt-1 leading-relaxed">
-              Browse completed projects from the S.A.N.K.A.L.P. community.
+              Browse completed projects from the MADHYAM community.
               View live demos, read business docs, or inquire about licensing.
             </p>
           </div>

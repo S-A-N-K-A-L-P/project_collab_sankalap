@@ -73,7 +73,7 @@ export default function OrgHero({ org, actions }: OrgHeroProps) {
             </span>
             {org.isHost && (
               <span className="flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border border-yellow-200 dark:border-yellow-400/30">
-                <Crown size={10} /> Official S.A.N.K.A.L.P.
+                <Crown size={10} /> Official MADHYAM
               </span>
             )}
           </div>

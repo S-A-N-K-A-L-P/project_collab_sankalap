@@ -1,4 +1,4 @@
-# S.A.N.K.A.L.P. — Portfolio Builder
+# MADHYAM — Portfolio Builder
 
 > **Status:** Design document — planning only, no code yet.
 > **Type:** Feature module (public, shareable, themed portfolios)

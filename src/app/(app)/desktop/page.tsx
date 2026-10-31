@@ -1,7 +1,7 @@
 import SyncroDesktopLanding from "@/components/desktop/SyncroDesktopLanding";
 
 export const metadata = {
-  title: "Syncro Desktop | S.A.N.K.A.L.P.",
+  title: "Syncro Desktop | MADHYAM",
   description: "Download Syncro Desktop — the native developer cockpit with AI agent, scaffolding, Git automation and full-stack orchestration.",
 };
 

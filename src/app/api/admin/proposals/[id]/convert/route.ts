@@ -42,8 +42,8 @@ export async function POST(
       } else {
         const adminId = (session!.user as any).id;
         const defaultOrg = await Org.create({
-          name: "SANKALP",
-          slug: "sankalp",
+          name: "MADHYAM",
+          slug: "madhyam",
           description: "Default organization",
           createdBy: adminId,
           admins: [adminId],

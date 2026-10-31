@@ -29,7 +29,7 @@ export function useSeasonRazorpay(slug: string, onSuccess: () => void) {
       const user = session?.user as any;
       const razorpay = new (window as any).Razorpay({
         key: order.keyId, amount: order.amount, currency: order.currency, order_id: order.orderId,
-        name: "S.A.N.K.A.L.P.", description: `${order.seasonName}${order.cycleNumber > 1 ? ` — cycle ${order.cycleNumber}` : " — participation fee"}`,
+        name: "MADHYAM", description: `${order.seasonName}${order.cycleNumber > 1 ? ` — cycle ${order.cycleNumber}` : " — participation fee"}`,
         image: "/logo.png", prefill: { name: user?.name || "", email: user?.email || "" }, theme: { color: "#4f46e5" },
         handler: async (result: any) => {
           try {

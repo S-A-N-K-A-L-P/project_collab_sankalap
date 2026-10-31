@@ -28,7 +28,7 @@ export default async function DiscoverPage() {
       <div className="bg-card border-l-4 border-l-primary border border-border rounded-xl p-6 shadow-sm">
         <h1 className="text-2xl font-bold text-foreground">Discover Contributors</h1>
         <p className="text-sm text-muted mt-1 leading-relaxed">
-          Connect with verified builders and collaborators across the S.A.N.K.A.L.P. network.
+          Connect with verified builders and collaborators across the MADHYAM network.
         </p>
         <div className="flex items-center gap-2 mt-3 text-sm text-muted">
           <Users className="w-4 h-4" />

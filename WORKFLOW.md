@@ -1,4 +1,4 @@
-# Syncro (SANKALP) — Full Platform Workflow
+# Syncro (MADHYAM) — Full Platform Workflow
 
 > This document describes the complete lifecycle of the platform: every actor, every state transition, every sync point between the user-facing app and the admin control panel. It is the authoritative reference for building new features.
 

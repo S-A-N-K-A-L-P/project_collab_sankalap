@@ -1,4 +1,4 @@
-# S.A.N.K.A.L.P. — Multi-Org Platform & Gamified Open-Source Workflow
+# MADHYAM — Multi-Org Platform & Gamified Open-Source Workflow
 
 > **Status:** Design document — planning only, no code written yet.
 > **Type:** Major upgrade (v2 architecture)
@@ -14,7 +14,7 @@
 
 ## 1. Vision
 
-Turn S.A.N.K.A.L.P. from a **single-tenant** project platform into a **multi-org,
+Turn MADHYAM from a **single-tenant** project platform into a **multi-org,
 gamified, open-source collaboration network** — think *"GitHub meets a guild
 system"*.
 
@@ -24,7 +24,7 @@ Three pillars:
    admin approves it. Each org runs its own proposals → projects → showcase
    pipeline (the existing workflow, scoped per-org).
 2. **Two-tier governance** — a **platform tier** (runs the whole network) and an
-   **org tier** (runs one organisation). S.A.N.K.A.L.P. itself is the **host org**
+   **org tier** (runs one organisation). MADHYAM itself is the **host org**
    — the first, permanent, system-owned organisation.
 3. **Gamified & open-source** — contributions to open-source projects earn XP,
    levels, badges, and leaderboard rank. Git activity (commits, PRs, merged
@@ -39,7 +39,7 @@ Three pillars:
               ┌──────────────────────────┼──────────────────────────┐
               ▼                          ▼                          ▼
      ┌─────────────────┐       ┌─────────────────┐        ┌─────────────────┐
-     │  S.A.N.K.A.L.P   │       │   Org: Acme AI  │        │  Org: GreenTech │
+     │  MADHYAM   │       │   Org: Acme AI  │        │  Org: GreenTech │
      │  (HOST ORG)      │       │  (community)    │        │  (community)    │
      │  system-owned    │       │  org admin: Ria │        │  org admin: Sam │
      └─────────────────┘       └─────────────────┘        └─────────────────┘
@@ -71,7 +71,7 @@ Three pillars:
 | **Orgs are created instantly** (`POST /api/orgs` → live immediately) | No platform-admin approval; anyone spins up an org |
 | **No org lifecycle status** | Can't model proposed → approved → suspended → archived |
 | **Single-dimension roles** | A user is globally `master_admin` OR nothing; can't be "admin of Org A, member of Org B" cleanly via `User.role` |
-| **No host-org concept** | S.A.N.K.A.L.P. isn't a distinguished system org |
+| **No host-org concept** | MADHYAM isn't a distinguished system org |
 | **No gamification layer** | `reputation` is a lone number; no XP/levels/badges/quests |
 | **No open-source semantics** | No license field, "good first issue", contribution bounties, fork/star tracking surfaced |
 | **No org-scoped admin panel** | `/admin/*` is platform-wide only; org admins have no console |
@@ -161,7 +161,7 @@ Result: `Org` document with `status: "requested"`, founder recorded.
 - Platform admin can **suspend** (policy violation) or **archive** (inactive).
 - Owner can **transfer ownership** or request deletion (platform sign-off).
 
-### The HOST ORG (S.A.N.K.A.L.P.)
+### The HOST ORG (MADHYAM)
 - Seeded once as `isHost: true`, `status: "active"`, system-owned.
 - Cannot be suspended/deleted. Platform admins are its owners by default.
 - New users auto-join the host org as `member` on registration (configurable).
@@ -223,7 +223,7 @@ do work  →  earn XP  →  level up  →  unlock badges/roles  →  climb leade
 {
   // ...existing
   status:    { type: String, enum: ["requested","in_review","approved","active","suspended","archived","rejected"], default: "requested" },
-  isHost:    { type: Boolean, default: false },     // S.A.N.K.A.L.P only
+  isHost:    { type: Boolean, default: false },     // MADHYAM only
   category:  { type: String, enum: ["community","academic","company","open_source"], default: "community" },
   charter:   { type: String, default: "" },          // mission / why
   roadmap:   { type: String, default: "" },
@@ -404,7 +404,7 @@ Task.bountyXP:       { type: Number, default: 0 }
 
 ### Phase 0 — Migrations & host org (½ sprint)
 - Extend `Org`, `OrgMember`, `User` schemas (status, roles, gamification).
-- Seed/upgrade S.A.N.K.A.L.P. as `isHost:true, status:"active"`.
+- Seed/upgrade MADHYAM as `isHost:true, status:"active"`.
 - Backfill: existing orgs → `status:"active"`, founders → `owner`.
 - DB migration endpoint (reuse `/api/admin/migrate` pattern).
 
@@ -471,7 +471,7 @@ Task.bountyXP:       { type: Number, default: 0 }
 | `POST /api/orgs` creates org instantly | `POST /api/orgs/request` → platform approval → active |
 | `Org` has no status | `Org.status` lifecycle (requested→…→archived) |
 | `User.role` only governs host-org admin | Platform tier; per-org roles via extended `OrgMember` |
-| S.A.N.K.A.L.P. = the whole app | S.A.N.K.A.L.P. = the **host org** among many |
+| MADHYAM = the whole app | MADHYAM = the **host org** among many |
 | `reputation` (lone number) | `gamification{ totalXP, level, badges, streak }` + `XpEvent` log |
 | `/admin/*` platform-wide only | + org-scoped `/o/[slug]/admin/*` consoles |
 | Projects org-scoped but no OSS semantics | `license`, `isOpenSource`, good-first-issues, git-reward XP |
@@ -483,4 +483,4 @@ Task.bountyXP:       { type: Number, default: 0 }
 (URL scheme, XP scoping, moderator timing) are now **locked** (see top + §11).
 Remaining open items (§11.4–9) are non-blocking — they can be settled during
 Phase 0/1. Say the word to begin **Phase 0** (schema migrations + seeding
-S.A.N.K.A.L.P. as the host org).
+MADHYAM as the host org).

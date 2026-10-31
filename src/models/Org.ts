@@ -112,7 +112,7 @@ const OrgSchema = new Schema(
       enum: ["requested", "in_review", "approved", "active", "suspended", "archived", "rejected"],
       default: "requested",
     },
-    isHost: { type: Boolean, default: false },  // S.A.N.K.A.L.P. host org
+    isHost: { type: Boolean, default: false },  // MADHYAM host org
 
     /* ── Classification ──────────────────────────────────────── */
     orgType: {

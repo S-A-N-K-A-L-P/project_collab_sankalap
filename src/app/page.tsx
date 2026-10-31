@@ -21,7 +21,7 @@ import { EngagementCTA } from "@/components/portfolio/EngagementCTA";
 import { IdeologyFooter } from "@/components/portfolio/IdeologyFooter";
 import { IdeologyCloud } from "@/components/portfolio/IdeologyCloud";
 import { DiversitySection } from "@/components/portfolio/DiversitySection";
-import { SankalpWorkflow } from "@/components/portfolio/SankalpWorkflow";
+import { MadhyamWorkflow } from "@/components/portfolio/MadhyamWorkflow";
 import { LeadershipProgression } from "@/components/portfolio/LeadershipProgression";
 import { Acknowledgement } from "@/components/portfolio/Acknowledgement";
 
@@ -66,7 +66,7 @@ export default async function Home() {
               <Zap className="w-6 h-6 fill-current" />
             </div>
             <div className="flex flex-col -space-y-1">
-              <span className="text-xl font-black theme-text-primary tracking-tighter uppercase italic">S.A.N.K.A.L.P.</span>
+              <span className="text-xl font-black theme-text-primary tracking-tighter uppercase italic">MADHYAM</span>
               <span className="text-[10px] font-mono font-black text-blue-600 uppercase tracking-widest">PLATFORM</span>
             </div>
           </div>
@@ -95,7 +95,7 @@ export default async function Home() {
       <IdeologyCloud />
       <ValuesGrid />
       <CommunityPulse />
-      <SankalpWorkflow />
+      <MadhyamWorkflow />
       <LeadershipProgression />
       <ProjectShowcase projects={featuredProjects} />
       <VisionParallax />

@@ -51,7 +51,7 @@ export interface UploadResult {
 }
 
 export interface UploadOptions {
-  folder?:        string;          // e.g. "sankalp/orgs/logos"
+  folder?:        string;          // Legacy folder paths remain supported.
   resourceType?:  "image" | "video" | "raw" | "auto";
   maxBytes?:      number;          // throws if file exceeds this
   transformation?: object[];       // Cloudinary transformation array

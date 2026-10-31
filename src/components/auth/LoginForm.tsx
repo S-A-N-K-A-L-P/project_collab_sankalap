@@ -82,7 +82,7 @@ export default function LoginForm() {
               required
               value={formData.email}
               onChange={handleChange}
-              placeholder="user@sankalp.ai"
+              placeholder="user@madhyam.ai"
               className="w-full pl-12 pr-4 py-3 bg-background border border-border-subtle rounded-xl focus:border-accent/50 outline-none transition-all text-foreground text-[13px] placeholder:text-muted"
             />
           </div>
@@ -127,7 +127,7 @@ export default function LoginForm() {
 
       <div className="text-center pt-2">
         <p className="text-[11px] text-muted font-bold uppercase tracking-widest">
-          New to S.A.N.K.A.L.P?{" "}
+          New to MADHYAM?{" "}
           <Link href="/register" className="text-accent hover:underline font-bold ml-2">
             Create an account
           </Link>

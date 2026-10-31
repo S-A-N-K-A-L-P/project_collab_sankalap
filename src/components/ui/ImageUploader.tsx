@@ -6,7 +6,7 @@ import { Upload, X, Image as ImageIcon, Link as LinkIcon, Check, Loader2 } from 
 import { useCloudinaryUpload } from "@/hooks/useCloudinaryUpload";
 
 export interface ImageUploaderProps {
-  /** Cloudinary folder (e.g. "sankalp/orgs/logos") */
+  /** Legacy Cloudinary folder structure retained for existing assets. */
   folder?:      string;
   /** Current value (URL) */
   value?:       string;

@@ -372,7 +372,7 @@ Convert an approved/active proposal into a Project.
 **Request body:**
 ```json
 {
-  "orgId": "<orgId>",       // optional — falls back to first org, or creates "SANKALP"
+  "orgId": "<orgId>",       // optional — falls back to first org, or creates "MADHYAM"
   "title": "My Project",    // optional — defaults to proposal title
   "description": "...",     // optional — defaults to proposal description
   "leadId": "<userId>"      // optional — defaults to proposal.projectLead or current admin

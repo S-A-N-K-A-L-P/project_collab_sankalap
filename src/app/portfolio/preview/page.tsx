@@ -5,6 +5,10 @@ import PortfolioRenderer, { type PortfolioData } from "@/components/portfolio/Po
 import { getTheme } from "@/components/portfolio/themes/registry";
 import { buildPreviewData } from "@/components/portfolio/previewData";
 
+const PREVIEW_MESSAGE_TYPE = "madhyam-preview";
+const PREVIEW_READY_MESSAGE_TYPE = "madhyam-preview-ready";
+const LEGACY_PREVIEW_MESSAGE_TYPE = "sankalp-preview";
+
 /**
  * Dedicated live-preview route: renders ONLY the portfolio (no editor chrome),
  * inside its own real viewport so the portfolio's media queries fire correctly.
@@ -25,11 +29,16 @@ export default function PortfolioPreviewPage() {
     if (embedded) {
       const onMsg = (e: MessageEvent) => {
         if (e.origin !== window.location.origin) return;
-        if (e.data?.type === "sankalp-preview" && e.data.data) setData(e.data.data);
+        if (
+          [PREVIEW_MESSAGE_TYPE, LEGACY_PREVIEW_MESSAGE_TYPE].includes(e.data?.type) &&
+          e.data.data
+        ) {
+          setData(e.data.data);
+        }
       };
       window.addEventListener("message", onMsg);
       // Tell the editor we're ready so it pushes the current state immediately.
-      window.parent.postMessage({ type: "sankalp-preview-ready" }, window.location.origin);
+      window.parent.postMessage({ type: PREVIEW_READY_MESSAGE_TYPE }, window.location.origin);
       return () => window.removeEventListener("message", onMsg);
     }
 

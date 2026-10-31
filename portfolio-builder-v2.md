@@ -146,7 +146,7 @@ A single portable shape. **Import** fills the builder; **Export** downloads it.
       "content": { "items": [ { "name": "AWS SA", "issuer": "Amazon",
         "date": "2025", "url": "https://...", "image": "https://..." } ] } },
     { "type": "affiliated_orgs", "title": "Organizations",
-      "content": { "items": [ { "name": "S.A.N.K.A.L.P", "role": "Member",
+      "content": { "items": [ { "name": "MADHYAM", "role": "Member",
         "period": "2024–", "url": "https://...", "logo": "https://..." } ] } },
     { "type": "links", "title": "Links",
       "content": { "items": [ { "icon": "globe", "label": "Website", "url": "..." } ] } },

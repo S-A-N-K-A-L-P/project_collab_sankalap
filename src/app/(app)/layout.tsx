@@ -3,8 +3,8 @@ import { unstable_noStore as noStore } from "next/cache";
 import AppLayoutClient from "@/components/layout/AppLayoutClient";
 
 export const metadata: Metadata = {
-  title: "Feed | Syncro",
-  description: "SANKALP builder coordination network.",
+  title: "Feed | MADHYAM",
+  description: "MADHYAM builder coordination network.",
 };
 
 export default function AppLayout({

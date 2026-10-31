@@ -291,7 +291,7 @@ export default function TopNav() {
               display: { xs: "none", sm: "block" },
             }}
           >
-            S.A.N.K.A.L.P
+            MADHYAM
           </Typography>
         </Box>
 

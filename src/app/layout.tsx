@@ -3,8 +3,8 @@ import "./globals.css";
 import { Providers } from "@/components/Providers";
 
 export const metadata: Metadata = {
-  title: "Syncro",
-  description: "SANKALP Collaboration Platform",
+  title: "MADHYAM",
+  description: "MADHYAM Collaboration Platform",
 };
 
 export default function RootLayout({

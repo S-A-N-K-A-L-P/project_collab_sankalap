@@ -130,8 +130,8 @@ export default function PortfolioRenderer({ data, contained = false }: { data: P
         const logo = data.orgMode ? org.logo : user.avatar;
         const displayName = data.orgMode ? org.name : user.name;
         const headline = data.orgMode
-          ? (tk(c.headline || data.headline) || org.tagline || "Community on S.A.N.K.A.L.P.")
-          : (tk(c.headline || data.headline) || user.bio || "Builder on S.A.N.K.A.L.P.");
+          ? (tk(c.headline || data.headline) || org.tagline || "Community on MADHYAM")
+          : (tk(c.headline || data.headline) || user.bio || "Builder on MADHYAM");
         const tagline = tk(c.tagline || data.tagline);
         return (
           <section key={sec.id} style={{ position: "relative", minHeight: "70vh", display: "flex", flexDirection: "column", justifyContent: "center", paddingTop: 72, paddingBottom: 36 }}>
@@ -613,7 +613,7 @@ export default function PortfolioRenderer({ data, contained = false }: { data: P
       <div style={{ position: "relative", zIndex: 1, maxWidth: 900, margin: "0 auto", padding: "0 24px" }}>
         {sections.map(renderSection)}
         <footer style={{ padding: "48px 0", textAlign: "center", color: p.muted, fontSize: 12 }}>
-          Built on S.A.N.K.A.L.P. · {new Date().getFullYear()}
+          Built on MADHYAM · {new Date().getFullYear()}
         </footer>
       </div>
     </div>

@@ -1,8 +1,8 @@
-# S.A.N.K.A.L.P. Platform — Project Scope & Workflow
+# MADHYAM Platform — Project Scope & Workflow
 
 ## 1. What Is This Platform?
 
-**S.A.N.K.A.L.P.** (also referred to internally as *Syncro*) is a full-stack community platform built for a university tech club called **Pixel Collective**. It is the club's internal operating system — members propose ideas, the community votes on them, admins greenlight the best ones, and those ideas get turned into real tracked projects with assigned teams, tasks, weekly reports, and GitHub integration.
+**MADHYAM** (also referred to internally as *Syncro*) is a full-stack community platform built for a university tech club called **Pixel Collective**. It is the club's internal operating system — members propose ideas, the community votes on them, admins greenlight the best ones, and those ideas get turned into real tracked projects with assigned teams, tasks, weekly reports, and GitHub integration.
 
 **Tech stack:** Next.js 15 (App Router) · TypeScript · MongoDB (Mongoose) · NextAuth.js · Tailwind CSS · Framer Motion · Lucide Icons
 

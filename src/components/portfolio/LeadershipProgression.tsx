@@ -63,7 +63,7 @@ export const LeadershipProgression = () => {
             transition={{ delay: 0.2 }}
             className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto"
           >
-            A transparent and meritocratic pathway to grow from a learner to a visionary leader within the S.A.N.K.A.L.P. ecosystem.
+            A transparent and meritocratic pathway to grow from a learner to a visionary leader within the MADHYAM ecosystem.
           </motion.p>
         </div>
 
