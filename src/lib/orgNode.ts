@@ -6,7 +6,8 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Org from "@/models/Org";
 import OrgMember from "@/models/OrgMember";
-import { decryptSecret, parseSecretKey, verifySignedRequest } from "@/lib/orgNodeCore";
+import User from "@/models/User";
+import { decryptSecret, EVENTS_PATH, memberChangedEvent, parseSecretKey, showcaseCallHeaders, verifySignedRequest } from "@/lib/orgNodeCore";
 
 export type OrgNodeDoc = {
   nodeId?: string;
@@ -90,4 +91,36 @@ export function publicNodeStatus(org: OrgWithNode, hostName?: string) {
     lastOnlineAt: n.lastOnlineAt ?? null,
     lastOfflineAt: n.lastOfflineAt ?? null,
   };
+}
+
+/**
+ * Tells the org's node that one person's membership changed (admindashboard-syncro.md §5.8): role, status, or removal.
+ * Best effort and only while the node is online (it has a URL); if it is offline, the roster it fetches at its next
+ * start catches up. Never throws and gives up after 3 s, so the admin action that triggered it is never held up long.
+ */
+export async function notifyNodeMemberChanged(orgId: unknown, userId: string): Promise<void> {
+  try {
+    const key = nodeSecretKey();
+    if (!key || !/^[a-f0-9]{24}$/.test(userId)) return;
+    const org = await Org.findById(orgId).select("+node +node.secretEnc").lean<OrgWithNode>();
+    const url = org?.node?.url;
+    if (!org || !url || !org.node?.secretEnc) return;
+    const secret = decryptSecret(org.node.secretEnc, key);
+    if (!secret) return;
+    const [membership, user] = await Promise.all([
+      OrgMember.findOne({ userId, orgId: org._id }).select("role status").lean<{ role?: string; status?: string }>(),
+      User.findById(userId).select("name avatar role").lean<{ name?: string; avatar?: string; role?: string }>(),
+    ]);
+    const body = JSON.stringify(memberChangedEvent({ userId, membership: membership ?? null, user: user ?? null, at: new Date() }));
+    const res = await fetch(url.replace(/\/+$/, "") + EVENTS_PATH, {
+      method: "POST",
+      headers: showcaseCallHeaders(String(org._id), secret, "POST", EVENTS_PATH, body, Math.floor(Date.now() / 1000)),
+      body,
+      redirect: "error",
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!res.ok) console.warn(`[org-node] member.changed for ${org.slug} answered ${res.status}`);
+  } catch (e) {
+    console.warn("[org-node] member.changed not delivered:", e instanceof Error ? e.message : e);
+  }
 }

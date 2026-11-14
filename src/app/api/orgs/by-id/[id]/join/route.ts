@@ -5,6 +5,7 @@ import dbConnect from "@/lib/mongodb";
 import Org from "@/models/Org";
 import OrgMember from "@/models/OrgMember";
 import User from "@/models/User";
+import { notifyNodeMemberChanged } from "@/lib/orgNode";
 
 export async function POST(
   req: Request,
@@ -37,6 +38,7 @@ export async function POST(
     await Org.findByIdAndUpdate(orgId, {
       $push: { members: userId }
     });
+    await notifyNodeMemberChanged(org._id, String(userId));   // the org's node can seat them right away
 
     return NextResponse.json(membership, { status: 201 });
   } catch (error) {

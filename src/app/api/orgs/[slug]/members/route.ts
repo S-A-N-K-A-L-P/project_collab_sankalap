@@ -5,6 +5,7 @@ import dbConnect from "@/lib/mongodb";
 import Org from "@/models/Org";
 import OrgMember from "@/models/OrgMember";
 import User from "@/models/User";
+import { notifyNodeMemberChanged } from "@/lib/orgNode";
 
 /** GET /api/orgs/[slug]/members — list org members */
 export async function GET(req: Request, { params }: { params: Promise<{ slug: string }> }) {
@@ -102,6 +103,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
     if (!requiresApproval) {
       // Update member count
       await Org.updateOne({ _id: org._id }, { $inc: { "stats.memberCount": 1 } });
+      await notifyNodeMemberChanged(org._id, String(userId));   // the org's node can seat them right away
     }
 
     return NextResponse.json({

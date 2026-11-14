@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   attestSignature, b64url, decryptSecret, encryptSecret, fromB64url, generateNodeSecret, generatePairingCode,
-  buildPassClaims, normalizeNodeUrl, normalizePairingCode, parseSecretKey, PAIRING_CODE_RE, seatsFor, signPass, signRequest,
-  verifySignedRequest,
+  buildPassClaims, buildRoster, memberChangedEvent, normalizeNodeUrl, normalizePairingCode, parseSecretKey, PAIRING_CODE_RE, seatsFor,
+  showcaseCallHeaders, signPass, signRequest, verifySignedRequest,
 } from "./orgNodeCore.ts";
 
 // Same vectors are asserted by Syncro.Git.Tests (OrgNodeTests.Signing_matches_showcase_vectors), so the
@@ -121,4 +121,60 @@ test("seats come from teamRoster, then lead, then members", () => {
     { projectId: "p3", projectRole: "contributor", maxActiveTasks: 5 },
     { projectId: "p4", projectRole: "contributor", maxActiveTasks: 50 },
   ]);
+});
+
+// Asserted by Syncro.Git.Tests (OrgNodeProjectsTests.Showcase_event_vector_verifies) too.
+const EVENT_BODY = '{"type":"member.changed","userId":"cccccccccccccccccccccccc","orgRole":"lead","status":"active","removed":false,"at":"2023-11-14T22:13:20.000Z","name":"Lou Lead","platformRole":"user"}';
+
+test("member.changed body and Showcase signature match the vector the node verifies", () => {
+  const body = JSON.stringify(memberChangedEvent({
+    userId: "cccccccccccccccccccccccc", membership: { role: "lead", status: "active" }, user: { name: "Lou Lead", role: "user", email: "x@y.z" } as never,
+    at: new Date(1700000000000),
+  }));
+  assert.equal(body, EVENT_BODY);
+  assert.deepEqual(showcaseCallHeaders("0123456789abcdef01234567", SECRET, "POST", "/api/org/v1/events", body, 1700000000), {
+    "Content-Type": "application/json",
+    "X-Syncro-Showcase": "0123456789abcdef01234567",
+    "X-Syncro-Timestamp": "1700000000",
+    "X-Syncro-Signature": "XMJcf61-HsElPoGH-hBSHlCNuPvg-Jj2_dUdBuHDWZ0",
+  });
+  const removed = memberChangedEvent({ userId: "cccccccccccccccccccccccc", membership: null, user: null, at: new Date(0) });
+  assert.deepEqual(removed, { type: "member.changed", userId: "cccccccccccccccccccccccc", orgRole: null, status: null, removed: true, at: "1970-01-01T00:00:00.000Z" });
+});
+
+test("roster lists valid members with seats and unused approved proposals, never email", () => {
+  const a = "aaaaaaaaaaaaaaaaaaaaaaaa", b = "bbbbbbbbbbbbbbbbbbbbbbbb", c = "cccccccccccccccccccccccc", p1 = "111111111111111111111111", p2 = "222222222222222222222222";
+  const roster = buildRoster({
+    orgId: "0123456789abcdef01234567",
+    now: new Date(1700000000000),
+    memberships: [
+      { userId: a, role: "owner", status: "active" },
+      { userId: b, role: "member", status: "pending" },
+      { userId: c, role: "wizard", status: "active" },              // unknown role: left out
+      { userId: "dddddddddddddddddddddddd", role: "member", status: "active" }, // user gone: left out
+    ],
+    users: new Map([
+      [a, { name: "Olive Owner", avatar: "https://x/a.png", role: "master_admin", email: "o@x.y" } as never],
+      [b, { name: "Pat Pending", role: "weird" }],
+      [c, { name: "Cam", role: "user" }],
+    ]),
+    projects: [{ _id: p1, lead: a, members: [b] }],
+    proposals: [
+      { _id: p1, title: "Used already", techStack: [] },
+      { _id: p2, title: "Payments API", techStack: ["Next.js", 7, "Postgres"], createdBy: b },
+    ],
+    usedProposalIds: new Set([p1]),
+  });
+  assert.deepEqual(roster, {
+    orgId: "0123456789abcdef01234567",
+    generatedAt: "2023-11-14T22:13:20.000Z",
+    members: [
+      { userId: a, name: "Olive Owner", avatar: "https://x/a.png", platformRole: "master_admin", orgRole: "owner", status: "active",
+        seats: [{ showcaseProjectId: p1, projectRole: "lead", maxActiveTasks: 5 }] },
+      { userId: b, name: "Pat Pending", platformRole: "user", orgRole: "member", status: "pending",
+        seats: [{ showcaseProjectId: p1, projectRole: "contributor", maxActiveTasks: 5 }] },
+    ],
+    approvedProposals: [{ proposalId: p2, title: "Payments API", techStack: ["Next.js", "Postgres"], createdBy: b }],
+  });
+  assert.ok(!JSON.stringify(roster).includes("@"));
 });

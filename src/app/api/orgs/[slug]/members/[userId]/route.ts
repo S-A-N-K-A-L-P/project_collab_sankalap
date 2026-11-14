@@ -5,6 +5,7 @@ import dbConnect from "@/lib/mongodb";
 import Org from "@/models/Org";
 import OrgMember from "@/models/OrgMember";
 import { canChangeOrgRole, canRemoveMember, isPlatformAdminOverride } from "@/lib/org-permissions";
+import { notifyNodeMemberChanged } from "@/lib/orgNode";
 
 /** PATCH /api/orgs/[slug]/members/[userId] — change member role or approve join */
 export async function PATCH(
@@ -68,6 +69,9 @@ export async function PATCH(
       await Org.updateOne({ _id: org._id }, { $inc: { "stats.memberCount": 1 } });
     }
 
+    // The org's node (if online) applies the new role at once: repo access, sessions (docs/org-server roles.md §7.4).
+    await notifyNodeMemberChanged(org._id, targetUserId);
+
     return NextResponse.json(JSON.parse(JSON.stringify(membership)));
   } catch (error: any) {
     console.error("[PATCH member]", error);
@@ -108,6 +112,9 @@ export async function DELETE(
     if (membership.status === "active") {
       await Org.updateOne({ _id: org._id }, { $inc: { "stats.memberCount": -1 } });
     }
+
+    // The org's node (if online) revokes their console sessions, tokens, seats and repo access at once.
+    await notifyNodeMemberChanged(org._id, targetUserId);
 
     return NextResponse.json({ message: "Member removed successfully" });
   } catch (error: any) {

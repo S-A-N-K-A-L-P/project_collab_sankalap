@@ -230,3 +230,112 @@ export function buildPassClaims(input: {
     seats: input.seats.slice(0, 50),
   };
 }
+
+// ── Roster snapshot and member.changed (step 3; admindashboard-syncro.md §5.5, §5.8) ──────────────────────────────
+
+export const ROSTER_MAX_MEMBERS = 5000;
+export const EVENTS_PATH = "/api/org/v1/events";
+
+export type RosterSeat = { showcaseProjectId: string; projectRole: (typeof PROJECT_ROLES)[number]; maxActiveTasks: number };
+export type RosterMember = {
+  userId: string;
+  name: string;
+  avatar?: string;
+  platformRole: (typeof PLATFORM_ROLES)[number];
+  orgRole: (typeof ORG_ROLES)[number];
+  status: (typeof ORG_STATUSES)[number];
+  seats: RosterSeat[];
+};
+export type RosterProposal = { proposalId: string; title: string; techStack: string[]; createdBy?: string };
+export type Roster = { orgId: string; generatedAt: string; members: RosterMember[]; approvedProposals: RosterProposal[] };
+
+type MembershipLike = { userId?: unknown; role?: unknown; status?: unknown };
+type UserLike = { name?: unknown; avatar?: unknown; role?: unknown };
+type ProposalLike = { _id: unknown; title?: unknown; techStack?: unknown; createdBy?: unknown };
+
+const OBJECT_ID_RE = /^[a-f0-9]{24}$/;
+const cleanAvatar = (v: unknown) => (typeof v === "string" && v.length > 0 && v.length <= 500 ? v : undefined);
+
+/**
+ * The roster a node fetches once per start: every org member with role, status and seats, plus approved proposals
+ * that have no project yet. Memberships with unknown roles/statuses, or whose user is gone, are left out. Never email.
+ */
+export function buildRoster(input: {
+  orgId: string;
+  now: Date;
+  memberships: MembershipLike[];
+  users: Map<string, UserLike>;
+  projects: ProjectLike[];
+  proposals: ProposalLike[];
+  usedProposalIds: Set<string>;
+}): Roster {
+  const members: RosterMember[] = [];
+  for (const m of input.memberships) {
+    if (members.length >= ROSTER_MAX_MEMBERS) break;
+    const userId = String(m.userId ?? "");
+    const user = input.users.get(userId);
+    if (!OBJECT_ID_RE.test(userId) || !user || !isOneOf(ORG_ROLES, m.role) || !isOneOf(ORG_STATUSES, m.status)) continue;
+    const avatar = cleanAvatar(user.avatar);
+    members.push({
+      userId,
+      name: (typeof user.name === "string" ? user.name : "").slice(0, 120),
+      ...(avatar ? { avatar } : {}),
+      platformRole: isOneOf(PLATFORM_ROLES, user.role) ? user.role : "user",
+      orgRole: m.role,
+      status: m.status,
+      seats: seatsFor(input.projects, userId).map((s) => ({ showcaseProjectId: s.projectId, projectRole: s.projectRole, maxActiveTasks: s.maxActiveTasks })),
+    });
+  }
+  const approvedProposals: RosterProposal[] = [];
+  for (const p of input.proposals) {
+    const proposalId = String(p._id);
+    if (!OBJECT_ID_RE.test(proposalId) || input.usedProposalIds.has(proposalId) || typeof p.title !== "string") continue;
+    const createdBy = p.createdBy ? String(p.createdBy) : "";
+    approvedProposals.push({
+      proposalId,
+      title: p.title.slice(0, 200),
+      techStack: Array.isArray(p.techStack) ? p.techStack.filter((t): t is string => typeof t === "string").slice(0, 20).map((t) => t.slice(0, 40)) : [],
+      ...(OBJECT_ID_RE.test(createdBy) ? { createdBy } : {}),
+    });
+  }
+  return { orgId: input.orgId, generatedAt: input.now.toISOString(), members, approvedProposals };
+}
+
+export type MemberChangedEvent = {
+  type: "member.changed";
+  userId: string;
+  orgRole: (typeof ORG_ROLES)[number] | null;
+  status: (typeof ORG_STATUSES)[number] | null;
+  removed: boolean;
+  at: string;
+  name?: string;
+  avatar?: string;
+  platformRole?: (typeof PLATFORM_ROLES)[number];
+};
+
+/** member.changed for one person: their membership now (null when removed) and display details for new members. */
+export function memberChangedEvent(input: { userId: string; membership: MembershipLike | null; user: UserLike | null; at: Date }): MemberChangedEvent {
+  const m = input.membership;
+  const avatar = cleanAvatar(input.user?.avatar);
+  return {
+    type: "member.changed",
+    userId: input.userId,
+    orgRole: m && isOneOf(ORG_ROLES, m.role) ? m.role : null,
+    status: m && isOneOf(ORG_STATUSES, m.status) ? m.status : null,
+    removed: !m,
+    at: input.at.toISOString(),
+    ...(input.user && typeof input.user.name === "string" ? { name: input.user.name.slice(0, 120) } : {}),
+    ...(avatar ? { avatar } : {}),
+    ...(input.user && isOneOf(PLATFORM_ROLES, input.user.role) ? { platformRole: input.user.role } : {}),
+  };
+}
+
+/** Headers for a Showcase → node call (gitupgrades.md §2.3): same HMAC as node → Showcase, X-Syncro-Showcase = orgId. */
+export function showcaseCallHeaders(orgId: string, nodeSecret: string, method: string, path: string, body: string, timestamp: number) {
+  return {
+    "Content-Type": "application/json",
+    "X-Syncro-Showcase": orgId,
+    "X-Syncro-Timestamp": String(timestamp),
+    "X-Syncro-Signature": signRequest(nodeSecret, method, path, timestamp, body),
+  };
+}
