@@ -50,6 +50,43 @@ const OrgStatsSchema = new Schema(
   { _id: false }
 );
 
+/**
+ * Org Node — the org admin's PC that serves this org's console through a Cloudflare tunnel
+ * (Syncro.Desktop docs/org-server/gitupgrades.md §17.1). The whole subdocument is select:false: existing routes
+ * return org documents to anyone, and the host's PC name, OS and app version must not leak through them.
+ * Inside it, secretEnc and pairing.codeHash are select:false too. Load with .select("+node") (secrets stay out),
+ * "+node +node.secretEnc", or explicit "node.<field>" paths. Never .select("node"): it projects {node: 1} and
+ * reads both secrets.
+ */
+const OrgNodeSchema = new Schema(
+  {
+    nodeId:        { type: String },
+    nodeName:      { type: String, default: "" },
+    secretEnc:     { type: String, select: false },          // AES-256-GCM(nodeSecret) with NODE_SECRET_KEY
+    pairedBy:      { type: Schema.Types.ObjectId, ref: "User" },
+    pairedAt:      { type: Date },
+    url:           { type: String, default: null },           // last attested URL; a hint, not proof of being online
+    tunnelKind:    { type: String, enum: ["quick", "named"] },
+    features:      { type: [String], default: [] },
+    appVersion:    { type: String, default: "" },
+    os:            { type: String, default: "" },
+    lastOnlineAt:  { type: Date, default: null },
+    lastOfflineAt: { type: Date, default: null },
+    pairing: {
+      type: new Schema(
+        {
+          codeHash:  { type: String, select: false },
+          createdBy: { type: Schema.Types.ObjectId, ref: "User" },
+          expiresAt: { type: Date },
+        },
+        { _id: false }
+      ),
+      default: null,
+    },
+  },
+  { _id: false }
+);
+
 // Embedded portfolio config (mirrors Portfolio model shape)
 const OrgPortfolioConfigSchema = new Schema(
   {
@@ -162,6 +199,9 @@ const OrgSchema = new Schema(
     /* ── Cached aggregates ───────────────────────────────────── */
     stats:      { type: OrgStatsSchema,    default: () => ({}) },
     trustScore: { type: TrustScoreSchema,  default: () => ({}) },
+
+    /* ── Org Node (live work on the admin's PC) ───────────────── */
+    node: { type: OrgNodeSchema, default: null, select: false },
   },
   {
     timestamps: true,
@@ -173,6 +213,7 @@ OrgSchema.index({ status: 1 });
 OrgSchema.index({ ownerId: 1 });
 OrgSchema.index({ category: 1, status: 1 });
 OrgSchema.index({ "stats.memberCount": -1 });
+OrgSchema.index({ "node.pairing.codeHash": 1 }, { sparse: true });
 
 const Org = models.Org || model("Org", OrgSchema);
 

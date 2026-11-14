@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import {
   Users, FolderOpen, Shield, Settings, Palette,
   ArrowRight, Loader2, AlertCircle, LayoutDashboard,
-  UserCheck, ShieldAlert
+  UserCheck, ShieldAlert, Server
 } from "lucide-react";
 import { useOrg } from "@/context/OrgContext";
 import { useRouter } from "next/navigation";
@@ -170,6 +170,22 @@ export default function OrgAdminDashboard() {
             </div>
             <span className="text-xs text-primary dark:text-indigo-400 font-semibold flex items-center gap-1 mt-2">
               Configure <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+            </span>
+          </a>
+
+          <a
+            href={`/orgs/${org.slug}/admin/node`}
+            className="group p-5 rounded-xl border border-border dark:border-white/8 bg-card dark:bg-white/4 hover:border-primary/30 dark:hover:border-indigo-500/30 hover:shadow-md dark:hover:bg-white/8 transition-all flex flex-col justify-between h-36"
+          >
+            <div>
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-tertiary dark:from-indigo-400 dark:to-purple-400 flex items-center justify-center mb-2">
+                <Server size={18} className="text-white" />
+              </div>
+              <h4 className="font-semibold text-foreground dark:text-white group-hover:text-primary dark:group-hover:text-indigo-300 transition-colors">Org Server</h4>
+              <p className="text-xs text-muted-foreground dark:text-white/40 mt-1 leading-normal">Pair a PC running Syncro Desktop to host the org&apos;s console.</p>
+            </div>
+            <span className="text-xs text-primary dark:text-indigo-400 font-semibold flex items-center gap-1 mt-2">
+              Set up <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
             </span>
           </a>
         </div>
