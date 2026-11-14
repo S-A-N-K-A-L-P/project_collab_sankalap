@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   attestSignature, b64url, decryptSecret, encryptSecret, fromB64url, generateNodeSecret, generatePairingCode,
-  normalizeNodeUrl, normalizePairingCode, parseSecretKey, PAIRING_CODE_RE, signRequest, verifySignedRequest,
+  buildPassClaims, normalizeNodeUrl, normalizePairingCode, parseSecretKey, PAIRING_CODE_RE, seatsFor, signPass, signRequest,
+  verifySignedRequest,
 } from "./orgNodeCore.ts";
 
 // Same vectors are asserted by Syncro.Git.Tests (OrgNodeTests.Signing_matches_showcase_vectors), so the
@@ -64,4 +65,60 @@ test("node URLs: https hosts only", () => {
     "https://a.b?x=1", "https://u:p@a.b", "https://a.b:8443", "javascript:alert(1)", "https://intranet", 5]) {
     assert.equal(normalizeNodeUrl(bad), null, String(bad));
   }
+});
+
+// Same pass vector is verified by Syncro.Git.Tests (OrgNodeSsoTests.Pass_vector_from_the_showcase_verifies).
+const PASS_VECTOR =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3Byb2plY3Qtc3luY3Jvby5uZXRsaWZ5LmFwcCIsImF1ZCI6Im9yZy1ub2RlOjAxMjM0NTY3ODlhYmNkZWYwMTIzNDU2NyIsInN1YiI6ImFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYSIsImlhdCI6MTcwMDAwMDAwMCwiZXhwIjoxNzAwMDAwMDYwLCJqdGkiOiIwMDExMjIzMzQ0NTU2Njc3ODg5OWFhYmJjY2RkZWVmZiIsIm5vbmNlIjoibm9uY2VfMDEyMzQ1Njc4OWFiY2RlZmdoaWoiLCJuYW1lIjoiVGVzdCBVc2VyIiwicGxhdGZvcm1Sb2xlIjoidXNlciIsIm9yZyI6eyJpZCI6IjAxMjM0NTY3ODlhYmNkZWYwMTIzNDU2NyIsInNsdWciOiJhY21lIiwicm9sZSI6Im1lbWJlciIsInN0YXR1cyI6ImFjdGl2ZSJ9LCJzZWF0cyI6W3sicHJvamVjdElkIjoiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiIiwicHJvamVjdFJvbGUiOiJsZWFkIiwibWF4QWN0aXZlVGFza3MiOjV9XX0." +
+  "28YH6wbUlbOfwXGVMNxcYrBmc6VDVodt7GGqNUkBCaw";
+
+test("sign-in pass matches the vector the node verifies", () => {
+  const claims = buildPassClaims({
+    issuer: "https://project-syncroo.netlify.app/",
+    orgId: "0123456789abcdef01234567",
+    orgSlug: "acme",
+    userId: "aaaaaaaaaaaaaaaaaaaaaaaa",
+    name: "Test User",
+    avatar: "",
+    platformRole: "user",
+    membership: { role: "member", status: "active" },
+    seats: [{ projectId: "bbbbbbbbbbbbbbbbbbbbbbbb", projectRole: "lead", maxActiveTasks: 5 }],
+    nonce: "nonce_0123456789abcdefghij",
+    now: 1700000000,
+    jti: "00112233445566778899aabbccddeeff",
+  });
+  assert.equal(signPass(claims, SECRET), PASS_VECTOR);
+});
+
+test("pass claims never carry unknown roles, and non-members get null org role/status", () => {
+  const base = {
+    issuer: "https://x.dev", orgId: "0123456789abcdef01234567", orgSlug: "acme", userId: "aaaaaaaaaaaaaaaaaaaaaaaa",
+    name: "N".repeat(200), platformRole: "god_mode", seats: [], nonce: "n".repeat(22), now: 10, jti: "j".repeat(32),
+  };
+  const c = buildPassClaims({ ...base, membership: null });
+  assert.equal(c.platformRole, "user");
+  assert.deepEqual(c.org, { id: base.orgId, slug: "acme", role: null, status: null });
+  assert.equal(c.name.length, 120);
+  assert.equal(c.exp - c.iat, 60);
+  assert.equal("avatar" in c, false);
+  const d = buildPassClaims({ ...base, avatar: "https://a/b.png", membership: { role: "superuser", status: "weird" } });
+  assert.deepEqual([d.org.role, d.org.status, d.avatar], [null, null, "https://a/b.png"]);
+  assert.deepEqual(Object.keys(d).slice(7, 10), ["name", "avatar", "platformRole"]);
+});
+
+test("seats come from teamRoster, then lead, then members", () => {
+  const u = "aaaaaaaaaaaaaaaaaaaaaaaa";
+  const seats = seatsFor([
+    { _id: "p1", teamRoster: [{ userId: u, projectRole: "qa", maxActiveTasks: 3 }], lead: u },
+    { _id: "p2", lead: u, members: [] },
+    { _id: "p3", members: [u] },
+    { _id: "p4", teamRoster: [{ userId: u, projectRole: "wizard", maxActiveTasks: 99 }] },
+    { _id: "p5", members: ["someone-else"] },
+  ], u);
+  assert.deepEqual(seats, [
+    { projectId: "p1", projectRole: "qa", maxActiveTasks: 3 },
+    { projectId: "p2", projectRole: "lead", maxActiveTasks: 5 },
+    { projectId: "p3", projectRole: "contributor", maxActiveTasks: 5 },
+    { projectId: "p4", projectRole: "contributor", maxActiveTasks: 50 },
+  ]);
 });

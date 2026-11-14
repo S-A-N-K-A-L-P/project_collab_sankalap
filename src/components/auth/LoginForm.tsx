@@ -35,7 +35,10 @@ export default function LoginForm() {
       if (res?.error) {
         setError("Invalid email or password");
       } else {
-        router.push("/feed");
+        // Honour ?callbackUrl= (set by middleware and by "Sign in" links such as the org console). Same-site paths only:
+        // "/x" yes; "//evil.example", "/\evil.example" and absolute URLs no (open-redirect guard).
+        const back = new URLSearchParams(window.location.search).get("callbackUrl");
+        router.push(back && /^\/(?![/\\])/.test(back) ? back : "/feed");
         router.refresh();
       }
     } catch (err) {

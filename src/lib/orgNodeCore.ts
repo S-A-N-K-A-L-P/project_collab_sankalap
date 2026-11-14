@@ -128,3 +128,105 @@ export function normalizeNodeUrl(input: unknown): string | null {
 }
 
 export const NODE_FEATURES = ["console", "projects", "tasks", "merge-requests", "intelligence", "database-map", "agents", "ci"] as const;
+
+// ── Sign-in pass (roles.md §7.2, admindashboard-syncro.md §5.3) ─────────────────────────────────────────────
+
+export const PASS_TTL_S = 60;
+export const PASS_NONCE_RE = /^[A-Za-z0-9_-]{22,64}$/;
+export const PLATFORM_ROLES = ["user", "sankalp_member", "sankalp_associate", "platform_moderator", "master_admin"] as const;
+export const ORG_ROLES = ["observer", "member", "contributor", "lead", "admin", "owner"] as const;
+export const ORG_STATUSES = ["active", "pending", "suspended"] as const;
+export const PROJECT_ROLES = ["lead", "architect", "backend", "frontend", "mobile", "sre", "qa", "contributor"] as const;
+
+export type PassSeat = { projectId: string; projectRole: (typeof PROJECT_ROLES)[number]; maxActiveTasks: number };
+export type PassClaims = {
+  iss: string;
+  aud: string;
+  sub: string;
+  iat: number;
+  exp: number;
+  jti: string;
+  nonce: string;
+  name: string;
+  avatar?: string;
+  platformRole: (typeof PLATFORM_ROLES)[number];
+  org: { id: string; slug: string; role: (typeof ORG_ROLES)[number] | null; status: (typeof ORG_STATUSES)[number] | null };
+  seats: PassSeat[];
+};
+
+/**
+ * HS256 JWT over the exact JSON text, keyed with the raw 32 bytes of the node secret (same key as signRequest).
+ * Verified on the node by Syncro.Git.Server/Node/PassVerifier.cs; both are pinned by one test vector.
+ */
+export function signPass(claims: PassClaims, nodeSecret: string): string {
+  const input = b64url(Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" }))) + "." + b64url(Buffer.from(JSON.stringify(claims)));
+  return input + "." + b64url(createHmac("sha256", fromB64url(nodeSecret)).update(input, "ascii").digest());
+}
+
+const isOneOf = <T extends readonly string[]>(list: T, v: unknown): v is T[number] => typeof v === "string" && (list as readonly string[]).includes(v);
+
+type ProjectLike = {
+  _id: unknown;
+  lead?: unknown;
+  members?: unknown[];
+  teamRoster?: { userId?: unknown; projectRole?: unknown; maxActiveTasks?: unknown }[];
+};
+
+/** Seats for one user across an org's projects: teamRoster first, then lead, then plain members (max 50). */
+export function seatsFor(projects: ProjectLike[], userId: string): PassSeat[] {
+  const seats: PassSeat[] = [];
+  for (const p of projects) {
+    if (seats.length >= 50) break;
+    const roster = (p.teamRoster ?? []).find((t) => String(t.userId) === userId);
+    let role: PassSeat["projectRole"] | null = null;
+    let max = 5;
+    if (roster) {
+      role = isOneOf(PROJECT_ROLES, roster.projectRole) ? roster.projectRole : "contributor";
+      if (typeof roster.maxActiveTasks === "number" && Number.isInteger(roster.maxActiveTasks)) max = Math.min(50, Math.max(0, roster.maxActiveTasks));
+    } else if (String(p.lead) === userId) {
+      role = "lead";
+    } else if ((p.members ?? []).some((m) => String(m) === userId)) {
+      role = "contributor";
+    }
+    if (role) seats.push({ projectId: String(p._id), projectRole: role, maxActiveTasks: max });
+  }
+  return seats;
+}
+
+/** Builds pass claims. Unknown enum values fall back to the least-privileged value; never email/phone/tokens. */
+export function buildPassClaims(input: {
+  issuer: string;
+  orgId: string;
+  orgSlug: string;
+  userId: string;
+  name: string;
+  avatar?: string | null;
+  platformRole: unknown;
+  membership: { role?: unknown; status?: unknown } | null;
+  seats: PassSeat[];
+  nonce: string;
+  now: number;
+  jti: string;
+}): PassClaims {
+  const avatar = input.avatar && input.avatar.length <= 500 ? input.avatar : undefined;
+  // Keys in schema order (the shared test vector depends on JSON.stringify keeping insertion order).
+  return {
+    iss: input.issuer.replace(/\/+$/, ""),
+    aud: `org-node:${input.orgId}`,
+    sub: input.userId,
+    iat: input.now,
+    exp: input.now + PASS_TTL_S,
+    jti: input.jti,
+    nonce: input.nonce,
+    name: (input.name || "").slice(0, 120),
+    ...(avatar ? { avatar } : {}),
+    platformRole: isOneOf(PLATFORM_ROLES, input.platformRole) ? input.platformRole : "user",
+    org: {
+      id: input.orgId,
+      slug: input.orgSlug,
+      role: input.membership && isOneOf(ORG_ROLES, input.membership.role) ? input.membership.role : null,
+      status: input.membership && isOneOf(ORG_STATUSES, input.membership.status) ? input.membership.status : null,
+    },
+    seats: input.seats.slice(0, 50),
+  };
+}
