@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Clock, FileCode2, GitBranch, GitPullRequest, Link2, Lock, MonitorSmartphone, Search } from "lucide-react";
 import {
-  BOARD_COLUMNS, boardColumn, clock, PRIORITY_CLS, laneSteps,
+  BOARD_COLUMNS, boardColumn, clock, PRIORITY_CLS, laneSteps, stalledText,
   type BoardColumn, type CRData, type CRTask,
 } from "./pipeline";
 import { Avatar, GateDots, Pill } from "./ui";
@@ -55,7 +55,7 @@ function TaskCard({ t, nowMs, onOpen }: { t: CRTask; nowMs: number; onOpen: () =
       {job && ["claimed", "running"].includes(job.status) && (
         <p className={`text-[10px] flex items-center gap-1 truncate ${job.stalled ? "text-amber-500" : "text-sky-500"}`}>
           <MonitorSmartphone className="w-3 h-3" />
-          {job.stalled ? (job.deviceOnline === false ? "PC is offline" : "PC went quiet") : `${job.claimedByName || "PC"}: ${job.note || job.status}`}
+          {job.stalled ? stalledText(job, nowMs) : `${job.claimedByName || "PC"}: ${job.note || job.status}`}
         </p>
       )}
       <p className="text-[10px] font-mono text-muted truncate" title={current.detail}>▸ {current.label}{current.detail ? `: ${current.detail}` : ""}</p>

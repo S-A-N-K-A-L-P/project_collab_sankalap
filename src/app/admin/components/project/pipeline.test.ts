@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { boardColumn, isTaskDone, laneSteps, type CRJob, type CRTask } from "./pipeline.ts";
+import { boardColumn, closedWithoutPr, isTaskDone, laneSteps, stalledText, type CRJob, type CRTask } from "./pipeline.ts";
 
 const now = Date.parse("2026-10-24T00:00:00Z");
 
@@ -78,6 +78,37 @@ test("a running job on an offline PC is not an active setup", () => {
   const t = task({ setupJob: job({ status: "running", stalled: true, deviceOnline: false, claimedByName: "Desk" }) });
   const steps = laneSteps(t, now);
   assert.equal(steps[1].state, "fail");
-  assert.equal(steps[1].detail, "PC is offline");
+  assert.equal(steps[1].detail, "Desk offline");
   assert.equal(boardColumn(t, now), "blocked");
+});
+
+test("a stalled job says which PC and since when", () => {
+  const j = job({ status: "claimed", stalled: true, deviceOnline: false, claimedByName: "TUSHAR-PC", deviceLastSeenAt: "2026-10-01T00:00:00Z" });
+  assert.equal(stalledText(j, now), "TUSHAR-PC offline since 23d ago");
+  assert.equal(stalledText(job({ stalled: true, deviceOnline: true, claimedByName: "" }), now), "the PC went quiet");
+});
+
+test("code closed without a pull request is not done, and says so", () => {
+  const t = task({ status: "completed", commitCount: 3, verificationGate: { buildStatus: "passed", testsStatus: "passed" },
+    setupJob: job({ status: "cancelled" }) });
+  assert.equal(closedWithoutPr(t), true);
+  const steps = laneSteps(t, now);
+  assert.equal(steps[4].state, "fail");
+  assert.equal(steps[4].detail, "closed without PR");
+  assert.equal(isTaskDone(t, now), false);
+  assert.equal(boardColumn(t, now), "blocked");
+  // completed with nothing to merge still counts as done
+  assert.equal(closedWithoutPr(task({ status: "completed" })), false);
+});
+
+test("a missing pull request reads as not opened, never as an open PR", () => {
+  const t = task({ verificationGate: { buildStatus: "passed", testsStatus: "passed" }, commitCount: 2, setupJob: job({ status: "done" }) });
+  const steps = laneSteps(t, now);
+  assert.equal(steps[4].state, "todo");
+  assert.equal(steps[4].detail, "not opened yet");
+});
+
+test("a setup Syncro never recorded is marked as not recorded", () => {
+  const t = task({ status: "in-progress", commitCount: 2, setupJob: null });
+  assert.equal(laneSteps(t, now)[1].detail, "not recorded");
 });

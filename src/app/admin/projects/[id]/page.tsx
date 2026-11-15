@@ -38,7 +38,7 @@ interface Project {
   status: string; progress: number; githubRepo?: string;
   githubInstallationId?: string;
   techStack: string[]; lead?: Member; members: Member[];
-  orgId?: { name: string }; proposalId?: { _id: string; title: string };
+  orgId?: { name: string; slug: string }; proposalId?: { _id: string; title: string };
   verifiedBy?: Member; createdAt: string;
 }
 
@@ -223,7 +223,7 @@ export default function AdminProjectDetailPage() {
         {/* ── Agents tab: members' Syncro Desktop PCs and their jobs ── */}
         {/* ── Control Room: live pipeline across every task ── */}
         {tab === "control" && (live.data
-          ? <ControlRoom data={live.data} updatedAt={live.updatedAt} onOpenTask={setOpenTask} />
+          ? <ControlRoom data={live.data} updatedAt={live.updatedAt} onOpenTask={setOpenTask} org={project.orgId ?? null} />
           : <LiveLoading error={live.error} />)}
 
         {/* ── Scheduler: timeline + agent job queue ── */}

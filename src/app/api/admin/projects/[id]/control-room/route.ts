@@ -124,6 +124,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       runAt: j.runAt || j.createdAt,
       waitingOn: j.status === "queued" ? unmetFor(j.dependsOnTaskIds, j.dependencyRule) : [],
       claimedBy: j.claimedBy, claimedByName: device?.name || "",
+      deviceLastSeenAt: device?.lastSeenAt ?? null,
       attempts: j.attempts, maxAttempts: j.maxAttempts,
       note: j.note, error: j.error, result: j.result,
       createdAt: j.createdAt, createdByName: j.createdByName, finishedAt: j.finishedAt,

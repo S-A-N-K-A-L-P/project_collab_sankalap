@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Clock, X, Loader2, Circle } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   GATE_KEYS, gateTone, laneSteps, STEP_DOT, STEP_TEXT,
   type CRTask, type Gate, type StepState,
@@ -97,14 +97,22 @@ export function Kpi({ label, value, sub, tone = "text-foreground", icon }: { lab
   );
 }
 
+/** How fresh the data is (it is polled about every 10 s). Turns grey when the last refresh is over 30 s old. */
 export function LiveDot({ updatedAt }: { updatedAt: number }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 5_000);
+    return () => clearInterval(t);
+  }, []);
+  const age = updatedAt ? Math.max(0, Math.round((now - updatedAt) / 1000)) : null;
+  const fresh = age !== null && age <= 30;
   return (
-    <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-muted" title={updatedAt ? `Updated ${new Date(updatedAt).toLocaleTimeString()}` : "Loading"}>
+    <span className="inline-flex items-center gap-1.5 text-[10px] font-mono text-muted" title={updatedAt ? `Updated ${new Date(updatedAt).toLocaleTimeString()} · refreshes every 10 s` : "Loading"}>
       <span className="relative flex w-2 h-2">
-        <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
-        <span className="relative inline-flex w-2 h-2 rounded-full bg-emerald-500" />
+        {fresh && <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-75 animate-ping" />}
+        <span className={`relative inline-flex w-2 h-2 rounded-full ${fresh ? "bg-emerald-500" : "bg-zinc-400"}`} />
       </span>
-      LIVE
+      {age === null ? "LOADING" : fresh ? `UPDATED ${age}s AGO` : `STALE · ${age}s`}
     </span>
   );
 }

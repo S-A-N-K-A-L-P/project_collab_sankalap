@@ -45,6 +45,8 @@ export interface CRJob {
   status: "queued" | "claimed" | "running" | "done" | "failed" | "cancelled";
   stalled: boolean; deviceOnline: boolean; runAt: string; waitingOn: Dependency[];
   claimedBy: string; claimedByName: string; attempts: number; maxAttempts: number;
+  /** When the PC holding this job last reported in (null when unknown). */
+  deviceLastSeenAt?: string | null;
   note: string; error: string; result: JobResult | null; createdAt: string; createdByName?: string; finishedAt?: string;
 }
 export interface Gate {
@@ -189,6 +191,21 @@ export function gateSummary(g: Gate) {
 }
 
 // ── Pipeline ──
+
+/**
+ * Marked completed on the platform with no pull request, after real code work (commits or verification gates).
+ * That work never reached the base branch, so the task is not done, whatever its status says.
+ */
+export function closedWithoutPr(t: CRTask): boolean {
+  return t.status === "completed" && !t.pullRequest && ((t.commitCount || 0) > 0 || gateSummary(t.verificationGate).verified);
+}
+
+/** A setup job held by a PC that stopped reporting: any of the member's PCs picks it up again when Syncro is open. */
+export function stalledText(job: CRJob, nowMs: number): string {
+  const who = job.claimedByName || "the PC";
+  if (job.deviceOnline === false) return `${who} offline${job.deviceLastSeenAt ? ` since ${ago(job.deviceLastSeenAt, nowMs)}` : ""}`;
+  return `${who} went quiet`;
+}
 export type StepState = "done" | "active" | "wait" | "fail" | "todo";
 export interface Step { key: string; label: string; state: StepState; detail: string }
 
@@ -205,15 +222,15 @@ export function laneSteps(t: CRTask, nowMs: number): Step[] {
 
   // Agent setup
   if (!job) {
-    if (t.status !== "pending" || pr || gate.verified) steps[1] = { ...steps[1], state: "done", detail: "set up on PC" };
+    // No setup job exists: work happened, but Syncro never recorded a setup on a PC.
+    if (t.status !== "pending" || pr || gate.verified) steps[1] = { ...steps[1], state: "done", detail: "not recorded" };
     else steps[1] = { ...steps[1], state: t.repoUrl ? "todo" : "wait", detail: t.repoUrl ? "no agent job" : "no repo linked" };
   } else if (job.status === "queued") {
     if (job.waitingOn.length) steps[1] = { ...steps[1], state: "wait", detail: `after ${job.waitingOn.map((d) => d.title).join(", ")}` };
     else if (new Date(job.runAt).getTime() > nowMs) steps[1] = { ...steps[1], state: "wait", detail: `starts ${clock(job.runAt)}` };
     else steps[1] = { ...steps[1], state: "active", detail: "waiting for a PC" };
   } else if (job.status === "claimed" || job.status === "running") {
-    const quiet = job.deviceOnline === false ? "PC is offline" : "PC went quiet";
-    steps[1] = { ...steps[1], state: job.stalled ? "fail" : "active", detail: job.stalled ? quiet : job.note || `on ${job.claimedByName || "PC"}` };
+    steps[1] = { ...steps[1], state: job.stalled ? "fail" : "active", detail: job.stalled ? stalledText(job, nowMs) : job.note || `on ${job.claimedByName || "PC"}` };
   } else if (job.status === "done") {
     steps[1] = { ...steps[1], state: "done", detail: `${job.result?.deviceName || job.claimedByName || "PC"} @ ${shortSha(job.result?.headSha)}` };
   } else if (job.status === "failed") {
@@ -234,7 +251,8 @@ export function laneSteps(t: CRTask, nowMs: number): Step[] {
 
   // PR open
   if (pr) steps[4] = { ...steps[4], state: "done", detail: `#${pr.number}` };
-  else if (steps[3].state === "done") steps[4] = { ...steps[4], state: "active", detail: "push & open PR" };
+  else if (closedWithoutPr(t)) steps[4] = { ...steps[4], state: "fail", detail: "closed without PR" };
+  else if (steps[3].state === "done") steps[4] = { ...steps[4], state: "todo", detail: "not opened yet" };
 
   // Review + merged
   if (pr) {
@@ -290,7 +308,7 @@ export const BOARD_COLUMNS: { id: BoardColumn; label: string; hint: string }[] =
 export function boardColumn(t: CRTask, nowMs: number): BoardColumn {
   const steps = laneSteps(t, nowMs);
   if (steps[6].state === "done") return "merged";
-  if (t.status === "completed" && !t.pullRequest) return "merged";
+  if (t.status === "completed" && !t.pullRequest && !closedWithoutPr(t)) return "merged";
   if (steps.some((s) => s.state === "fail")) return "blocked";
   if (t.pullRequest) return "review";
   if (steps[3].state === "done" && steps[3].detail !== "not recorded") return "verified";
@@ -299,7 +317,7 @@ export function boardColumn(t: CRTask, nowMs: number): BoardColumn {
   return "setup";
 }
 
-/** Finished means GitHub merged it, or it was completed with no pull request. An open PR is not done. */
+/** Finished means GitHub merged it, or it was completed with no code to merge. An open PR is not done, nor is code closed without a PR. */
 export function isTaskDone(t: CRTask, nowMs: number): boolean {
   return boardColumn(t, nowMs) === "merged";
 }
