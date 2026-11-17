@@ -13,6 +13,12 @@ export const BRAND = {
   logo: "/syncro.jpg",
 };
 
+export type VideoChapter = {
+  time: number;
+  tag: string;
+  label: string;
+};
+
 export type VideoConfig = {
   src: string;
   poster?: string;
@@ -21,6 +27,13 @@ export type VideoConfig = {
   title: string;
   subtitle?: string;
   length?: string;
+  accent?: "indigo" | "emerald";
+  badge?: string;
+  floatingBadges?: {
+    topRight?: string;
+    bottomLeft?: string;
+  };
+  chapters?: VideoChapter[];
 };
 
 /**
@@ -35,6 +48,19 @@ export const INTRO_VIDEO: VideoConfig = {
   title: "Introducing S.A.N.K.A.L.P.",
   subtitle: `${BRAND.name} · ${BRAND.company}`,
   length: "1:20",
+  accent: "indigo",
+  badge: "Community Film",
+  floatingBadges: {
+    topRight: "Cloud · AI · IoT across India",
+    bottomLeft: "Propose → Join → Build → Release",
+  },
+  chapters: [
+    { time: 0, tag: "0:00", label: "Vision" },
+    { time: 19, tag: "0:19", label: "How It Works" },
+    { time: 30, tag: "0:30", label: "Live Proposals" },
+    { time: 41, tag: "0:41", label: "Syncro Platform" },
+    { time: 61, tag: "1:01", label: "Why Connect" },
+  ],
 };
 
 /**
@@ -47,6 +73,20 @@ export const SYNCRO_GIT_VIDEO: VideoConfig = {
   title: "Syncro Git — Private Git with built-in code intelligence",
   subtitle: "Powered by Syncro Desktop · A S.A.N.K.A.L.P. project",
   length: "2:10",
+  accent: "emerald",
+  badge: "Product Walkthrough",
+  floatingBadges: {
+    topRight: "Smart Syncro Push · Auto-Indexed",
+    bottomLeft: "Private Git · Groq BYOK & Ollama",
+  },
+  chapters: [
+    { time: 0, tag: "0:00", label: "Why Syncro Git" },
+    { time: 24, tag: "0:24", label: "Smart Push" },
+    { time: 45, tag: "0:45", label: "Code Intelligence" },
+    { time: 60, tag: "1:00", label: "RAG & Vector Search" },
+    { time: 77, tag: "1:17", label: "Hindsight Memory" },
+    { time: 98, tag: "1:38", label: "BYOK & Ollama" },
+  ],
 };
 
 export type SyncroHighlight = {
