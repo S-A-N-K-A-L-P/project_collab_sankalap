@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Play, Clapperboard } from "lucide-react";
-import { BRAND, INTRO_VIDEO } from "./content";
+import { useEffect, useState } from "react";
+import { Play, PlayCircle, Clapperboard } from "lucide-react";
+import { BRAND, INTRO_VIDEO, type VideoConfig } from "./content";
 
 /** Turns a YouTube or Vimeo link into its embeddable player URL; returns null for anything else. */
 function embedUrl(src: string): string | null {
@@ -19,52 +19,124 @@ function embedUrl(src: string): string | null {
       return id ? `https://player.vimeo.com/video/${id}?autoplay=1` : null;
     }
   } catch {
-    // A relative path such as /media/intro.mp4 is not a URL; it plays as a file.
+    // A relative path such as /media/sankalp_intro.mp4 is not a URL; it plays as a file.
   }
   return null;
 }
 
 /**
- * The hero's introduction video. Until a video is configured (INTRO_VIDEO.src in content.ts, or
- * NEXT_PUBLIC_INTRO_VIDEO_URL), it shows a "coming soon" frame instead of a broken player.
+ * Reusable showcase / introduction video player.
+ * Supports YouTube/Vimeo embeds as well as local MP4 files in /public/media.
+ * Until a video is configured, it shows a graceful "coming soon" frame instead of a broken player.
  */
-export function IntroVideo() {
+export function IntroVideo({
+  video = INTRO_VIDEO,
+  id = "intro-video",
+}: {
+  video?: VideoConfig;
+  id?: string;
+}) {
   const [playing, setPlaying] = useState(false);
-  const src = INTRO_VIDEO.src.trim();
+  const src = video.src.trim();
   const embed = src ? embedUrl(src) : null;
+  const previewSrc =
+    src && !embed && !src.includes("#") && typeof video.previewTime === "number"
+      ? `${src}#t=${video.previewTime}`
+      : src;
+
+  useEffect(() => {
+    const onPlayEvent = (e: Event) => {
+      const detail = (e as CustomEvent<{ id?: string }>).detail;
+      if (detail?.id === id && src) {
+        setPlaying(true);
+      }
+    };
+    window.addEventListener("syncro:play-video", onPlayEvent);
+    return () => window.removeEventListener("syncro:play-video", onPlayEvent);
+  }, [id, src]);
 
   return (
-    <div id="intro-video" className="relative w-full scroll-mt-28">
+    <div id={id} className="relative w-full scroll-mt-28">
       <div className="absolute -inset-3 rounded-[28px] bg-gradient-to-br from-indigo-500/20 via-sky-400/10 to-emerald-400/20 blur-2xl" aria-hidden />
       <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 shadow-2xl shadow-slate-900/20 dark:border-slate-700">
         {!src ? (
-          <Placeholder />
+          <Placeholder title={video.title} />
         ) : playing && embed ? (
           <iframe
             src={embed}
-            title={INTRO_VIDEO.title}
+            title={video.title}
             className="absolute inset-0 h-full w-full"
             allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
             allowFullScreen
           />
         ) : playing ? (
-          <video src={src} poster={INTRO_VIDEO.poster || undefined} className="absolute inset-0 h-full w-full bg-black" controls autoPlay playsInline />
+          <video
+            src={src}
+            poster={video.poster || undefined}
+            className="absolute inset-0 h-full w-full bg-black"
+            controls
+            autoPlay
+            playsInline
+          />
         ) : (
-          <button type="button" onClick={() => setPlaying(true)} className="group absolute inset-0 flex items-center justify-center" aria-label={`Play: ${INTRO_VIDEO.title}`}>
-            {INTRO_VIDEO.poster ? (
+          <button
+            type="button"
+            onClick={() => setPlaying(true)}
+            className="group absolute inset-0 flex items-center justify-center cursor-pointer"
+            aria-label={`Play: ${video.title}`}
+          >
+            <Backdrop />
+            {video.poster ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={INTRO_VIDEO.poster} alt="" className="absolute inset-0 h-full w-full object-cover opacity-80" />
-            ) : (
-              <Backdrop />
-            )}
+              <img src={video.poster} alt="" className="absolute inset-0 h-full w-full object-cover opacity-85 transition-transform duration-500 group-hover:scale-[1.02]" />
+            ) : !embed ? (
+              <video
+                src={previewSrc}
+                preload="metadata"
+                muted
+                playsInline
+                aria-hidden
+                tabIndex={-1}
+                className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-85 transition-transform duration-500 group-hover:scale-[1.02]"
+              />
+            ) : null}
+            <div className="pointer-events-none absolute inset-0 bg-slate-950/25 transition-colors group-hover:bg-slate-950/15" aria-hidden />
             <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-white/95 text-indigo-600 shadow-xl transition-transform group-hover:scale-105">
               <Play className="ml-1 h-7 w-7 fill-current" />
             </span>
-            <Caption />
+            <Caption video={video} />
           </button>
         )}
       </div>
     </div>
+  );
+}
+
+/** Button that smoothly scrolls to a video player on the page and starts playback. */
+export function WatchVideoButton({
+  targetId = "intro-video",
+  label = "Watch the introduction",
+  className = "inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3.5 text-[15px] font-semibold text-slate-800 hover:border-slate-400 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800 transition-colors",
+}: {
+  targetId?: string;
+  label?: string;
+  className?: string;
+}) {
+  return (
+    <a
+      href={`#${targetId}`}
+      onClick={(e) => {
+        const el = document.getElementById(targetId);
+        if (el) {
+          e.preventDefault();
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+          window.dispatchEvent(new CustomEvent("syncro:play-video", { detail: { id: targetId } }));
+        }
+      }}
+      className={className}
+    >
+      <PlayCircle className="h-4 w-4" /> {label}
+    </a>
   );
 }
 
@@ -76,19 +148,24 @@ function Backdrop() {
   );
 }
 
-function Caption() {
+function Caption({ video }: { video: VideoConfig }) {
+  const subtitle = video.subtitle ?? `${BRAND.name} · ${BRAND.company}`;
   return (
-    <span className="absolute bottom-0 inset-x-0 flex items-end justify-between bg-gradient-to-t from-black/70 to-transparent px-5 pb-4 pt-10 text-left">
+    <span className="absolute bottom-0 inset-x-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-5 pb-4 pt-12 text-left">
       <span>
-        <span className="block text-[15px] font-semibold text-white">{INTRO_VIDEO.title}</span>
-        <span className="block text-[12px] text-white/70">{BRAND.name} · {BRAND.company}</span>
+        <span className="block text-[15px] font-semibold text-white">{video.title}</span>
+        <span className="block text-[12px] text-white/75">{subtitle}</span>
       </span>
-      {INTRO_VIDEO.length && <span className="rounded bg-black/50 px-2 py-0.5 text-[12px] font-medium text-white">{INTRO_VIDEO.length}</span>}
+      {video.length && (
+        <span className="shrink-0 rounded bg-black/60 px-2 py-0.5 text-[12px] font-medium tabular-nums text-white backdrop-blur-sm">
+          {video.length}
+        </span>
+      )}
     </span>
   );
 }
 
-function Placeholder() {
+function Placeholder({ title }: { title: string }) {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
       <Backdrop />
@@ -96,8 +173,8 @@ function Placeholder() {
         <Clapperboard className="h-6 w-6" />
       </span>
       <span className="relative px-6">
-        <span className="block text-[16px] font-semibold text-white">{INTRO_VIDEO.title}</span>
-        <span className="mt-1 block text-[13px] text-white/70">Our introduction video is coming soon.</span>
+        <span className="block text-[16px] font-semibold text-white">{title}</span>
+        <span className="mt-1 block text-[13px] text-white/70">Our video is coming soon.</span>
       </span>
     </div>
   );

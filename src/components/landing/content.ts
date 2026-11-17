@@ -13,22 +13,76 @@ export const BRAND = {
   logo: "/syncro.jpg",
 };
 
-/**
- * The introduction video shown in the hero. Leave `src` empty to show the "coming soon" placeholder.
- * - A YouTube or Vimeo link is embedded as a player.
- * - A path to a file (for example "/media/intro.mp4" in /public) plays with the browser's own player.
- */
-export const INTRO_VIDEO = {
-  src: process.env.NEXT_PUBLIC_INTRO_VIDEO_URL ?? "",
-  poster: "" as string,
-  title: "Introducing S.A.N.K.A.L.P.",
-  length: "",
+export type VideoConfig = {
+  src: string;
+  poster?: string;
+  /** Timestamp (seconds) used to preview a frame before Play is clicked on local MP4 files. */
+  previewTime?: number;
+  title: string;
+  subtitle?: string;
+  length?: string;
 };
+
+/**
+ * The introduction video shown in the hero.
+ * - A YouTube or Vimeo link is embedded as a player.
+ * - A path to a file (for example "/media/sankalp_intro.mp4" in /public) plays with the browser's own player.
+ */
+export const INTRO_VIDEO: VideoConfig = {
+  src: process.env.NEXT_PUBLIC_INTRO_VIDEO_URL || "/media/sankalp_intro.mp4",
+  poster: "",
+  previewTime: 0.5,
+  title: "Introducing S.A.N.K.A.L.P.",
+  subtitle: `${BRAND.name} · ${BRAND.company}`,
+  length: "1:20",
+};
+
+/**
+ * The Syncro Git product showcase video (powered by Syncro Desktop).
+ */
+export const SYNCRO_GIT_VIDEO: VideoConfig = {
+  src: process.env.NEXT_PUBLIC_SYNCRO_SHOWCASE_VIDEO_URL || "/media/syncro_git_showcase.mp4",
+  poster: "",
+  previewTime: 4,
+  title: "Syncro Git — Private Git with built-in code intelligence",
+  subtitle: "Powered by Syncro Desktop · A S.A.N.K.A.L.P. project",
+  length: "2:10",
+};
+
+export type SyncroHighlight = {
+  title: string;
+  text: string;
+  icon: "git" | "search" | "key" | "history";
+};
+
+export const SYNCRO_HIGHLIGHTS: SyncroHighlight[] = [
+  {
+    icon: "git",
+    title: "Smart Syncro Push & Code Intelligence",
+    text: "Every push automatically indexes files, symbols, API routes and dependencies — giving an instant map of the repository without a separate pipeline.",
+  },
+  {
+    icon: "search",
+    title: "Low-token RAG & Vector Search",
+    text: "Search and ask questions by meaning, not just keyword. Agents receive only the relevant slices instead of thousands of lines of private code.",
+  },
+  {
+    icon: "key",
+    title: "Works with or without AI",
+    text: "Get retrieval-only code answers with no model running, bring a free Groq key, or run local models through Ollama while keeping token usage minimal.",
+  },
+  {
+    icon: "history",
+    title: "Hindsight project memory",
+    text: "Preserves past context alongside the repository so contributors understand why the code looks the way it does, not just what it does.",
+  },
+];
 
 export const NAV_LINKS = [
   { label: "About us", href: "/about" },
   { label: "What we build", href: "/#focus" },
   { label: "How it works", href: "/#how-it-works" },
+  { label: "Syncro Git", href: "/#syncro-git" },
   { label: "Projects", href: "/#projects" },
 ];
 

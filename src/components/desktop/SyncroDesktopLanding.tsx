@@ -3,8 +3,10 @@
 import {
   Download, Zap, Bot, FolderGit2, TerminalSquare, Radar, Braces,
   Cable, Play, Network, Rss, Cpu, ShieldCheck, Sparkles, MonitorDown,
-  CheckCircle2, ArrowRight,
+  CheckCircle2, ArrowRight, GitBranch,
 } from "lucide-react";
+import { IntroVideo, WatchVideoButton } from "@/components/landing/IntroVideo";
+import { SYNCRO_GIT_VIDEO } from "@/components/landing/content";
 
 const DOWNLOAD_URL =
   "https://drive.google.com/file/d/1_TGpFcbk50EXtMTTcDZD1SHFlyxDc70G/view?usp=sharing";
@@ -74,6 +76,11 @@ export default function SyncroDesktopLanding() {
               <Download className="w-5 h-5 group-hover:translate-y-0.5 transition-transform" />
               Download Now
             </a>
+            <WatchVideoButton
+              targetId="desktop-syncro-git-showcase"
+              label="Watch Syncro Git showcase"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl border border-border bg-card font-semibold text-foreground hover:bg-background transition-colors"
+            />
             <a href="#features"
               className="inline-flex items-center gap-2 px-6 py-3.5 rounded-2xl border border-border bg-card font-semibold text-foreground hover:bg-background transition-colors">
               Explore features <ArrowRight className="w-4 h-4" />
@@ -96,6 +103,21 @@ export default function SyncroDesktopLanding() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* ── SYNCRO GIT SHOWCASE VIDEO ─────────────────────── */}
+      <section className="max-w-5xl mx-auto px-6 py-12">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 mb-3 rounded-full border border-border bg-card text-xs font-medium text-muted">
+            <GitBranch className="w-3.5 h-3.5 text-primary" /> Built on Syncro Desktop
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-3">Syncro Git Showcase</h2>
+          <p className="text-muted max-w-2xl mx-auto">
+            Private Git hosting with Smart Syncro Push, instant AST &amp; symbol intelligence, low-token RAG search
+            (retrieval-only, Groq BYOK, or local Ollama), and Hindsight project memory.
+          </p>
+        </div>
+        <IntroVideo id="desktop-syncro-git-showcase" video={SYNCRO_GIT_VIDEO} />
       </section>
 
       {/* ── FEATURES ──────────────────────────────────────── */}

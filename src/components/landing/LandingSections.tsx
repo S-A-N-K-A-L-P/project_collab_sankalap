@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, Cloud, Cpu, HeartPulse, Radio, Sprout, Truck, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Cloud, Cpu, HeartPulse, Radio, Sprout, Truck, CheckCircle2, GitBranch, Search, KeyRound, History } from "lucide-react";
 import { BrandMark, PoweredBy } from "./BrandMark";
-import { BRAND, FOCUS_AREAS, NAV_LINKS, PILLARS, STEPS, type FocusArea } from "./content";
+import { IntroVideo, WatchVideoButton } from "./IntroVideo";
+import { BRAND, FOCUS_AREAS, NAV_LINKS, PILLARS, STEPS, SYNCRO_GIT_VIDEO, SYNCRO_HIGHLIGHTS, type FocusArea, type SyncroHighlight } from "./content";
 
 export function SectionHeading({ eyebrow, title, text, center = false }: { eyebrow: string; title: string; text?: string; center?: boolean }) {
   return (
@@ -113,6 +114,65 @@ export function HowItWorks() {
   );
 }
 
+const SYNCRO_ICON: Record<SyncroHighlight["icon"], typeof GitBranch> = {
+  git: GitBranch,
+  search: Search,
+  key: KeyRound,
+  history: History,
+};
+
+/** Syncro Git & Syncro Desktop showcase section with the product walkthrough video. */
+export function SyncroShowcase() {
+  return (
+    <section id="syncro-git" className="scroll-mt-20 border-t border-slate-200 bg-slate-50 py-20 sm:py-24 dark:border-slate-800 dark:bg-slate-900/40">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.15fr] lg:gap-14">
+          <div>
+            <SectionHeading
+              eyebrow="Built-in platform"
+              title="Syncro Git: private Git with built-in code understanding"
+              text="Every S.A.N.K.A.L.P. task runs inside Syncro. Instead of pasting thousands of lines of private code into someone else's cloud, Syncro indexes every push so contributors and AI agents get the exact pieces they need."
+            />
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <WatchVideoButton
+                targetId="syncro-git-video"
+                label="Watch Syncro Git showcase"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-[14px] font-semibold text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 transition-colors"
+              />
+              <Link
+                href="/desktop"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-5 py-3 text-[14px] font-semibold text-slate-800 hover:border-slate-400 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:hover:bg-slate-900 transition-colors"
+              >
+                Explore Syncro Desktop <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+
+          <IntroVideo id="syncro-git-video" video={SYNCRO_GIT_VIDEO} />
+        </div>
+
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {SYNCRO_HIGHLIGHTS.map((item) => {
+            const Icon = SYNCRO_ICON[item.icon];
+            return (
+              <div
+                key={item.title}
+                className="flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-950"
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <h3 className="mt-4 text-[15px] font-semibold text-slate-900 dark:text-white">{item.title}</h3>
+                <p className="mt-2 text-[13.5px] leading-relaxed text-slate-600 dark:text-slate-400">{item.text}</p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export type FeaturedProject = {
   _id: string;
   title: string;
@@ -129,7 +189,7 @@ const clip = (s = "", n = 150) => (s.length > n ? s.slice(0, n).trimEnd() + "…
 export function FeaturedProjects({ projects }: { projects: FeaturedProject[] }) {
   if (!projects.length) return null;
   return (
-    <section id="projects" className="scroll-mt-20 border-t border-slate-200 bg-slate-50 py-20 sm:py-24 dark:border-slate-800 dark:bg-slate-900/40">
+    <section id="projects" className="scroll-mt-20 border-t border-slate-200 py-20 sm:py-24 dark:border-slate-800">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <SectionHeading eyebrow="Projects" title="What the community is building" text="The most-supported proposals on the platform right now." />

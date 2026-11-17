@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Building2, FlaskConical, CloudCog, Users } from "lucide-react";
 import { LandingNav } from "@/components/landing/LandingNav";
+import { IntroVideo } from "@/components/landing/IntroVideo";
 import { JoinCta, LandingFooter, SectionHeading } from "@/components/landing/LandingSections";
-import { BRAND, COMMUNITY, FOCUS_AREAS, ROLES, TEAM } from "@/components/landing/content";
+import { BRAND, COMMUNITY, FOCUS_AREAS, INTRO_VIDEO, ROLES, SYNCRO_GIT_VIDEO, TEAM } from "@/components/landing/content";
 
 export const metadata: Metadata = {
   title: "About us · S.A.N.K.A.L.P.",
@@ -92,6 +93,30 @@ export default function AboutPage() {
             {COMMUNITY.map((n) => (
               <span key={n} className="rounded-full border border-slate-200 px-3 py-1 text-[13px] text-slate-600 dark:border-slate-700 dark:text-slate-300">{n}</span>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-slate-200 bg-slate-50 py-20 dark:border-slate-800 dark:bg-slate-900/40">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <SectionHeading
+            eyebrow="Videos"
+            title="See S.A.N.K.A.L.P. and Syncro Git in action"
+            text="Watch our community introduction and how Syncro Git indexes repositories for private, low-token code intelligence."
+          />
+          <div className="mt-10 grid gap-8 lg:grid-cols-2">
+            <div>
+              <IntroVideo id="about-intro-video" video={INTRO_VIDEO} />
+              <p className="mt-3 text-[13.5px] text-slate-600 dark:text-slate-400">
+                How {BRAND.name} connects engineers, mentors and divisions across India to ship real projects.
+              </p>
+            </div>
+            <div>
+              <IntroVideo id="about-syncro-video" video={SYNCRO_GIT_VIDEO} />
+              <p className="mt-3 text-[13.5px] text-slate-600 dark:text-slate-400">
+                How Syncro Git powers private Git hosting, automatic push indexing, RAG search and Hindsight memory.
+              </p>
+            </div>
           </div>
         </div>
       </section>

@@ -8,7 +8,7 @@ import Proposal from "@/models/Proposal";
 import Activity from "@/models/Activity";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { LandingHero } from "@/components/landing/LandingHero";
-import { FeaturedProjects, FocusAreas, HowItWorks, JoinCta, LandingFooter, type FeaturedProject } from "@/components/landing/LandingSections";
+import { FeaturedProjects, FocusAreas, HowItWorks, JoinCta, LandingFooter, SyncroShowcase, type FeaturedProject } from "@/components/landing/LandingSections";
 
 export const metadata: Metadata = {
   title: "S.A.N.K.A.L.P. · Applied engineering community, powered by Morwin Technologies",
@@ -54,6 +54,7 @@ export default async function Home() {
       />
       <FocusAreas />
       <HowItWorks />
+      <SyncroShowcase />
       <FeaturedProjects projects={featured} />
       <JoinCta />
       <LandingFooter />
